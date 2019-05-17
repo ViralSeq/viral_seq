@@ -6,8 +6,8 @@ require "ViralSeq/version"
 Gem::Specification.new do |spec|
   spec.name          = "ViralSeq"
   spec.version       = ViralSeq::VERSION
-  spec.authors       = ["Ronald Swanstrom"]
-  spec.email         = ["swanstromlab@gmail.com"]
+  spec.authors       = ["Shuntai Zhou", "Michael Clark"]
+  spec.email         = ["shuntai.zhou@gmail.com", "clarkmu@gmail.com"]
 
   spec.summary       = %q{A Ruby Gem containing bioinformatics tools for processing viral NGS data.}
   spec.description   = %q{Specifically for Primer-ID sequencing and HIV drug resistance analysis.}

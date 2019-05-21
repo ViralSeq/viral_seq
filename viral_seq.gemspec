@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = %q{A Ruby Gem containing bioinformatics tools for processing viral NGS data.}
   spec.description   = %q{Specifically for Primer-ID sequencing and HIV drug resistance analysis.}
-  spec.homepage      = "https://github.com/ViralSeq/viral_seq"
+  spec.homepage      = "https://github.com/ViralSeq/ViralSeq"
   spec.license       = "MIT"
 
   # Specify which files should be added to the gem when it is released.

@@ -5,7 +5,7 @@
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'viral_seq'
+gem 'ViralSeq'
 ```
 
 And then execute:

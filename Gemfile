@@ -1,4 +1,4 @@
 source "https://rubygems.org"
 
-# Specify your gem's dependencies in ViralSeq.gemspec
+# Specify your gem's dependencies in viral_seq.gemspec
 gemspec

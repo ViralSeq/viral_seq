@@ -1,5 +1,5 @@
 require "bundler/setup"
-require "ViralSeq"
+require "viral_seq"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

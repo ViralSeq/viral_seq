@@ -1,17 +1,17 @@
 
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require "ViralSeq/version"
+require "viral_seq/version"
 
 Gem::Specification.new do |spec|
-  spec.name          = "ViralSeq"
+  spec.name          = "viral_seq"
   spec.version       = ViralSeq::VERSION
   spec.authors       = ["Shuntai Zhou", "Michael Clark"]
   spec.email         = ["shuntai.zhou@gmail.com", "clarkmu@gmail.com"]
 
   spec.summary       = %q{A Ruby Gem containing bioinformatics tools for processing viral NGS data.}
   spec.description   = %q{Specifically for Primer-ID sequencing and HIV drug resistance analysis.}
-  spec.homepage      = "https://github.com/ViralSeq/ViralSeq"
+  spec.homepage      = "https://github.com/ViralSeq/viral_seq"
   spec.license       = "MIT"
 
   # Specify which files should be added to the gem when it is released.

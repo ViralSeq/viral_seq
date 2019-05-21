@@ -1,4 +1,4 @@
-require "ViralSeq/version"
+require "viral_seq/version"
 
 module ViralSeq
   $amino_acid_list = ["A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y", "*"]

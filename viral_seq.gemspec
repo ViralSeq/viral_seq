@@ -20,10 +20,15 @@ Gem::Specification.new do |spec|
     `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   end
   spec.bindir        = "exe"
-  spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
+  # spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }\
   spec.require_paths = ["lib"]
+  spec.post_install_message = "Thanks for installing!"
 
   spec.add_development_dependency "bundler", "~> 2.0"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec", "~> 3.0"
+  # not sure if need rinruby
+  # spec.add_development_dependency "rinruby", "~> 2.0"
+  spec.requirements << 'MUSCLE (http://www.drive5.com/muscle) required for some functions'
+  spec.requirements << 'R required for some functions'
 end

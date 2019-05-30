@@ -19,10 +19,9 @@
 # THE SOFTWARE.
 
 # viral_seq main
+module ViralSeq; end
 
 # load all modules
-
-module ViralSeq; end
 
 require "viral_seq/version"
 require "viral_seq/sequence"
@@ -30,3 +29,4 @@ require "viral_seq/math"
 require "viral_seq/fasta"
 require "viral_seq/misc"
 require "viral_seq/refseq"
+require "viral_seq/locator"

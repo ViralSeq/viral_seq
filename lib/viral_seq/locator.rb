@@ -1,41 +1,48 @@
 # viral_seq/locator.rb
 
+# HIV sequence locator function
+#   resembling HIV Sequence Locator from LANL
+#   https://www.hiv.lanl.gov/content/sequence/LOCATE/locate.html
+#   require MUSCLE (http://www.drive5.com/muscle) installed
+#   current version only supports nucleotide sequence, not for amino acid sequence.
+#
+# =USAGE1
+#   # Find the location of a sequence
+#   ViralSeq.sequence_locator(input_sequence, reference_options, path_to_muscle)
+#   # input_sequence: String of nucleotide sequence
+#   # reference_options: choose a reference genome from :HXB2 (default), :NL43, or :MAC239
+#   # path_to_muscle: path to the muscle executable. Default as 'muscle', add MUSCLE excutable path to $PATH to use the default setting or provide the path
+#   # function returns an array of
+#   #   start_location (Integer)
+#   #   end_location (Integer)
+#   #   percentage_of_similarity_to_reference_sequence (Float)
+#   #   containing_indel? (Boolean)
+#   #   aligned_input_sequence (String)
+#   #   aligned_reference_sequence (String)
+#   # example code
+#   sequence = 'AGCAGATGATACAGTATTAGAAGAAATAAATTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAATATGATC'
+#   p ViralSeq.sequence_locator(sequence, :NL43, 'muscle')
+#   => [2333, 2433, 98.0, false, "AGCAGATGATACAGTATTAGAAGAAATAAATTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAATATGATC", "AGCAGATGATACAGTATTAGAAGAAATGAATTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAGTATGATC"]
+#
+# =USAGE2
+#   # Given a pair of specific start and end positions, and an input sequence, return a sub-sequence of that range
+#   # return nil if the input sequence is not in the range
+#   ViralSeq.sequence_clip(input_sequence, start_position, end_position, reference_options, path_to_muscle)
+#   # input_sequence: String of nucleotide sequence
+#   # start_position and end_position: Integer of the start and end reference number of the sub-sequence
+#   # reference_options and path_to_muscle are same as in ViralSeq.sequence_locator
+#   # example code
+#   seq = "CCTCAGATCACTCTTTGGCAACGACCCCTAGTTACAATAAGGGTAGGGGGGCAACTAAAGGAAGCCCTATTAGATACAGGAGCAGATGATACAGTATTAGAAGAAATAAATTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAATATGATCAGATACCCATAGAAATTTGTGGACATGAAGCTATAGGTACAGTATTAGTGGGACCTACACCTGTCAACATAATTGGGAGAAATCTGTTGACTCAGATTGGTTGCACTCTAAATTTT"
+#   p ViralSeq.sequence_clip(seq, 2333, 2433, :HXB2, 'muscle')
+#   => "AGCAGATGATACAGTATTAGAAGAAATAAATTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAATATGATC"
+
 
 module ViralSeq
 
-  def self.sequence_locator(seq='', ref_option = 'HXB2', path_to_muscle = 'muscle')
+  def self.sequence_locator(seq='', ref_option = :HXB2, path_to_muscle = 'muscle')
 
-    # check if path_to_muscle is correct
-    begin
-      `#{path_to_muscle} -version`
-    rescue Errno::ENOENT
-      puts "
-            Error: MUSCLE is not found!!\n
-            MUSLCE can be download at http://www.drive5.com/muscle\n
-            Add MUSCLE excutable path to $PATH using\n
-            $  export PATH=$PATH:/path/to/muscle\n
-            or\n
-            provide path_to_MUSCLE in the ViralSeq::sequence_locator arguments\n
-            "
-      return nil
-    end
-
-    # check if reference option is correct
-    begin
-      case ref_option
-      when 'HXB2'
-        ori_ref = HXB2.dup
-      when 'NL43'
-        ori_ref = NL43.dup
-      when 'MAC239'
-        ori_ref = MAC239.dup
-      else
-        raise StandardError.new("reference sequence not recognized, choose from 'HXB2' (default), 'NL43', or 'MAC239'.")
-      end
-    rescue StandardError => e
-      puts e.message
-      return nil
-    end
+    ViralSeq.check_muscle(path_to_muscle)
+    ori_ref = ViralSeq.locator_ref(ref_option)
 
     begin
       ori_ref_l = ori_ref.size
@@ -231,6 +238,8 @@ module ViralSeq
             indel = true
         elsif aln_test.include?("-")
             indel = true
+        else
+            indel = false
         end
         return [loc_p1,loc_p2,similarity,indel,aln_test,ref]
       else
@@ -243,6 +252,32 @@ module ViralSeq
       puts "Exception Backtrace: #{ e.backtrace[0] }"
       puts "ViralSeq.sequence_locator returns nil"
       return nil
+    end
+  end
+
+  # sequence clip function
+  def self.sequence_clip(seq='', p1 = 0, p2 = 0, ref_option = :HXB2, path_to_muscle = 'muscle')
+    loc = ViralSeq.sequence_locator(seq, ref_option, path_to_muscle)
+    l1 = loc[0]
+    l2 = loc[1]
+    if (p1 >= l1) & (p2 <= l2)
+        seq = loc[4]
+        ref = loc[5]
+        g1 = 0
+        ref.each_char do |char|
+            break if l1 == p1
+            g1 += 1
+            l1 += 1 unless char == "-"
+        end
+        g2 = 1
+        ref.reverse.each_char do |char|
+            break if l2 == p2
+            g2 += 1
+            l2 -= 1 unless char == "-"
+        end
+        return seq[g1..(-g2)].tr("-","")
+    else
+        return nil
     end
   end
 

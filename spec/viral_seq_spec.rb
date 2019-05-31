@@ -59,7 +59,7 @@ RSpec.describe ViralSeq do
   end
 
   it "has a function to calculate Primer ID consensus cut-off" do
-    expect(ViralSeq.calculate_pid_cut_off(1000)).to eq 17
+    expect(ViralSeq.calculate_pid_cut_off(1000, 0.021)).to eq 17
     expect(ViralSeq.calculate_pid_cut_off(10)).to eq 2
   end
 end

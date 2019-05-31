@@ -41,34 +41,21 @@ module ViralSeq
 
   def self.sequence_locator(seq='', ref_option = :HXB2, path_to_muscle = 'muscle')
 
-    ViralSeq.check_muscle(path_to_muscle)
+    # ViralSeq.check_muscle(path_to_muscle)
     ori_ref = ViralSeq.locator_ref(ref_option)
 
     begin
       ori_ref_l = ori_ref.size
-
-      temp_dir = File.dirname($0)
-      temp_file = temp_dir + "/_temp_muscle_in"
-      temp_aln = temp_dir + "/_temp_muscle_aln"
-
       l1 = 0
       l2 = 0
-      name = ">test"
-      temp_in = File.open(temp_file,"w")
-      temp_in.puts ">ref"
-      temp_in.puts ori_ref
-      temp_in.puts name
-      temp_in.puts seq
-      temp_in.close
 
-      print `#{path_to_muscle} -in #{temp_file} -out #{temp_aln} -quiet`
-      aln_seq = ViralSeq.fasta_to_hash(temp_aln)
-      aln_test = aln_seq[name]
+      aln_seq = ViralSeq.muscle_align(ori_ref, seq, path_to_muscle)
+      aln_test = aln_seq[1]
       aln_test =~ /^(\-*)(\w.*\w)(\-*)$/
       gap_begin = $1.size
       gap_end = $3.size
       aln_test2 = $2
-      ref = aln_seq[">ref"]
+      ref = aln_seq[0]
       ref = ref[gap_begin..(-gap_end-1)]
       ref_size = ref.size
       if ref_size > 1.3*(seq.size)
@@ -95,23 +82,17 @@ module ViralSeq
           l1 = l1 + (before_aln - b1)
           l2 = l2 + (post_aln - b2)
         end
-        temp_in = File.open(temp_file,"w")
-        temp_in.puts ">ref"
-        temp_in.puts ref
-        temp_in.puts name
-        temp_in.puts seq
-        temp_in.close
-        print `#{path_to_muscle} -in #{temp_file} -out #{temp_aln} -quiet`
-        aln_seq = ViralSeq.fasta_to_hash(temp_aln)
-        aln_test = aln_seq[name]
+
+        aln_seq = ViralSeq.muscle_align(ref, seq, path_to_muscle)
+        aln_test = aln_seq[1]
         aln_test =~ /^(\-*)(\w.*\w)(\-*)$/
         gap_begin = $1.size
         gap_end = $3.size
-        ref = aln_seq[">ref"]
+        ref = aln_seq[0]
         ref = ref[gap_begin..(-gap_end-1)]
       end
-      aln_seq = ViralSeq.fasta_to_hash(temp_aln)
-      aln_test = aln_seq[name]
+
+      aln_test = aln_seq[1]
       aln_test =~ /^(\-*)(\w.*\w)(\-*)$/
       gap_begin = $1.size
       gap_end = $3.size
@@ -122,8 +103,6 @@ module ViralSeq
       aln_test =~ /\w(\-*)(\w+)$/
       s2 = $2.size
       g2 = $1.size
-      ref = aln_seq[">ref"]
-      ref = ref[gap_begin..(-gap_end-1)]
 
       l1 = l1 + gap_begin
       l2 = l2 + gap_end
@@ -153,15 +132,8 @@ module ViralSeq
       end
 
       while repeat == 1
-        temp_in = File.open(temp_file,"w")
-        temp_in.puts ">ref"
-        temp_in.puts ref
-        temp_in.puts name
-        temp_in.puts seq
-        temp_in.close
-        print `#{path_to_muscle} -in #{temp_file} -out #{temp_aln} -quiet`
-        aln_seq = ViralSeq.fasta_to_hash(temp_aln)
-        aln_test = aln_seq[name]
+        aln_seq = ViralSeq.muscle_align(ref, seq, path_to_muscle)
+        aln_test = aln_seq[1]
         aln_test =~ /^(\-*)(\w.*\w)(\-*)$/
         gap_begin = $1.size
         gap_end = $3.size
@@ -172,7 +144,7 @@ module ViralSeq
         aln_test =~ /\w(\-*)(\w+)$/
         s2 = $2.size
         g2 = $1.size
-        ref = aln_seq[">ref"]
+        ref = aln_seq[0]
         ref = ref[gap_begin..(-gap_end-1)]
         l1 = l1 + gap_begin
         l2 = l2 + gap_end
@@ -190,16 +162,10 @@ module ViralSeq
       end
       ref = ori_ref[l1..(ori_ref_l - l2 - 1)]
 
-      temp_in = File.open(temp_file,"w")
-      temp_in.puts ">ref"
-      temp_in.puts ref
-      temp_in.puts name
-      temp_in.puts seq
-      temp_in.close
-      print `#{path_to_muscle} -in #{temp_file} -out #{temp_aln} -quiet`
-      aln_seq = ViralSeq.fasta_to_hash(temp_aln)
-      aln_test = aln_seq[name]
-      ref = aln_seq[">ref"]
+
+      aln_seq = ViralSeq.muscle_align(ref, seq, path_to_muscle)
+      aln_test = aln_seq[1]
+      ref = aln_seq[0]
 
       #refine alignment
 
@@ -211,16 +177,9 @@ module ViralSeq
 
       if (ori_ref_l - l2 - 1) >= l1
         ref = ori_ref[l1..(ori_ref_l - l2 - 1)]
-        temp_in = File.open(temp_file,"w")
-        temp_in.puts ">ref"
-        temp_in.puts ref
-        temp_in.puts name
-        temp_in.puts seq
-        temp_in.close
-        print `#{path_to_muscle} -in #{temp_file} -out #{temp_aln} -quiet`
-        aln_seq = ViralSeq.fasta_to_hash(temp_aln)
-        aln_test = aln_seq[name]
-        ref = aln_seq[">ref"]
+        aln_seq = ViralSeq.muscle_align(ref, seq, path_to_muscle)
+        aln_test = aln_seq[1]
+        ref = aln_seq[0]
 
         ref_size = ref.size
         sim_count = 0
@@ -230,8 +189,7 @@ module ViralSeq
           sim_count += 1 if ref_base == test_base
         end
         similarity = (sim_count/ref_size.to_f*100).round(1)
-        print `rm -f #{temp_file}`
-        print `rm -f #{temp_aln}`
+
         loc_p1 = l1 + 1
         loc_p2 = ori_ref_l - l2
         if seq.size != (loc_p2 - loc_p1 + 1)

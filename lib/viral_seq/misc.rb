@@ -50,7 +50,7 @@ def tail(path, n)
                 offset
               else
                 buffer_s
-              end 
+              end
 
     file.seek(offset-to_read)
     data = file.read(to_read)
@@ -69,4 +69,46 @@ def tail(path, n)
 
   file.seek(offset)
   data = file.read
+end
+
+
+# subtract one hash (h2) from the other (h1) if the keys are identical
+# example:
+# h1 = {"Cat" => 100, "Dog" => 5, "Bird" => 2, "Snake" => 10}
+# h2 = {"Cat" => 100, "Dog" => 5, "Bison" => 30}
+# h1.difference(h2) = {"Bird" => 2, "Snake" => 10}
+class Hash
+  def difference(other)
+    reject do |k,_v|
+      other.has_key? k
+    end
+  end
+end
+
+
+# input hash A, return hash B with the unique values of hash A as keys,
+# and the keys of the unique values of hash A as values of hash B
+#   # example
+#   hash = {1=>"A", 2=>"A", 3=>"C", 4=>"C", 5=>"T"}
+#   p hash.uniq_hash
+#   => {"A"=>[1, 2], "C"=>[3, 4], "T"=>[5]}
+
+class Hash
+  def uniq_hash
+    uniq_values = self.values.uniq
+    out_hash = {}
+    uniq_values.each do |uniq_va|
+      self.each do |k,v|
+        if v == uniq_va
+          if out_hash[uniq_va]
+            out_hash[uniq_va] << k
+          else
+            out_hash[uniq_va] = []
+            out_hash[uniq_va] << k
+          end
+        end
+      end
+    end
+    return out_hash
+  end
 end

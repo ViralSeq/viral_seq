@@ -25,7 +25,7 @@ module ViralSeq
     return entropy_hash
   end
 
-  # nucleotide pairwise diversity 
+  # nucleotide pairwise diversity
   def self.nucleotide_pi(seq = [])
     seq_length = seq[0].size - 1
     nt_position_hash = {}
@@ -40,7 +40,7 @@ module ViralSeq
     nt_position_hash.each do |p,nt|
       nt.delete("-")
       next if nt.size == 1
-      nt_count = count(nt)
+      nt_count = ViralSeq.count(nt)
       combination = (nt.size)*(nt.size - 1)/2
       com += combination
       a = nt_count["A"]
@@ -55,9 +55,9 @@ module ViralSeq
   end
 
   # TN93 distance function. Input: sequence array, output hash: diff => counts
-  def TN93(sequence_array = [])
+  def self.TN93(sequence_array = [])
     diff = []
-    seq_hash = count(sequence_array)
+    seq_hash = ViralSeq.count(sequence_array)
     seq_hash.values.each do |v|
       comb = v * (v - 1) / 2
       comb.times {diff << 0}
@@ -66,12 +66,12 @@ module ViralSeq
     seq_hash.keys.combination(2).to_a.each do |pair|
       s1 = pair[0]
       s2 = pair[1]
-      diff_temp = compare_two_seq(s1,s2)
+      diff_temp = ViralSeq.compare_two_seq(s1,s2)
       comb = seq_hash[s1] * seq_hash[s2]
       comb.times {diff << diff_temp}
     end
 
-    count_diff = count(diff)
+    count_diff = ViralSeq.count(diff)
     out_hash = Hash.new(0)
     Hash[count_diff.sort_by{|k,_v|k}].each do |k,v|
       out_hash[k] = v

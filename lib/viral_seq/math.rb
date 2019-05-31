@@ -23,8 +23,8 @@ module ViralSeq
   # default decimal as 2
   # =Usage
   #   array = %w{cat dog monkey cat cat cat monkey}
-  #   ViralSeq.count(array)
-  #   => {"cat"=>4, "dog"=>1, "monkey"=>2}
+  #   ViralSeq.count_percentage(array)
+  #   => {"cat"=>0.57, "dog"=>0.14, "monkey"=>0.29}
 
   def self.count_percentage(array,decimal = 2)
     hash1 = Hash.new(0)

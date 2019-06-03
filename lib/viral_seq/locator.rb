@@ -35,7 +35,19 @@
 #   seq = "CCTCAGATCACTCTTTGGCAACGACCCCTAGTTACAATAAGGGTAGGGGGGCAACTAAAGGAAGCCCTATTAGATACAGGAGCAGATGATACAGTATTAGAAGAAATAAATTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAATATGATCAGATACCCATAGAAATTTGTGGACATGAAGCTATAGGTACAGTATTAGTGGGACCTACACCTGTCAACATAATTGGGAGAAATCTGTTGACTCAGATTGGTTGCACTCTAAATTTT"
 #   p ViralSeq.sequence_clip(seq, 2333, 2433, :HXB2, 'muscle')
 #   => "AGCAGATGATACAGTATTAGAAGAAATAAATTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAATATGATC"
-
+#
+# =USAGE3
+#   # Given a sequence hash, start and end nt positions to a chosen reference genome (default :HXB2),
+#   # and a boolean value for allowing indels,
+#   # return a sequence sub-hash that meets the the criteria
+#   ViralSeq.qc_hiv_seq_check(seq_hash, start_nt, end_nt, allow_indel?, reference_options, path_to_muscle)
+#   # example code
+#   sequence_hash = ViralSeq.fasta_to_hash('sample/sample_seq.fasta') # load the .fasta file as a sequence hash
+#   filtered_sequence_hash = ViralSeq.qc_hiv_seq_check(sequence_hash, 4384, 4751, false, :HXB2, 'muscle')
+#   puts sequence_hash.size
+#   => 6
+#   puts filtered_sequence_hash.size
+#   => 4
 
 module ViralSeq
 
@@ -237,6 +249,38 @@ module ViralSeq
     else
         return nil
     end
+  end
+
+  # batch quality check of HIV sequences based on ViralSeq.sequence_locator
+  # input a sequence hash, start nt position(s) and end nt position(s) can be an Integer, Array or Range
+  # and allow the sequence to contain indels
+  # return a hash of filtered sequences
+
+  def self.qc_hiv_seq_check(seq_hash, start_nt, end_nt, indel=true, ref_option = :HXB2, path_to_muscle = 'muscle')
+    seq_hash_unique = seq_hash.values.uniq
+    seq_hash_unique_pass = []
+    start_nt = start_nt..start_nt if start_nt.is_a?(Integer)
+    end_nt = end_nt..end_nt if end_nt.is_a?(Integer)
+    seq_hash_unique.each do |seq|
+      loc = ViralSeq.sequence_locator(seq, ref_option, path_to_muscle)
+      if start_nt.include?(loc[0]) && end_nt.include?(loc[1])
+        if indel
+          seq_hash_unique_pass << seq
+        elsif loc[3] == false
+          seq_hash_unique_pass << seq
+        end
+      end
+    end
+    seq_pass = {}
+    seq_hash_unique_pass.each do |seq|
+      seq_hash.each do |seq_name, orginal_seq|
+        if orginal_seq == seq
+          seq_pass[seq_name] =  seq
+          seq_hash.delete(seq_name)
+        end
+      end
+    end
+    return seq_pass
   end
 
 end

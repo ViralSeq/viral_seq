@@ -1,5 +1,5 @@
 # viral_seq/sdrm_core.rb
-# core functions for HIV SDRM analysis using MPID-DR protocol. 
+# core functions for HIV SDRM analysis using MPID-DR protocol.
 
 
 module ViralSeq
@@ -292,7 +292,7 @@ module ViralSeq
       aa_seq = s.aa_array
 
       r1_aa[name] = aa_seq[0,89].join("")
-      r2_aa[name] = aa_seq[85..-1].join("")
+      r2_aa[name] = aa_seq[-85..-1].join("")
       nrti = ViralSeq.sdrm_nrti(aa_seq,start_codon_number)
       nnrti = ViralSeq.sdrm_nnrti(aa_seq,start_codon_number)
       mut_com << (nrti.merge(nnrti))

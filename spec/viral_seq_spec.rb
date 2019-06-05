@@ -68,4 +68,8 @@ RSpec.describe ViralSeq do
     filtered_sequence_hash = ViralSeq.qc_hiv_seq_check(sequence_hash, 4384, 4751, false, :HXB2, 'muscle')
     expect(filtered_sequence_hash.size).to eq 4
   end
+
+  it "can read paired fasta sequences as a paired sequence hash" do
+    expect(ViralSeq.pair_fasta_to_hash('sample/sample_paired_seq').size).to eq 29
+  end
 end

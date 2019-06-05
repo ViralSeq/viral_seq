@@ -17,6 +17,15 @@
 #
 #   # convert a aligned fasta sequence hash into relaxed sequencial phylip format
 #   phylip_hash = ViralSeq.fasta_hash_to_rsphylip(sequence_fasta_hash)
+#
+#   # input a directory containing paired sequence files in the fasta format
+#   # ├───lib1
+#         │     lib1_r1.txt
+#         │     lib1_r2.txt
+#   # paired sequence files need to have "r1" and "r2" in their file names
+#   # the sequence taxa should only differ by last 3 characters to distinguish r1 and r2 sequence.
+#   # return a paired sequence hash :seq_name => [r1_seq, r2_seq]
+#   paired_sequence_hash = ViralSeq.pair_fasta_to_hash(directory_of_paired_fasta)
 
 module ViralSeq
 
@@ -107,5 +116,34 @@ module ViralSeq
       outline += k[1..-1] + "\s" * (name_block_l - k.size + 2) + v.scan(/.{1,10}/).join("\s") + "\n"
     end
     return outline
+  end
+
+  # input a directory with r1 and r2 sequences, return a hash :seq_name => [r1_seq, r2_seq]
+  # r1 and r2 file names should contain "r1" and "r2" respectively
+  # the sequence taxa should only differ by last 3 characters to distinguish r1 and r2 sequence.
+  def self.pair_fasta_to_hash(indir)
+    files = Dir[indir + "/*"]
+    r1_file = ""
+    r2_file = ""
+    files.each do |f|
+      if File.basename(f) =~ /r1/i
+        r1_file = f
+      elsif File.basename(f) =~ /r2/i
+        r2_file = f
+      end
+    end
+
+    seq1 = ViralSeq.fasta_to_hash(r1_file)
+    seq2 = ViralSeq.fasta_to_hash(r2_file)
+
+    new_seq1 = seq1.each_with_object({}) {|(k, v), h| h[k[0..-4]] = v}
+    new_seq2 = seq2.each_with_object({}) {|(k, v), h| h[k[0..-4]] = v}
+
+    seq_pair_hash = {}
+
+    new_seq1.each do |seq_name,seq|
+      seq_pair_hash[seq_name] = [seq, new_seq2[seq_name]]
+    end
+    return seq_pair_hash
   end
 end

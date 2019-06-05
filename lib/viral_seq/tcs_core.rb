@@ -1,5 +1,6 @@
 # viral_seq/tcs_core
 # core functions for TCS and DR pipeline
+# functions to manipulate sequences
 
 module ViralSeq
 
@@ -273,5 +274,156 @@ module ViralSeq
     end
     return diff
   end
+
+  # gap strip from a sequence alignment
+
+  def self.gap_strip(sequence_alignment)
+    new_seq_hash = {}
+    seq_size = sequence_alignment.values[0].size
+    seq_matrix = {}
+    (0..(seq_size - 1)).each do |p|
+      seq_matrix[p] = []
+      sequence_alignment.values.each do |s|
+        seq_matrix[p] << s[p]
+      end
+    end
+
+    seq_matrix.delete_if do |p, list|
+      list.include?("-")
+    end
+
+    sequence_alignment.each do |n,s|
+      new_s = ""
+      seq_matrix.keys.each {|p| new_s += s[p]}
+      new_seq_hash[n] = new_s
+    end
+    return new_seq_hash
+  end
+
+  # gap strip from a sequence alignment, only strip the gaps at the ends of the alignment
+
+  def self.gap_strip_ends(sequence_alignment)
+    new_seq_hash = {}
+    seq_size = sequence_alignment.values[0].size
+    seq_matrix = {}
+    (0..(seq_size - 1)).each do |p|
+      seq_matrix[p] = []
+      sequence_alignment.values.each do |s|
+        seq_matrix[p] << s[p]
+      end
+    end
+    n1 = 0
+    n2 = 0
+    seq_matrix.each do |p, list|
+      if list.include?("-")
+        n1 += 1
+      else
+        break
+      end
+    end
+
+    seq_matrix.keys.reverse.each do |p|
+      list = seq_matrix[p]
+      if list.include?("-")
+        n2 += 1
+      else
+        break
+      end
+    end
+
+    sequence_alignment.each do |n,s|
+      new_s = s[n1..(- n2 - 1)]
+      new_seq_hash[n] = new_s
+    end
+    return new_seq_hash
+  end
+
+  # input paired-end sequence hash format seq_name => [r1_seq, r2_seq]
+  # overlap is pre-determined
+  def self.join_pid_seq_overlap(seq_pair_hash, diff = 0.0, overlap)
+    joined_seq_hash = {}
+    seq_pair_hash.each do |seq_name, seq_pair|
+      r1_seq = seq_pair[0]
+      r2_seq = seq_pair[1]
+      if overlap.zero?
+        joined_seq_hash[seq_name] = r1_seq + r2_seq
+      elsif compare_two_seq(r1_seq[-overlap..-1], r2_seq[0,overlap]) <= (overlap * diff)
+        joined_seq_hash[seq_name] = r1_seq + r2_seq[overlap..-1]
+      else
+        next
+      end
+    end
+    return joined_seq_hash
+  end
+
+
+  # overlap is not predetermined
+  # model 1: overlap is determined based on consensus, all sequence pairs are supposed to have the same overlap size
+  # model 2: overlap is determined for each sequence pair, sequence pairs can have different size of overlap
+  def self.join_pid_seq_no_overlap(seq_pair_hash, diff = 0.0, model = 1)
+    begin
+      if model == 1
+        overlap = determine_overlap_pid_pair(seq_pair_hash, diff)
+        return join_pid_seq_overlap(seq_pair_hash, diff, overlap)
+      elsif model == 2
+        joined_seq_hash = {}
+        seq_pair_hash.each do |seq_name, seq_pair|
+          overlap_list = []
+          overlap_matrix(seq_pair[0], seq_pair[1]).each do |overlap1, diff_nt|
+            cut_off_base = overlap1 * diff
+            overlap_list << overlap1 if diff_nt <= cut_off_base
+          end
+          if overlap_list.empty?
+            joined_seq_hash[seq_name] = seq_pair[0] + seq_pair[1]
+          else
+            overlap = overlap_list.max
+            joined_seq_hash[seq_name] = seq_pair[0] + seq_pair[1][overlap..-1]
+          end
+        end
+        return joined_seq_hash
+      else
+        raise ArgumentError.new("Error::Wrong Overlap Model Argument. Given \'#{model}\', expected '1' or '2'.")
+      end
+    rescue ArgumentError => e
+      puts e
+    end
+  end
+
+
+  def self.determine_overlap_pid_pair(seq_pair_hash, diff = 0.0)
+    overlaps = []
+    seq_pair_hash.each do |_seq_name, seq_pair|
+      overlap_list = []
+      matrix = overlap_matrix(seq_pair[0], seq_pair[1])
+      matrix.each do |overlap, diff_nt|
+        cut_off_base = overlap * diff
+        overlap_list << overlap if diff_nt <= cut_off_base
+      end
+      if overlap_list.empty?
+        overlaps << 0
+      else
+        overlaps << overlap_list.max
+      end
+    end
+    count_overlaps = count(overlaps)
+    max_value = count_overlaps.values.max
+    max_overlap_list = []
+    count_overlaps.each {|overlap, counts| max_overlap_list << overlap if counts == max_value}
+    max_overlap_list.max
+  end
+
+
+  def self.overlap_matrix(sequence1, sequence2)
+    min_overlap = 6
+    max_overlap = [sequence1.size, sequence2.size].max
+    matrix_hash = {}
+    (min_overlap..max_overlap).each do |overlap|
+      matrix_hash[overlap] = compare_two_seq(sequence1[-overlap..-1], sequence2[0, overlap])
+    end
+    return matrix_hash
+  end
+
+
+
 
 end

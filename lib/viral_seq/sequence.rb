@@ -1,34 +1,35 @@
 # lib/sequence.rb
-# Includes functions for sequence manipulation
+# Includes functions for sequence operations
+
+# sequence class
+# =USAGE
+#   # create a sequence object
+#   seq = ViralSeq::Sequence.new('my_sequence', 'ACCTAGGTTCGGAGC')
+#
+#   # print dna sequence
+#   puts seq.dna_sequence
+#
+#   # reserce complement sequence of DNA sequence, return as a string
+#   seq.rev_complement
+#
+#   # change @dna_sequence to reverse complement DNA sequence
+#   seq.rev_complement!
+#
+#   # generate amino acid sequences. either return string or array.
+#   # starting codon option 0, 1, 2 for 1st, 2nd, 3rd reading frame.
+#   # if sequence contains ambiguities, Sequence.get_aa_array will return all possible amino acids.
+#   seq.get_aa_sequence
+#   # or
+#   seq.get_aa_array
+#
+#   # print amino acid sequence
+#   puts seq.aa_sequence
+
 
 module ViralSeq
 
   # array for all amino acid one letter abbreviations
   AMINO_ACID_LIST = ["A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y", "*"]
-
-  # sequence class
-  # =USAGE
-  #   # create a sequence object
-  #   seq = ViralSeq::Sequence.new('my_sequence', 'ACCTAGGTTCGGAGC')
-  #
-  #   # print dna sequence
-  #   puts seq.dna_sequence
-  #
-  #   # reserce complement sequence of DNA sequence, return as a string
-  #   seq.rev_complement
-  #
-  #   # change @dna_sequence to reverse complement DNA sequence
-  #   seq.rev_complement!
-  #
-  #   # generate amino acid sequences. either return string or array.
-  #   # starting codon option 0, 1, 2 for 1st, 2nd, 3rd reading frame.
-  #   # if sequence contains ambiguities, Sequence.get_aa_array will return all possible amino acids.
-  #   seq.get_aa_sequence
-  #   # or
-  #   seq.get_aa_array
-  #
-  #   # print amino acid sequence
-  #   puts seq.aa_sequence
 
   class Sequence
     def initialize (name = ">sequence",dna_sequence ="")
@@ -265,31 +266,60 @@ module ViralSeq
   end
 end
 
+# functions added to Class::String for direct operation on sequence if it is a String object
+# String.rc
+#   # reverse complement
+#   # example
+#   "ACAGA".rc
+#   => "TCTGT"
+#
+# String.mutation(error_rate)
+#   # mutate a nt sequence (String class) randomly
+#   # must define error rate, default value 0.01, aka 1%
+# =USAGE
+#   # example
+#   seq = "TGGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTG"
+#   seq.mutation(0.05)
+#   => "TGGAAGGGCTAATGCACTCCCAACGAAGACACGATATCCTTGATCTGTGGATCTACGACACACAAGGCTGCTTCCCTG"
+#
+# String.nt_parser
+#   # parse the nucleotide sequences as a String object and return a Regexp object for possible matches
+# =USAGE
+#   "ATRWCG".nt_parser
+#   => /AT[A|G][A|T]CG/
 
 class String
     # direct function of calling reverse complement on String class
-    def rc
-        self.reverse.tr("ACTG","TGAC")
-    end
+  def rc
+      self.reverse.tr("ACTG","TGAC")
+  end
 
-    # mutate a nt sequence (String class) randomly
-    # must define error rate, default value 0.01, aka 1%
-    # =USAGE
-    #   seq = "TGGAAGGGCTAATTCACTCCCAACGAAGACAAGATATCCTTGATCTGTGGATCTACCACACACAAGGCTACTTCCCTG"
-    #   puts seq.mutation(0.05)
-
-    def mutation(error_rate = 0.01)
-      new_string = ""
-      self.split("").each do |nt|
-        pool = ["A","C","T","G"]
-        pool.delete(nt)
-        s = error_rate * 10000
-        r = rand(10000)
-        if r < s
-          nt = pool.sample
-        end
-        new_string << nt
+  def mutation(error_rate = 0.01)
+    new_string = ""
+    self.split("").each do |nt|
+      pool = ["A","C","T","G"]
+      pool.delete(nt)
+      s = error_rate * 10000
+      r = rand(10000)
+      if r < s
+        nt = pool.sample
       end
-      return new_string
+      new_string << nt
     end
+    return new_string
+  end
+
+  def nt_parser
+    match = ""
+    self.each_char.each do |base|
+      base_array = ViralSeq.to_list(base)
+      if base_array.size == 1
+        match += base_array[0]
+      else
+        pattern = "[" + base_array.join("|") + "]"
+        match += pattern
+      end
+    end
+    Regexp.new match
+  end
 end

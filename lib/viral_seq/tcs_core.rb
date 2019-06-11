@@ -250,23 +250,8 @@ module ViralSeq
     return new_seq
   end
 
-  # sequences with ambiguities to an array of possible combinations
-  def self.nt_sequence_parse (primer = "")
-    match = ""
-    primer.each_char.each do |base|
-      base_array = ViralSeq.to_list(base)
-      if base_array.size == 1
-        match += base_array[0]
-      else
-        pattern = "[" + base_array.join("|") + "]"
-        match += pattern
-      end
-    end
-    return match
-  end
-
-
-  # collapse sequences with x number of nt differences. make sure sequences are aligned. The return frequency is NOT the frequency of the collasped sequences.
+  # collapse sequences with x number of nt differences. make sure sequences are aligned.
+  # The return frequency is NOT the frequency of the collasped sequences.
   def self.collapse_sequence_by_x_nt_difference(seq_array,cutoff)
       new_seq_freq = {}
       seq_freq = ViralSeq.count(seq_array)
@@ -297,7 +282,7 @@ module ViralSeq
   end
 
   # collapse sequence hash to unique sequence hash
-  def self.uniq_sequence(seq = {}, sequence_name = "sequence")
+  def self.uniq_sequence_hash(seq = {}, sequence_name = "sequence")
     uni = ViralSeq.count(seq.values)
     new_seq = {}
     n = 1

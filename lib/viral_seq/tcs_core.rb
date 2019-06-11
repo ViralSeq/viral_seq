@@ -1,9 +1,67 @@
 # viral_seq/tcs_core
 # core functions for TCS and DR pipeline
-# functions to manipulate sequences
+# functions to manipulate sequences including:
+#
+# ViralSeq.calculate_pid_cut_off
+#   # A function to calcuate cut-off for offspring primer IDs.
+#   # see reference at Zhou et al. JVI 2016.
+#   # https://www.ncbi.nlm.nih.gov/pubmed/26041299
+# =USAGE
+#   ViralSeq.calculate_pid_cut_off(PID_abundance, estimated_error_rate)
+#   # PID_abundance is the abundance of a certain PID
+#   # estimated_error_rate is the estimated platform error rate, 0.02 (2%) as default
+#   # the model supports error rate from 0.003 to 0.03.
+#   # return an abundance cut-off (Integer) for offspring Primer IDs.
+#
+# ViralSeq.consensus
+#   # Generate a consensus sequence from a given sequence array.
+# =USAGE
+#   a_consensus_sequence = ViralSeq.cosensus(seq_array, majority_cutoff)
+#   # where seq_array is an Array of input sequences (aligned) [seq1, seq2, seq3, ...]
+#   # majority_cutoff is a Float of majority cut-off. default as simply majority (0.5)
+#
+# ViralSeq.generate_primer_id_pool
+#   # generate all Primer ID combinations given the length of Primer ID
+#   # default Primer ID length is 8
+# =USAGE
+#   primer_id_pool = ViralSeq.generate_primer_id_pool(10) # 10 is the length of Primer ID
+#   puts primer_id_pool.size  #should be 4^10
+#   => 1048576
+#
+# ViralSeq.similar_pid?
+#   # compare two primer ID sequences.
+#   # If they differ in certain bases, return boolean value "TURE",
+#   # else, return boolean value "FALSE"
+# =USAGE
+#   ViralSeq.similar_pid?(pid1, pid2, base_difference)
+#   # where pid1 and pid2 are two Primer IDs for comparison
+#   # base_difference is an Integer for difference bases that allowed
+#   # example
+#   ViralSeq.similar_pid?("AAGGCTACGA", "AAGGATACGA", 1)
+#   => true
+#
+# ViralSeq.filter_similar_pid
+#   # compare PID with sequences which have identical sequences.
+#   # PIDs differ by 1 base will be recognized.
+#   # if PID1 is x time (cut-off) greater than PID2, PID2 will be disgarded
+# =USAGE
+#   ViralSeq.filter_similar_pid(sequence_fasta_file, cut_off)
+#   # where sequence_fasta_file is the sequence file in fasta format
+#   # each sequence tag starting with ">" and the Primer ID sequence
+#   # followed by the number of Primer ID appeared in the raw sequence
+#   # the information sections in the tags are separated by underscore "_"
+#   # example sequence tag: >AGGCGTAGA_32_sample1_RT
+#   # cut_off is the fold cut-off to remove the potential residual offspring Primer IDs
+#   # default value for cut_off is 10
+#   # return a new sequence hash. {sequence_name => sequence, ...}
+#
+
+
+
 
 module ViralSeq
 
+  # calculate cut-off for offspring primer IDs.
   def self.calculate_pid_cut_off(m, error_rate = 0.02)
     if m <= 10
       return 2
@@ -53,7 +111,7 @@ module ViralSeq
     return consensus_seq
   end
 
-  # call consensus nucleotide
+  # call consensus nucleotide, used by ViralSeq.consensus
   def self.call_consensus_base(base_array)
     if base_array.size == 1
        base_array[0]
@@ -106,7 +164,9 @@ module ViralSeq
     return pid_pool
   end
 
-  # compare two primer ID sequences. If they differ in x base, return boolean value "TURE", else, return boolean value "FALSE"
+  # compare two primer ID sequences.
+  # If they differ in x base, return boolean value "TURE",
+  # else, return boolean value "FALSE"
   def self.similar_pid?(pid1="",pid2="", x=0)
     l = pid1.size
     m = l - x
@@ -127,36 +187,9 @@ module ViralSeq
     end
   end
 
-  # primer with ambiguities to match
-  def self.primer_match (primer = "")
-    match = ""
-    primer.each_char.each do |base|
-      base_array = to_list(base)
-      if base_array.size == 1
-        match += base_array[0]
-      else
-        pattern = "[" + base_array.join("|") + "]"
-        match += pattern
-      end
-    end
-    return match
-  end
-
-  # #primer with ambiguities to match
-  # def primer_match (primer = "")
-  #   match = ""
-  #   primer.each_char.each do |base|
-  #     base_array = to_list(base)
-  #     if base_array.size == 1
-  #       match += base_array[0]
-  #     else
-  #       pattern = "[" + base_array.join("|") + "]"
-  #       match += pattern
-  #     end
-  #   end
-  #   return match
-  # end
-
+  # compare PID with sequences which have identical sequences.
+  # PIDs differ by 1 base will be recognized.
+  # if PID1 is x time greater than PID2, PID2 will be disgarded
   def self.filter_similar_pid(sequence_file = "", cutoff = 10)
     seq = ViralSeq.fasta_to_hash(sequence_file)
     uni_seq = seq.values.uniq
@@ -199,10 +232,8 @@ module ViralSeq
           n2 = pid_hash[pid2].to_i
           if n1 >= cutoff * n2
             dup_pid << pid2
-            #puts pid1 + "\t" + n1.to_s + "\t" + pid2 + "\t" + n2.to_s
           elsif n2 >= cutoff * n1
             dup_pid << pid1
-            #puts pid2 + "\t" + n2.to_s + "\t" + pid1 + "\t" + n1.to_s
           end
         end
       end
@@ -218,6 +249,22 @@ module ViralSeq
     end
     return new_seq
   end
+
+  # sequences with ambiguities to an array of possible combinations
+  def self.nt_sequence_parse (primer = "")
+    match = ""
+    primer.each_char.each do |base|
+      base_array = ViralSeq.to_list(base)
+      if base_array.size == 1
+        match += base_array[0]
+      else
+        pattern = "[" + base_array.join("|") + "]"
+        match += pattern
+      end
+    end
+    return match
+  end
+
 
   # collapse sequences with x number of nt differences. make sure sequences are aligned. The return frequency is NOT the frequency of the collasped sequences.
   def self.collapse_sequence_by_x_nt_difference(seq_array,cutoff)

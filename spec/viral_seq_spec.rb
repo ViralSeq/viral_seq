@@ -64,12 +64,22 @@ RSpec.describe ViralSeq do
   end
 
   it "can filter HIV sequences by locations" do
-    sequence_hash = ViralSeq.fasta_to_hash('sample/sample_seq.fasta') # load the .fasta file as a sequence hash
+    sequence_hash = ViralSeq.fasta_to_hash('spec/sample_files/sample_seq.fasta') # load the .fasta file as a sequence hash
     filtered_sequence_hash = ViralSeq.qc_hiv_seq_check(sequence_hash, 4384, 4751, false, :HXB2, 'muscle')
     expect(filtered_sequence_hash.size).to eq 4
   end
 
   it "can read paired fasta sequences as a paired sequence hash" do
-    expect(ViralSeq.pair_fasta_to_hash('sample/sample_paired_seq').size).to eq 29
+    expect(ViralSeq.pair_fasta_to_hash('spec/sample_files/sample_paired_seq').size).to eq 29
   end
+
+  it "can generate Primer ID pool by given Primer ID length" do
+    expect(ViralSeq.generate_primer_id_pool(10).size).to eq 1048576
+  end
+
+  it "can filter sequences with residual offspring Primer IDs" do
+    expect(ViralSeq.filter_similar_pid('spec/sample_files/sample_pid_filter.fasta').size).to eq 3
+  end
+
+
 end

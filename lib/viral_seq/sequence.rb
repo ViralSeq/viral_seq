@@ -1,35 +1,35 @@
 # lib/sequence.rb
 # Includes functions for sequence operations
 
-# sequence class
-# =USAGE
-#   # create a sequence object
-#   seq = ViralSeq::Sequence.new('my_sequence', 'ACCTAGGTTCGGAGC')
-#
-#   # print dna sequence
-#   puts seq.dna_sequence
-#
-#   # reserce complement sequence of DNA sequence, return as a string
-#   seq.rev_complement
-#
-#   # change @dna_sequence to reverse complement DNA sequence
-#   seq.rev_complement!
-#
-#   # generate amino acid sequences. either return string or array.
-#   # starting codon option 0, 1, 2 for 1st, 2nd, 3rd reading frame.
-#   # if sequence contains ambiguities, Sequence.get_aa_array will return all possible amino acids.
-#   seq.get_aa_sequence
-#   # or
-#   seq.get_aa_array
-#
-#   # print amino acid sequence
-#   puts seq.aa_sequence
-
 
 module ViralSeq
 
   # array for all amino acid one letter abbreviations
   AMINO_ACID_LIST = ["A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y", "*"]
+
+  # sequence class
+  # =USAGE
+  #   # create a sequence object
+  #   seq = ViralSeq::Sequence.new('my_sequence', 'ACCTAGGTTCGGAGC')
+  #
+  #   # print dna sequence
+  #   puts seq.dna_sequence
+  #
+  #   # reserce complement sequence of DNA sequence, return as a string
+  #   seq.rev_complement
+  #
+  #   # change @dna_sequence to reverse complement DNA sequence
+  #   seq.rev_complement!
+  #
+  #   # generate amino acid sequences. either return string or array.
+  #   # starting codon option 0, 1, 2 for 1st, 2nd, 3rd reading frame.
+  #   # if sequence contains ambiguities, Sequence.get_aa_array will return all possible amino acids.
+  #   seq.get_aa_sequence
+  #   # or
+  #   seq.get_aa_array
+  #
+  #   # print amino acid sequence
+  #   puts seq.aa_sequence
 
   class Sequence
     def initialize (name = ">sequence",dna_sequence ="")
@@ -264,6 +264,25 @@ module ViralSeq
     end
     return list
   end
+
+  # ViralSeq.uniq_sequence_hash(input_sequence_hash, master_sequence_tag)
+  # collapse sequence hash to unique sequence hash.
+  # input_sequence_hash is a sequence hash {:name => :sequence, ...}
+  # master_sequence_tag is the master tag for unique sequences
+  # sequences will be named as (master_sequence_tag + "_" + Integer)
+  
+  def self.uniq_sequence_hash(seq = {}, sequence_name = "sequence")
+    uni = ViralSeq.count(seq.values)
+    new_seq = {}
+    n = 1
+    uni.each do |s,c|
+      name = ">" + sequence_name + "_" + n.to_s + "_" + c.to_s
+      new_seq[name] = s
+      n += 1
+    end
+    return new_seq
+  end
+
 end
 
 # functions added to Class::String for direct operation on sequence if it is a String object

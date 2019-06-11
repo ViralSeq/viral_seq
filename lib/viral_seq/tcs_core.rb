@@ -281,18 +281,6 @@ module ViralSeq
       end
   end
 
-  # collapse sequence hash to unique sequence hash
-  def self.uniq_sequence_hash(seq = {}, sequence_name = "sequence")
-    uni = ViralSeq.count(seq.values)
-    new_seq = {}
-    n = 1
-    uni.each do |s,c|
-      name = ">" + sequence_name + "_" + n.to_s + "_" + c.to_s
-      new_seq[name] = s
-      n += 1
-    end
-    return new_seq
-  end
 
   # compare two sequences, return the number of different positions, NO NEED alignment
 

@@ -2,50 +2,45 @@
 # core functions for TCS and DR pipeline
 # functions to manipulate sequences including:
 #
-# ViralSeq.calculate_pid_cut_off
+# ViralSeq.calculate_pid_cut_off(PID_abundance, estimated_error_rate)
 #   # A function to calcuate cut-off for offspring primer IDs.
 #   # see reference at Zhou et al. JVI 2016.
 #   # https://www.ncbi.nlm.nih.gov/pubmed/26041299
-# =USAGE
-#   ViralSeq.calculate_pid_cut_off(PID_abundance, estimated_error_rate)
 #   # PID_abundance is the abundance of a certain PID
 #   # estimated_error_rate is the estimated platform error rate, 0.02 (2%) as default
 #   # the model supports error rate from 0.003 to 0.03.
 #   # return an abundance cut-off (Integer) for offspring Primer IDs.
 #
-# ViralSeq.consensus
+# ViralSeq.consensus(seq_array, majority_cutoff)
 #   # Generate a consensus sequence from a given sequence array.
-# =USAGE
-#   a_consensus_sequence = ViralSeq.cosensus(seq_array, majority_cutoff)
 #   # where seq_array is an Array of input sequences (aligned) [seq1, seq2, seq3, ...]
 #   # majority_cutoff is a Float of majority cut-off. default as simply majority (0.5)
+# =USAGE
+#   a_consensus_sequence = ViralSeq.cosensus(seq_array, majority_cutoff)
 #
-# ViralSeq.generate_primer_id_pool
+# ViralSeq.generate_primer_id_pool(n)
 #   # generate all Primer ID combinations given the length of Primer ID
-#   # default Primer ID length is 8
+#   # n is the length of the Primer ID (Integer). default value of n is 8.
 # =USAGE
 #   primer_id_pool = ViralSeq.generate_primer_id_pool(10) # 10 is the length of Primer ID
 #   puts primer_id_pool.size  #should be 4^10
 #   => 1048576
 #
-# ViralSeq.similar_pid?
+# ViralSeq.similar_pid?(pid1, pid2, base_difference)
 #   # compare two primer ID sequences.
 #   # If they differ in certain bases, return boolean value "TURE",
 #   # else, return boolean value "FALSE"
-# =USAGE
-#   ViralSeq.similar_pid?(pid1, pid2, base_difference)
 #   # where pid1 and pid2 are two Primer IDs for comparison
 #   # base_difference is an Integer for difference bases that allowed
+# =USAGE
 #   # example
 #   ViralSeq.similar_pid?("AAGGCTACGA", "AAGGATACGA", 1)
 #   => true
 #
-# ViralSeq.filter_similar_pid
+# ViralSeq.filter_similar_pid(sequence_fasta_file, cut_off)
 #   # compare PID with sequences which have identical sequences.
 #   # PIDs differ by 1 base will be recognized.
 #   # if PID1 is x time (cut-off) greater than PID2, PID2 will be disgarded
-# =USAGE
-#   ViralSeq.filter_similar_pid(sequence_fasta_file, cut_off)
 #   # where sequence_fasta_file is the sequence file in fasta format
 #   # each sequence tag starting with ">" and the Primer ID sequence
 #   # followed by the number of Primer ID appeared in the raw sequence
@@ -55,7 +50,6 @@
 #   # default value for cut_off is 10
 #   # return a new sequence hash. {sequence_name => sequence, ...}
 #
-
 
 
 
@@ -308,7 +302,7 @@ module ViralSeq
       end
     end
 
-    seq_matrix.delete_if do |p, list|
+    seq_matrix.delete_if do |_p, list|
       list.include?("-")
     end
 
@@ -334,7 +328,7 @@ module ViralSeq
     end
     n1 = 0
     n2 = 0
-    seq_matrix.each do |p, list|
+    seq_matrix.each do |_p, list|
       if list.include?("-")
         n1 += 1
       else
@@ -442,8 +436,5 @@ module ViralSeq
     end
     return matrix_hash
   end
-
-
-
 
 end

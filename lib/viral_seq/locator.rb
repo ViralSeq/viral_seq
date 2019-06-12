@@ -1,6 +1,7 @@
 # viral_seq/locator.rb
 
-# HIV sequence locator function
+# ViralSeq.sequence_locator(input_sequence, reference_options, path_to_muscle)
+#   HIV sequence locator function
 #   resembling HIV Sequence Locator from LANL
 #   https://www.hiv.lanl.gov/content/sequence/LOCATE/locate.html
 #   require MUSCLE (http://www.drive5.com/muscle) installed
@@ -25,9 +26,9 @@
 #   => [2333, 2433, 98.0, false, "AGCAGATGATACAGTATTAGAAGAAATAAATTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAATATGATC", "AGCAGATGATACAGTATTAGAAGAAATGAATTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAGTATGATC"]
 #
 # =USAGE2
+#   ViralSeq.sequence_clip(input_sequence, start_position, end_position, reference_options, path_to_muscle)
 #   # Given a pair of specific start and end positions, and an input sequence, return a sub-sequence of that range
 #   # return nil if the input sequence is not in the range
-#   ViralSeq.sequence_clip(input_sequence, start_position, end_position, reference_options, path_to_muscle)
 #   # input_sequence: String of nucleotide sequence
 #   # start_position and end_position: Integer of the start and end reference number of the sub-sequence
 #   # reference_options and path_to_muscle are same as in ViralSeq.sequence_locator
@@ -37,6 +38,7 @@
 #   => "AGCAGATGATACAGTATTAGAAGAAATAAATTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAATATGATC"
 #
 # =USAGE3
+#   ViralSeq.qc_hiv_seq_check(seq_hash, start_nt, end_nt, allow_indel?, reference_options, path_to_muscle)
 #   # Given a sequence hash, start and end nt positions to a chosen reference genome (default :HXB2),
 #   # and a boolean value for allowing indels,
 #   # return a sequence sub-hash that meets the the criteria

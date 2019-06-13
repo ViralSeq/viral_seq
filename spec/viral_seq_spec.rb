@@ -81,5 +81,69 @@ RSpec.describe ViralSeq do
     expect(ViralSeq.filter_similar_pid('spec/sample_files/sample_pid_filter.fasta').size).to eq 3
   end
 
+  it "can parse the nucleotide sequences as a String object and return a Regexp object for possible matches" do
+    expect("ATRWCG".nt_parser.to_s).to eq "(?-mix:AT[A|G][A|T]CG)"
+  end
+
+  it "can calculate Poisson probability of k number of events given λ" do
+    expect(ViralSeq.poisson_distribution(0.005)[2]).to eq 1.243765598990853e-05
+  end
+
+  it "can compare two sequences as String object and return number of differences" do
+    seq1 = 'AAGGCGTAGGAC'
+    seq2 = 'AAGCTTAGGACG'
+    aligned_seqs = ViralSeq.muscle_align(seq1,seq2)
+    expect(ViralSeq.compare_two_seq(seq1, seq2)).to eq 8
+    expect(ViralSeq.compare_two_seq(aligned_seqs[0], aligned_seqs[1])).to eq 4
+  end
+
+  it "has a gap strip function for a sequence alignment" do
+      sequence_hash = {'>seq1' => 'AACCGGTT',
+                       '>seq2' => 'A-CCGGTT',
+                       '>seq3' => 'AAC-GGTT',
+                       '>seq4' => 'AACCG-TT',
+                       '>seq5' => 'AACCGGT-'}
+      expected_hash = {">seq1"=>"ACGT", ">seq2"=>"ACGT", ">seq3"=>"ACGT", ">seq4"=>"ACGT", ">seq5"=>"ACGT"}
+      expect(ViralSeq.gap_strip(sequence_hash)).to eq expected_hash
+  end
+
+  it "has a gap strip function for a sequence alignment only at both ends" do
+      sequence_hash = {'>seq1' => 'AACCGGTT',
+                       '>seq2' => 'A-CCGGTT',
+                       '>seq3' => 'AAC-GGTT',
+                       '>seq4' => 'AACCG-TT',
+                       '>seq5' => 'AACCGGT-'}
+      expected_hash = {">seq1"=>"AACCGGT", ">seq2"=>"A-CCGGT", ">seq3"=>"AAC-GGT", ">seq4"=>"AACCG-T", ">seq5"=>"AACCGGT"}
+      expect(ViralSeq.gap_strip_ends(sequence_hash)).to eq expected_hash
+  end
+
+
+  paired_seqs = {">pair1"=>["GGGGGGGGGGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATTTTTTTTTT"],
+                ">pair2"=>["GGGGGGGGGGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                           "AAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATTTTTTTTTT"],
+                ">pair3"=>["GGGGGGGGGGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                           "AAAAAAAAAAGGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATTTTTTTTTT"]
+                }
+
+  paired_seq2 = {">pair4" => ["AAAGGGGGGG", "GGGGGGGTT"],
+                 ">pair5" => ["AAAAAAGGGG", "GGGGTTTTT"],
+                 ">pair6" => ["AAACAAGGGG", "GGGGTTTTT"]
+                 }
+
+  it "has a function to join paired-end reads with KNOWN overlap" do
+    expect(ViralSeq.paired_join1(paired_seqs, 100, 0.00).keys).to eq [">pair1"]
+    expect(ViralSeq.paired_join1(paired_seqs, 100, 0.01).keys).to eq [">pair1", ">pair2"]
+    expect(ViralSeq.paired_join1(paired_seqs, 100, 0.02).keys).to eq [">pair1", ">pair2", ">pair3"]
+  end
+
+  it "has a function to join paired-end reads with UNKNOWN overlap" do
+    expected_hash1 = {">pair4" => "AAAGGGGGGGGGGTT", ">pair5" => "AAAAAAGGGGTTTTT", ">pair6" => "AAACAAGGGGTTTTT"}
+    expected_hash2 = {">pair4"=>"AAAGGGGGGGTT", ">pair5"=>"AAAAAAGGGGTTTTT", ">pair6"=>"AAACAAGGGGTTTTT"}
+    expect(ViralSeq.paired_join2(paired_seq2, 1)).to eq expected_hash1
+    expect(ViralSeq.paired_join2(paired_seq2, 2)).to eq expected_hash2
+  end
+
+  
 
 end

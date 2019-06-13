@@ -1,23 +1,29 @@
 # fasta.rb
-# methods for converting sequence formats
-#
+# methods for converting sequence formats, including
+#   ViralSeq::fasta_to_hash
+#   ViralSeq::fastq_to_fasta
+#   ViralSeq::fastq_to_hash
+#   ViralSeq::fasta_hash_to_rsphylip
+#   ViralSeq::pair_fasta_to_hash
+
 # =USAGE
+#   sequence_fasta_hash = ViralSeq.fasta_to_hash(input_fasta_file)
 #   # input a sequence file in fasta format, read as a sequence hash
 #   # {:sequence_name1 => sequence1, ...}
-#   sequence_fasta_hash = ViralSeq.fasta_to_hash(input_fasta_file)
-#
+
+#   sequence_fasta_hash = ViralSeq.fastq_to_fasta(input_fastq_file)
 #   # input a sequence file in fastq format, read as a sequence hash
 #   # discard sequence quality score
-#   sequence_fasta_hash = ViralSeq.fastq_to_fasta(input_fastq_file)
-#
+
+#   sequence_fastq_hash = ViralSeq.fasta_to_hash(input_fastq_file)
 #   # input a sequence file in fastq format, read as a sequence hash
 #   # keep sequence quality score
 #   # {:sequence_name1 => [sequence1, quality1], ...}
-#   sequence_fastq_hash = ViralSeq.fasta_to_hash(input_fastq_file)
-#
-#   # convert a aligned fasta sequence hash into relaxed sequencial phylip format
+
 #   phylip_hash = ViralSeq.fasta_hash_to_rsphylip(sequence_fasta_hash)
-#
+#   # convert a aligned fasta sequence hash into relaxed sequencial phylip format
+
+#   paired_sequence_hash = ViralSeq.pair_fasta_to_hash(directory_of_paired_fasta)
 #   # input a directory containing paired sequence files in the fasta format
 #   # ├───lib1
 #         │     lib1_r1.txt
@@ -25,7 +31,6 @@
 #   # paired sequence files need to have "r1" and "r2" in their file names
 #   # the sequence taxa should only differ by last 3 characters to distinguish r1 and r2 sequence.
 #   # return a paired sequence hash :seq_name => [r1_seq, r2_seq]
-#   paired_sequence_hash = ViralSeq.pair_fasta_to_hash(directory_of_paired_fasta)
 
 module ViralSeq
 

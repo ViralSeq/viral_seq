@@ -1,6 +1,22 @@
 # lib/sequence.rb
 # Includes functions for sequence operations
-
+# Including methods as:
+#   ViralSeq::AMINO_ACID_LIST
+#   ViralSeq::Sequence
+#   ViralSeq::Sequence#rev_complement
+#   ViralSeq::Sequence#get_aa_sequence
+#   ViralSeq::Sequence#get_aa_array
+#   ViralSeq::Sequence#name
+#   ViralSeq::Sequence#dna_sequence
+#   ViralSeq::Sequence#aa_sequence
+#   ViralSeq::Sequence#aa_array
+#   ViralSeq::amino_acid
+#   ViralSeq::amino_acid_2
+#   ViralSeq::to_list
+#   ViralSeq::uniq_sequence_hash
+#   String#rc
+#   String#mutation
+#   String#nt_parser
 
 module ViralSeq
 
@@ -270,7 +286,7 @@ module ViralSeq
   # input_sequence_hash is a sequence hash {:name => :sequence, ...}
   # master_sequence_tag is the master tag for unique sequences
   # sequences will be named as (master_sequence_tag + "_" + Integer)
-  
+
   def self.uniq_sequence_hash(seq = {}, sequence_name = "sequence")
     uni = ViralSeq.count(seq.values)
     new_seq = {}

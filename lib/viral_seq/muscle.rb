@@ -1,13 +1,23 @@
 # viral_seq/muscle.rb
-
 # wrapper for MUSCLE (http://www.drive5.com/muscle)
-# ViralSeq.check_muscle will check if the path_to_muscle provided is valid,
-# prompt error messages if MUSCLE is not found.
+# Including Methods as:
+#   ViralSeq::check_muscle
+#   ViralSeq::muscle_align
+#   ViralSeq::muscle_align_multi
+
+# ViralSeq.check_muscle?(path_to_muscle)
+#   # check if the path_to_muscle provided is valid,
+#   # prompt error messages if MUSCLE is not found.
 #
-# ViralSeq.muscle_align takes a reference sequence and a test sequence,
-# returns aligned reference sequence and test sequences.
-#
-# ViralSeq.muscle_align
+# ViralSeq.muscle_align(reference_seq, test_sequence, path_to_muscle)
+#   # takes a reference sequence and a test sequence,
+#   # default path_to_muscle as 'muscle'
+#   # returns aligned reference sequence and test sequences
+
+# ViralSeq.muscle_align(sequence_hash, path_to_muscle)
+#   # input a sequence_hash object {:name=>:sequence,...}
+#   # default path_to_muscle as 'muscle'
+#   # return aligned sequences an hash
 
 module ViralSeq
 

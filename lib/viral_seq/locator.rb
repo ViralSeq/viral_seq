@@ -1,12 +1,16 @@
 # viral_seq/locator.rb
 
-# ViralSeq.sequence_locator(input_sequence, reference_options, path_to_muscle)
+# Including following methods:
+#   ViralSeq::sequence_locator
+#   ViralSeq::sequence_clip
+#   ViralSeq::qc_hiv_seq_check
+
 #   HIV sequence locator function
 #   resembling HIV Sequence Locator from LANL
 #   https://www.hiv.lanl.gov/content/sequence/LOCATE/locate.html
 #   require MUSCLE (http://www.drive5.com/muscle) installed
 #   current version only supports nucleotide sequence, not for amino acid sequence.
-#
+
 # =USAGE1
 #   # Find the location of a sequence
 #   ViralSeq.sequence_locator(input_sequence, reference_options, path_to_muscle)
@@ -24,7 +28,7 @@
 #   sequence = 'AGCAGATGATACAGTATTAGAAGAAATAAATTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAATATGATC'
 #   p ViralSeq.sequence_locator(sequence, :NL43, 'muscle')
 #   => [2333, 2433, 98.0, false, "AGCAGATGATACAGTATTAGAAGAAATAAATTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAATATGATC", "AGCAGATGATACAGTATTAGAAGAAATGAATTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAGTATGATC"]
-#
+
 # =USAGE2
 #   ViralSeq.sequence_clip(input_sequence, start_position, end_position, reference_options, path_to_muscle)
 #   # Given a pair of specific start and end positions, and an input sequence, return a sub-sequence of that range
@@ -36,7 +40,7 @@
 #   seq = "CCTCAGATCACTCTTTGGCAACGACCCCTAGTTACAATAAGGGTAGGGGGGCAACTAAAGGAAGCCCTATTAGATACAGGAGCAGATGATACAGTATTAGAAGAAATAAATTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAATATGATCAGATACCCATAGAAATTTGTGGACATGAAGCTATAGGTACAGTATTAGTGGGACCTACACCTGTCAACATAATTGGGAGAAATCTGTTGACTCAGATTGGTTGCACTCTAAATTTT"
 #   p ViralSeq.sequence_clip(seq, 2333, 2433, :HXB2, 'muscle')
 #   => "AGCAGATGATACAGTATTAGAAGAAATAAATTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAATATGATC"
-#
+
 # =USAGE3
 #   ViralSeq.qc_hiv_seq_check(seq_hash, start_nt, end_nt, allow_indel?, reference_options, path_to_muscle)
 #   # Given a sequence hash, start and end nt positions to a chosen reference genome (default :HXB2),
@@ -56,7 +60,7 @@ module ViralSeq
   def self.sequence_locator(seq='', ref_option = :HXB2, path_to_muscle = 'muscle')
 
     # ViralSeq.check_muscle(path_to_muscle)
-    ori_ref = ViralSeq.locator_ref(ref_option)
+    ori_ref = ViralSeq.check_ref(ref_option)
 
     begin
       ori_ref_l = ori_ref.size

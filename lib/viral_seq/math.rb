@@ -1,7 +1,20 @@
 # lib/math.rb
 
 # math and statistic functions
-
+# inlcuding the following methods
+#   ViralSeq::count
+#   ViralSeq::count_percentage
+#   ViralSeq::poisson_distribution
+#   ViralSeq::r_binom_CI
+#   Enumerable::median
+#   Enumerable::sum
+#   Enumerable::mean
+#   Enumerable::sample_variance
+#   Enumerable::stdev
+#   Enumerable::upper_quartile
+#   Enumerable::lower_quartile
+#   Integer::!
+#   Rubystats::FishersExactTest
 
 module ViralSeq
 
@@ -163,6 +176,8 @@ module Enumerable
   end
 end
 
+# factorial method for an Integer
+# Integer.!
 class Integer
   def !
     if self == 0

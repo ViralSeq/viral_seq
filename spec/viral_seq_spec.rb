@@ -144,6 +144,13 @@ RSpec.describe ViralSeq do
     expect(ViralSeq.paired_join2(paired_seq2, 2)).to eq expected_hash2
   end
 
-  
+  it "has a function to find APOBEC3g/f hypermutation sequences" do
+    sequences1 = ViralSeq.fasta_to_hash('spec/sample_files/sample_a3g_sequence1.fasta')
+    sequences2 = ViralSeq.fasta_to_hash('spec/sample_files/sample_a3g_sequence2.fasta')
+    hypermut1 = ViralSeq.a3g_hypermut_seq_hash(sequences1)
+    hypermut2 = ViralSeq.a3g_hypermut_seq_hash(sequences2)
+    expect(hypermut1[0].keys).to eq [">Seq7", ">Seq14"]
+    expect(hypermut2[0].keys).to eq [">CTAACACTCA_134_a3g-sample2", ">ATAGTGCCCA_60_a3g-sample2"]
+  end
 
 end

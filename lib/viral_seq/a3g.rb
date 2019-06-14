@@ -1,13 +1,60 @@
+# viral_seq/a3g
+# APOBEC3g/f hypermutation function including
+# ViralSeq::a3g_hypermut_seq_hash
+# ViralSeq::apobec3gf
+
 # APOBEC3g/f G to A hypermutation
 # APOBEC3G/F pattern: GRD -> ARD
 # control pattern: G[YN|RC] -> A[YN|RC]
-#
-# Two ways to identify hypermutation
+# use the sample consensus to determine potential a3g sites
+
+# Two criteria to identify hypermutation
 # 1. Fisher's exact test on the frequencies of G to A mutation at A3G positons vs. non-A3G positions
 # 2. Poisson distribution of G to A mutations at A3G positions, outliers sequences
+# note:  criteria 2 only applies on a sequence file containing more than 20 sequences
+#        b/c Poisson model does not do well on small sample size.
+
+# ViralSeq.a3g_hypermut_seq_hash(sequence_hash)
+# sequence_hash is a Hash object for sequences. {:name => :sequence, ...}
+# return array [hypermutation_hash, statistic_info]
+# hypermutation_hash is a Hash object for sequences
+# statistic_info is a hash object of [sequence_name, stats],
+# in which stats String object in csv format (separated by ',') containing
+#   sequence tag
+#   G to A mutation numbers at potential a3g positions
+#   total potential a3g G positions
+#   G to A mutation numbers at non a3g positions
+#   total non a3g G positions
+#   a3g G to A mutation rate / non-a3g G to A mutation rate
+#   Fishers Exact P-value
 #
-# Input sequences hash
-# Output [hypermutation sequence hash, lines for .csv file ("Sequence,Muts,Out of,Controls,Out of,Rate Ratio,Fishers Exact P-value")
+# =USAGE
+#   # example 1
+#   sequences = ViralSeq.fasta_to_hash('spec/sample_files/sample_a3g_sequence1.fasta')
+#   hypermut = ViralSeq.a3g_hypermut_seq_hash(sequences)
+#   hypermut[0].keys
+#   => [">Seq7", ">Seq14"]
+#   stats = hypermut[1]
+#   stats.values
+#   => [">Seq7,23,68,1,54,18.26,4.308329383112348e-06", ">Seq14,45,68,9,54,3.97,5.2143571971582974e-08"]
+#
+#   # example 2
+#   sequences = ViralSeq.fasta_to_hash('spec/sample_files/sample_a3g_sequence2.fasta')
+#   hypermut = ViralSeq.a3g_hypermut_seq_hash(sequences)
+#   stats = hypermut[1]
+#   stats = values
+#   => [">CTAACACTCA_134_a3g-sample2,4,35,0,51,Infinity,0.02465676660128911", ">ATAGTGCCCA_60_a3g-sample2,4,35,1,51,5.83,0.1534487353839561"]
+#   # notice sequence ">ATAGTGCCCA_60_a3g-sample2" has a p value at 0.15, greater than 0.05, but it is still called as hypermutation sequence b/c it's Poisson outlier sequence.
+
+
+# ViralSeq.apobec3gf(sequence)
+# APOBEC3G/F pattern: GRD -> ARD
+# control pattern: G[YN|RC] -> A[YN|RC]
+# input a sequence String object
+# return all two arrays of position numbers of
+#   a3g G positions (a3g)
+#   non-a3g G positions (control)
+
 
 module ViralSeq
   def ViralSeq.a3g_hypermut_seq_hash(seq_hash)
@@ -19,7 +66,7 @@ module ViralSeq
     # total G->A mutations at apobec3g/f positions.
     total = 0
 
-    #m ake consensus sequence for the input sequence hash
+    # make consensus sequence for the input sequence hash
     ref = ViralSeq.consensus(seq_hash.values)
 
     # obtain apobec3g positions and control positions
@@ -68,28 +115,30 @@ module ViralSeq
       end
     end
 
-    rate = total.to_f/(seq_hash.size)
+    if seq_hash.size > 20
+      rate = total.to_f/(seq_hash.size)
 
-    count_mut = Viralseq.count(mut_hash.values)
-    maxi_count = count_mut.values.max
+      count_mut = ViralSeq.count(mut_hash.values)
+      maxi_count = count_mut.values.max
 
-    poisson_hash = Viralseq.poisson_distribution(rate,maxi_count)
+      poisson_hash = ViralSeq.poisson_distribution(rate,maxi_count)
 
-    cut_off = 0
-    poisson_hash.each do |k,v|
-      cal = seq_hash.size * v
-      obs = count_mut[k]
-      if obs >= 20 * cal
-        cut_off = k
-        break
-      elsif k == maxi_count
-        cut_off = maxi_count
+      cut_off = 0
+      poisson_hash.each do |k,v|
+        cal = seq_hash.size * v
+        obs = count_mut[k]
+        if obs >= 20 * cal
+          cut_off = k
+          break
+        elsif k == maxi_count
+          cut_off = maxi_count
+        end
       end
-    end
 
-    mut_hash.each do |k,v|
-      if v > cut_off
-        hm_hash[k] = out_hash[k]
+      mut_hash.each do |k,v|
+        if v > cut_off
+          hm_hash[k] = out_hash[k]
+        end
       end
     end
 
@@ -105,6 +154,7 @@ module ViralSeq
   # control pattern: G[YN|RC] -> A[YN|RC]
 
   def self.apobec3gf(seq = "")
+    seq.tr!("-", "")
     seq_length = seq.size
     apobec_position = []
     control_position = []

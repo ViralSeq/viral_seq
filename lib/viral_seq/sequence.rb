@@ -165,9 +165,9 @@ module ViralSeq
   def self.amino_acid_2 (bases)
     bases_to_aa = []
     aa_list = []
-    base1 = to_list(bases[0])
-    base2 = to_list(bases[1])
-    base3 = to_list(bases[2])
+    base1 = ViralSeq.to_list(bases[0])
+    base2 = ViralSeq.to_list(bases[1])
+    base3 = ViralSeq.to_list(bases[2])
     l1 = base1.size - 1
     l2 = base2.size - 1
     l3 = base3.size - 1
@@ -183,8 +183,8 @@ module ViralSeq
       end
     end
 
-    bases_to_aa.each do |bases|
-    case bases
+    bases_to_aa.each do |base|
+    case base
     when /^TT[TCY]$/
       aa =  "F"
     when /^TT[AGR]$/

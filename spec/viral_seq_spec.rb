@@ -153,4 +153,12 @@ RSpec.describe ViralSeq do
     expect(hypermut2[0].keys).to eq [">CTAACACTCA_134_a3g-sample2", ">ATAGTGCCCA_60_a3g-sample2"]
   end
 
+  it "has a function to identify HCV NS5A drug resistance mutations given a sequence" do
+    seq = 'GGCTAAGGGCCAAGCTCATGCCACAATTGCCCGGGATCCCTTTTGTGTCCTGCCAACGCGGATATAGGGGGGTCTGGAAGGGAGATGGCATTATGCACACTCGCTGCCACTGCGGAGCTGAGATCACTGGACATGTCAAGAACGGGACGATGAGGATCGCCGGTCCTAAGACCTGCAGAAACATGTGGAGTGGGACCTTCCCCATCAACGCCTGCACCACGGGCCCCTGTACCCCCCTTCCCGCGCCGAACTATACGTTCGCGTTGTGGAGGGTGTCTGCGGAGGAATACGTGGAAATAAGGCGGGTGGGAGACTTCCACTACGTAACGGGC'
+    s = ViralSeq::Sequence.new('seq', seq)
+    s.get_aa_array(2)
+    aa_seq = s.aa_array
+    expected_resistance = {30=>["L", "Q"], 44=>["K", "R"], 78=>["R", "K"], 83=>["T", "M"], 93=>["Y", "C"], 107=>["K", "T"]}
+    expect(ViralSeq.hcv_ns5a(aa_seq, 23)).to eq expected_resistance
+  end
 end

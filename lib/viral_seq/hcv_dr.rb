@@ -1,5 +1,12 @@
 # viral_seq/hcv_dr
-# HCV NS5A resistant mutation
+# HCV resistant mutation interpretation
+# ViralSeq::hcv_ns5a
+
+# ViralSeq.hcv_ns5a(amino_acid_sequence_array, start_aa_position)
+#   # amino_acid_sequence_array is Array object of the amino acid sequence.
+#   # can use ViralSeq::Sequence#aa_array to obtain the aa array sequence
+#   # start_aa_position is the starting aa number of the input sequence as Integer
+
 module ViralSeq
   def self.hcv_ns5a(aa_array,start_aa=1)
     out_hash = {}

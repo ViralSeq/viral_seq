@@ -372,6 +372,15 @@ end
 #
 # RandomGaussian.rand
 #   # generate a random number that falls in the pre-defined gaussian distribution
+# =USAGE
+#   # example
+#   a = RandomGaussian.new
+#   a.rand
+#   numbers = []
+#   10.times {numbers << a.rand.round(5)}
+#   numbers
+#   [-1.83457, 1.24439, -0.30109, 0.13977, 0.61556, 1.3548, 1.72878, 2.46171, 0.97031, -0.29496] 
+
 
 class RandomGaussian
   def initialize(mean = 0.0, sd = 1.0, rng = lambda { Kernel.rand })

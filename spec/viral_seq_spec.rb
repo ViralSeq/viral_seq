@@ -175,4 +175,11 @@ RSpec.describe ViralSeq do
     sequences = %w{ AAGGCCTT ATGGCCTT AAGGCGTT AAGGCCTT AACGCCTT AAGGCCAT }
     expect(ViralSeq.nucleotide_pi(sequences)).to be 0.16667
   end
+
+  it "has a function to tabulate pairwise comparison (TN93)" do
+    sequences = %w{ AAGGCCTT ATGGCCTT AAGGCGTT AAGGCCTT AACGCCTT AAGGCCAT }
+    expect(ViralSeq.tn93(sequences)[2]).to be 6
+  end
+
+
 end

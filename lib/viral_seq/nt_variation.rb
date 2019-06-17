@@ -34,7 +34,19 @@
 #   # example
 #   sequences = %w{ AAGGCCTT ATGGCCTT AAGGCGTT AAGGCCTT AACGCCTT AAGGCCAT }
 #   ViralSeq.nucleotide_pi(sequences)
-#   =>
+#   => 0.16667
+
+# ViralSeq.tn93(sequences)
+#   # TN93 distance function
+#   # tabulate pairwise comparison of sequence pairs in a sequence alignment
+#   # input sequences alignment in Array [:seq1, :seq2, ...] or Hash [:name => :sequence] object
+#   # nt sequence only
+#   # return pairwise distance table in Hash object {:diff => :freq, ... }
+#   # Note: :diff in different positions (Integer), not percentage.
+# =Usage
+#   sequences = %w{ AAGGCCTT ATGGCCTT AAGGCGTT AAGGCCTT AACGCCTT AAGGCCAT }
+#   ViralSeq.tn93(sequences)
+#   => {0=>1, 1=>8, 2=>6}
 
 module ViralSeq
   # calculate Shannon's entropy, Euler's number as the base of logarithm
@@ -102,10 +114,17 @@ module ViralSeq
     return pi
   end
 
-  # TN93 distance function. Input: sequence array, output hash: diff => counts
-  def self.TN93(sequence_array = [])
+  # TN93 distance function. Input: sequence Array/Hash, output hash: {diff => counts, ...}
+  def self.tn93(sequences)
+    sequences = if sequences.is_a?(Hash)
+                  sequences.values
+                elsif sequences.is_a?(Array)
+                  sequences
+                else
+                  raise ArgumentError.new("Wrong type of input sequences. it has to be Hash or Array object")
+                end
     diff = []
-    seq_hash = ViralSeq.count(sequence_array)
+    seq_hash = ViralSeq.count(sequences)
     seq_hash.values.each do |v|
       comb = v * (v - 1) / 2
       comb.times {diff << 0}

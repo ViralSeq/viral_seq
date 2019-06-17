@@ -161,4 +161,18 @@ RSpec.describe ViralSeq do
     expected_resistance = {30=>["L", "Q"], 44=>["K", "R"], 78=>["R", "K"], 83=>["T", "M"], 93=>["Y", "C"], 107=>["K", "T"]}
     expect(ViralSeq.hcv_ns5a(aa_seq, 23)).to eq expected_resistance
   end
+
+  it "has a function to calculate Shannon's entropy from a sequence alignment" do
+    sequence_file = 'spec/sample_files/sample_sequence_alignment_for_entropy.fasta'
+    sequence_hash = ViralSeq.fasta_to_hash(sequence_file)
+    entropy_hash = ViralSeq.shannons_entropy(sequence_hash)
+    expect(entropy_hash[3].zero?).to be true
+    expect(entropy_hash[14].round(3)).to be 0.639
+    expect(entropy_hash[46].round(3)).to be 0.325
+  end
+
+  it "has a function to calculate nucleotide pairwise diversity (π)" do
+    sequences = %w{ AAGGCCTT ATGGCCTT AAGGCGTT AAGGCCTT AACGCCTT AAGGCCAT }
+    expect(ViralSeq.nucleotide_pi(sequences)).to be 0.16667
+  end
 end

@@ -1,23 +1,64 @@
 # viral_seq/nt_variation
 
 # contain functions to cacluate shannon's entropy, pairwise diversity, and TN93 distance
+#   ViralSeq::shannons_entropy
+#   ViralSeq::nucleotide_pi
+#   ViralSeq::TN93
+
+# ViralSeq.shannons_entropy(sequences)
+#   # calculate Shannon's entropy, Euler's number as the base of logarithm
+#   # https://en.wikipedia.org/wiki/Entropy_(information_theory)
+#   # input sequences alignment in Array [:seq1, :seq2, ...] or Hash [:name => :sequence] object
+#   # it works on both nt and aa sequences
+#   # return a Hash object for entropy score at each position in the alignment {:position => :entropy, ...}
+#   # position starts at 1.
+# =Usage
+#   # example
+#   sequence_file = 'spec/sample_files/sample_sequence_alignment_for_entropy.fasta'
+#   sequence_hash = ViralSeq.fasta_to_hash(sequence_file)
+#   entropy_hash = ViralSeq.shannons_entropy(sequence_hash)
+#   entropy_hash[3]
+#   => 0.0
+#   entropy_hash[14].round(3)
+#   => 0.639
+#   # This example is the sample input of LANL Entropy-One
+#   # https://www.hiv.lanl.gov/content/sequence/ENTROPY/entropy_one.html?sample_input=1
+
+# ViralSeq.nucleotide_pi(sequences)
+#   # Function to calculate nucleotide diversity π.
+#   # Refer to https://en.wikipedia.org/wiki/Nucleotide_diversity
+#   # input sequences alignment in Array [:seq1, :seq2, ...] or Hash [:name => :sequence] object
+#   # nt sequence only
+#   # return π as a Float object
+# =Usage
+#   # example
+#   sequences = %w{ AAGGCCTT ATGGCCTT AAGGCGTT AAGGCCTT AACGCCTT AAGGCCAT }
+#   ViralSeq.nucleotide_pi(sequences)
+#   =>
 
 module ViralSeq
   # calculate Shannon's entropy, Euler's number as the base of logarithm
-  # https://en.wikipedia.org/wiki/Entropy_(information_theory)
 
   def self.shannons_entropy(sequences)
+    sequences = if sequences.is_a?(Hash)
+                  sequences.values
+                elsif sequences.is_a?(Array)
+                  sequences
+                else
+                  raise ArgumentError.new("Wrong type of input sequences. it has to be Hash or Array object")
+                end
     entropy_hash = {}
     seq_l = sequences[0].size
-    seq_size = sequences.size
     (0..(seq_l - 1)).each do |position|
       element = []
       sequences.each do |seq|
         element << seq[position]
       end
       entropy = 0
+      element.delete('*')
+      element_size = element.size
       ViralSeq.count(element).each do |_k,v|
-        p = v/seq_size.to_f
+        p = v/element_size.to_f
         entropy += (-p * Math.log(p))
       end
       entropy_hash[(position + 1)] = entropy
@@ -26,19 +67,26 @@ module ViralSeq
   end
 
   # nucleotide pairwise diversity
-  def self.nucleotide_pi(seq = [])
-    seq_length = seq[0].size - 1
+  def self.nucleotide_pi(sequences)
+    sequences = if sequences.is_a?(Hash)
+                  sequences.values
+                elsif sequences.is_a?(Array)
+                  sequences
+                else
+                  raise ArgumentError.new("Wrong type of input sequences. it has to be Hash or Array object")
+                end
+    seq_length = sequences[0].size - 1
     nt_position_hash = {}
     (0..seq_length).each do |n|
       nt_position_hash[n] = []
-      seq.each do |s|
+      sequences.each do |s|
         nt_position_hash[n] << s[n]
       end
     end
     diver = 0
     com = 0
-    nt_position_hash.each do |p,nt|
-      nt.delete("-")
+    nt_position_hash.each do |_p,nt|
+      nt.delete_if {|n| n =~ /[^A|^C|^G|^T]/}
       next if nt.size == 1
       nt_count = ViralSeq.count(nt)
       combination = (nt.size)*(nt.size - 1)/2

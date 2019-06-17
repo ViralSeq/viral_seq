@@ -8,13 +8,13 @@
 # ViralSeq.check_muscle?(path_to_muscle)
 #   # check if the path_to_muscle provided is valid,
 #   # prompt error messages if MUSCLE is not found.
-#
+
 # ViralSeq.muscle_align(reference_seq, test_sequence, path_to_muscle)
-#   # takes a reference sequence and a test sequence,
+#   # takes a reference sequence and a test sequence as String object
 #   # default path_to_muscle as 'muscle'
 #   # returns aligned reference sequence and test sequences
 
-# ViralSeq.muscle_align(sequence_hash, path_to_muscle)
+# ViralSeq.muscle_align_multi(sequence_hash, path_to_muscle)
 #   # input a sequence_hash object {:name=>:sequence,...}
 #   # default path_to_muscle as 'muscle'
 #   # return aligned sequences an hash

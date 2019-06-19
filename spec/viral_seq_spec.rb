@@ -181,5 +181,10 @@ RSpec.describe ViralSeq do
     expect(ViralSeq.tn93(sequences)[2]).to be 6
   end
 
+  it "has a function for Poisson minority cut-off" do
+    sequence_file = 'spec/sample_files/sample_sequence_for_poisson.fasta'
+    sequences = ViralSeq.fasta_to_hash(sequence_file)
+    expect(ViralSeq.poisson_minority_cutoff(sequences)).to be 2
+  end
 
 end

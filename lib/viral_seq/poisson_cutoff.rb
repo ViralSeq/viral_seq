@@ -1,18 +1,37 @@
 # viral_seq/poisson_cutoff.rb
+# define Poission cut-off for minority variants.
+# (Ref: Zhou, et al. J Virol 2015)
+#   ViralSeq::poisson_minority_cutoff
 
-# define Poission cut-off for minority variants. (Ref: Zhou, et al. J Virol 2015)
-# Input is a sequence array, the redisual sequencing error rate (default = 0.0001), and a fold cut-off to determine the cut-off
-# example: cut-off = 2 means that mutations appear at least 2 times are very likely to be a true mutation instead of residual methods errors.
+# ViralSeq.poisson_minority_cutoff(sequences, error_rate, fold_cutoff)
+#   # sequences: input sequences alignment in Array [:seq1, :seq2, ...] or Hash [:name => :sequence] object
+#   # error_rate: the redisual sequencing error rate (default = 0.0001),
+#   # fold_cutoff: a fold cut-off to determine poisson minority cut-off. default = 20. i.e. <5% mutations from randome method error.
+#   # example: cut-off = 2 means that mutations appear at least 2 times are very likely to be a true mutation instead of residual methods errors.
+# =Usage
+#   sequence_file = 'spec/sample_files/sample_sequence_for_poisson.fasta'
+#   sequences = ViralSeq.fasta_to_hash(sequence_file)
+#   ViralSeq.poisson_minority_cutoff(sequences)
+#   => 2
+
+
 module ViralSeq
 
-  def self.poisson_minority_cutoff(seq_array, error_rate = 0.0001, fold_cutoff = 20)
-    if seq_array.size == 0
+  def self.poisson_minority_cutoff(sequences, error_rate = 0.0001, fold_cutoff = 20)
+    sequences = if sequences.is_a?(Hash)
+                  sequences.values
+                elsif sequences.is_a?(Array)
+                  sequences
+                else
+                  raise ArgumentError.new("Wrong type of input sequences. it has to be Hash or Array object")
+                end
+    if sequences.size == 0
       return 0
     else
       cut_off = 1
-      l = seq_array[0].size
-      rate = seq_array.size * error_rate
-      count_mut = ViralSeq.variant_for_poisson(seq_array)
+      l = sequences[0].size
+      rate = sequences.size * error_rate
+      count_mut = ViralSeq.variant_for_poisson(sequences)
       max_count = count_mut.keys.max
       poisson_hash = ViralSeq.poisson_distribution(rate, max_count)
 

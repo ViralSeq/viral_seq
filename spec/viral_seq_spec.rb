@@ -187,4 +187,29 @@ RSpec.describe ViralSeq do
     expect(ViralSeq.poisson_minority_cutoff(sequences)).to be 2
   end
 
+  it "has a function to make unique sequence Hash from a sequence Hash" do
+    sequences = {'>seq1' => 'AAAA','>seq2' => 'AAAA', '>seq3' => 'AAAA',
+                 '>seq4' => 'CCCC', '>seq5' => 'CCCC',
+                 '>seq6' => 'TTTT' }
+    uniq_sequence = {">sequence_1_3"=>"AAAA", ">sequence_2_2"=>"CCCC", ">sequence_3_1"=>"TTTT"}
+    expect(ViralSeq.uniq_sequence_hash(sequences)).to eq uniq_sequence
+  end
+
+  it "has a function to detect SDRMs from a sequence Hash" do
+    pr_sequence = ViralSeq.fasta_to_hash('spec/sample_files/sample_dr_sequences/pr.fasta')
+    pr_p_cut_off = ViralSeq.poisson_minority_cutoff(pr_sequence)
+    pr_sdrm = ViralSeq.sdrm_pr_bulk(pr_sequence, pr_p_cut_off)
+    expect(pr_sdrm[0][0][5]).to eq 247
+
+    rt_sequence = ViralSeq.fasta_to_hash('spec/sample_files/sample_dr_sequences/rt.fasta')
+    rt_p_cut_off = ViralSeq.poisson_minority_cutoff(rt_sequence)
+    rt_sdrm = ViralSeq.sdrm_rt_bulk(rt_sequence, rt_p_cut_off)
+    expect(rt_sdrm[0][1][5]).to eq 52
+
+    in_sequence = ViralSeq.fasta_to_hash('spec/sample_files/sample_dr_sequences/in.fasta')
+    in_p_cut_off = ViralSeq.poisson_minority_cutoff(in_sequence)
+    in_sdrm = ViralSeq.sdrm_in_bulk(in_sequence, in_p_cut_off)
+    expect(in_sdrm[1][0][3]).to eq 452
+  end
+
 end

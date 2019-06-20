@@ -1,5 +1,164 @@
 # viral_seq/sdrm_core.rb
 # core functions for HIV SDRM analysis using MPID-DR protocol.
+# More details for HIV Surveillance Drug Resistance Mutation (SDRM) can be found at
+# https://hivdb.stanford.edu/pages/surveillance.html
+
+# Including methods as:
+#   ViralSeq::sdrm_nrti
+#   ViralSeq::sdrm_nnrti
+#   ViralSeq::hiv_protease
+#   ViralSeq::sdrm_int
+#   ViralSeq::sdrm_pr_bulk
+#   ViralSeq::sdrm_rt_bulk
+#   ViralSeq::sdrm_in_bulk
+
+# ViralSeq.sdrm_nrti(aa_arry, start_aa)
+# ViralSeq.sdrm_nnrti(aa_arry, start_aa)
+# ViralSeq.hiv_protease(aa_arry, start_aa)
+# ViralSeq.sdrm_int(aa_arry, start_aa)
+#   # funtions to identify SDRMs from a given sequence in an Array object
+#   # function names indicate which HIV drug resistance mutations it can identify
+#   # input an Array object for amino acid sequence ['A', 'M', 'L', ...]
+#   # start_aa is an Integer to indicate codon number of the 1st amino acid sequence in the input aa_array
+#   # return a Hash object for SDRMs identified. {:posiiton =>[:wildtype_codon, :mutation_codon]}
+
+# ViralSeq.sdrm_pr_bulk(sequence_hash, minority_cut_off)
+# ViralSeq.sdrm_rt_bulk(sequence_hash, minority_cut_off)
+# ViralSeq.sdrm_in_bulk(sequence_hash, minority_cut_off)
+#   # functions to identify SDRMs from a sequence hash object.
+#   # name of the functions indicate which region it works on
+#   # works for MPID-DR protocol (dx.doi.org/10.17504/protocols.io.useewbe)
+#   # PR codon 1-99
+#   # RT codon 34-122, 152-236, two regions are linked
+#   # IN codon 53-174
+#   # sequence_hash is a Hash object of sequences {:name => :sequence, ...}
+#   # sequences usually need to be QCed (remove sequences with stop codon and a3g hypermutations) first
+#   # minority_cut_off is the Integer cut-off for minimal abundance of a mutation to be called as valid mutation
+#   # minority_cut_off can be obtained using ViralSeq::poisson_minority_cutoff function
+#   # return [point_mutation_list, linkage_list, report_list]
+# =USAGE
+#   # example (example files from ID:VS053118-0566)
+#   sequence = ViralSeq.fasta_to_hash('spec/sample_files/sample_dr_sequences/pr.fasta')
+#   p_cut_off = ViralSeq.poisson_minority_cutoff(sequences)
+#   pr_sdrm = ViralSeq.sdrm_pr_bulk(sequence, p_cut_off)
+#   puts "region,tcs_number,position,wildtype,mutation,count,%,CI_low,CI_high,label"
+#   pr_sdrm[0].each {|n| puts n.join(',')}
+#   => region,tcs_number,position,wildtype,mutation,count,%,CI_low,CI_high,label
+#   => PR,396,30,D,N,247,0.62374,0.57398,0.67163,
+#   => PR,396,50,I,V,1,0.00253,6.0e-05,0.01399,*
+#   => PR,396,88,N,D,246,0.62121,0.57141,0.66919,
+#
+#   puts "region,tcs_number,linkage,count,%,CI_low,CI_high,label"
+#   pr_sdrm[1].each {|n| puts n.join(',')}
+#   => region,tcs_number,linkage,count,%,CI_low,CI_high,label
+#   => PR,396,D30N+N88D,245,0.61869,0.56884,0.66674,
+#   => PR,396,WT,149,0.37626,0.32837,0.42602,
+#   => PR,396,D30N,1,0.00253,6.0e-05,0.01399,*
+#   => PR,396,D30N+I50V+N88D,1,0.00253,6.0e-05,0.01399,*
+#
+#   puts "position,codon,tcs_number," + ViralSeq::AMINO_ACID_LIST.join(",")
+#   pr_sdrm[2].each {|n|puts n.join(",")}
+#   => position,codon,tcs_number,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*
+#   => PR,1,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,2,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,3,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,4,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0
+#   => PR,5,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,6,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0
+#   => PR,7,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,8,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,9,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,10,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,11,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0
+#   => PR,12,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,37.8788,62.1212,0.0,0.0,0.0,0.0
+#   => PR,13,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,38.1313,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,61.8687,0.0,0.0,0.0
+#   => PR,14,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,15,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,62.3737,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,37.6263,0.0,0.0,0.0
+#   => PR,16,396,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,17,396,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,18,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,99.4949,0.5051,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,19,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,20,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,21,396,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,22,396,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,23,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,24,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,25,396,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,26,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0
+#   => PR,27,396,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,28,396,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,29,396,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,30,396,0.0,0.0,37.6263,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,62.3737,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,31,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0
+#   => PR,32,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0
+#   => PR,33,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,99.7475,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.2525,0.0,0.0,0.0
+#   => PR,34,396,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,35,396,0.0,0.0,62.1212,37.6263,0.0,0.0,0.0,0.0,0.2525,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,36,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,99.7475,0.0,0.0,0.0,0.0,0.0,0.0,0.2525,0.0,0.0,0.0
+#   => PR,37,396,0.0,0.0,37.8788,61.8687,0.0,0.0,0.0,0.0,0.2525,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,38,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,39,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,99.4949,0.0,0.0,0.5051,0.0,0.0,0.0,0.0,0.0
+#   => PR,40,396,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,41,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,37.8788,0.0,0.0,0.0,0.0,0.0,62.1212,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,42,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0
+#   => PR,43,396,0.0,0.0,0.0,0.2525,0.0,0.0,0.0,0.0,99.7475,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,44,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,45,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,46,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,47,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,48,396,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,49,396,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,50,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,99.7475,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.2525,0.0,0.0,0.0
+#   => PR,51,396,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,52,396,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,53,396,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,54,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,55,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,56,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0
+#   => PR,57,396,0.0,0.0,0.0,0.0,0.0,0.2525,0.0,0.0,0.2525,0.0,0.0,0.0,0.0,0.0,99.4949,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,58,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,59,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0
+#   => PR,60,396,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,61,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,62,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,63,396,0.0,0.0,0.0,0.0,0.0,0.0,0.2525,0.0,0.0,37.8788,0.0,0.0,61.8687,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,64,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,62.1212,0.0,37.8788,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,65,396,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,66,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,67,396,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,68,396,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,69,396,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,70,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,71,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,62.1212,37.8788,0.0,0.0,0.0
+#   => PR,72,396,0.0,0.0,0.0,37.8788,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,62.1212,0.0,0.0,0.0,0.0
+#   => PR,73,396,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,74,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0
+#   => PR,75,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0
+#   => PR,76,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,77,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,99.7475,0.0,0.0,0.2525,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,78,396,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,79,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,80,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0
+#   => PR,81,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,82,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0
+#   => PR,83,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,99.4949,0.0,0.0,0.0,0.5051,0.0,0.0,0.0,0.0,0.0
+#   => PR,84,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,85,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,86,396,0.0,0.0,0.0,0.5051,0.0,99.4949,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,87,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,88,396,0.0,0.0,62.1212,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,37.8788,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,89,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,90,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,91,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0
+#   => PR,92,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,93,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,94,396,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,95,396,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,96,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0
+#   => PR,97,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+#   => PR,98,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,99.7475,0.0,0.0,0.0,0.2525,0.0,0.0,0.0,0.0,0.0
+#   => PR,99,396,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+
 
 
 module ViralSeq
@@ -178,7 +337,7 @@ module ViralSeq
   # HIV-1 PR region SDRM based on HIVDB.stanford.edu
   # only for MPID-DR MiSeq sequences, PR codon 1-99
   # return [substitution rate with 95% CI, halpotype abundance with 95% CI, amino acid sequence report spreadsheet]
-  def self.sdrm_pr_bulk(sequences, cutoff = 0, temp_r_dir = File.dirname($0))
+  def self.sdrm_pr_bulk(sequences, cutoff = 0)
     region = "PR"
     rf_label = 0
     start_codon_number = 1
@@ -208,7 +367,7 @@ module ViralSeq
       mut_list = mutation[1]
       count_mut_list = ViralSeq.count(mut_list)
       count_mut_list.each do |m,number|
-        ci = ViralSeq.r_binom_CI(number, n_seq, temp_r_dir)
+        ci = ViralSeq.r_binom_CI(number, n_seq)
         label = number < cutoff ? "*" : ""
         point_mutation_list << [region, n_seq, position, wt, m, number, (number/n_seq.to_f).round(5), ci[0], ci[1], label]
       end
@@ -230,7 +389,7 @@ module ViralSeq
     end
     linkage_list = []
     link2.sort_by{|_key,value|value}.reverse.to_h.each do |k,v|
-      ci = ViralSeq.r_binom_CI(v, n_seq, temp_r_dir)
+      ci = ViralSeq.r_binom_CI(v, n_seq)
       label = v < cutoff ? "*" : ""
       linkage_list << [region, n_seq, k, v, (v/n_seq.to_f).round(5), ci[0], ci[1], label]
     end
@@ -254,7 +413,7 @@ module ViralSeq
 
     div_aa.each do |k,v|
       record = [region, k, n_seq]
-      $amino_acid_list.each do |amino_acid|
+      ViralSeq::AMINO_ACID_LIST.each do |amino_acid|
         aa_count = v[amino_acid]
         record << (aa_count.to_f/n_seq*100).round(4)
       end
@@ -270,7 +429,7 @@ module ViralSeq
   #only for MPID-DR MiSeq sequences
   #RT codon 34-122, 152-236 two regions are linked.
   #return [substitution rate with 95% CI, halpotype abundance with 95% CI, amino acid sequence report spreadsheet]
-  def self.sdrm_rt_bulk(sequences, cutoff = 0, temp_r_dir = File.dirname($0))
+  def self.sdrm_rt_bulk(sequences, cutoff = 0)
     region = "RT"
     rf_label = 1
     start_codon_number = 34
@@ -320,7 +479,7 @@ module ViralSeq
       mut_list = mutation[1]
       count_mut_list = ViralSeq.count(mut_list)
       count_mut_list.each do |m,number|
-        ci = ViralSeq.r_binom_CI(number, n_seq, temp_r_dir)
+        ci = ViralSeq.r_binom_CI(number, n_seq)
         label = number < cutoff ? "*" : ""
         point_mutation_list << ["NRTI", n_seq, position, wt, m, number, (number/n_seq.to_f).round(5), ci[0], ci[1], label]
       end
@@ -331,7 +490,7 @@ module ViralSeq
       mut_list = mutation[1]
       count_mut_list = ViralSeq.count(mut_list)
       count_mut_list.each do |m,number|
-        ci = ViralSeq.r_binom_CI(number, n_seq, temp_r_dir)
+        ci = ViralSeq.r_binom_CI(number, n_seq)
         label = number < cutoff ? "*" : ""
         point_mutation_list << ["NNRTI", n_seq, position, wt, m, number, (number/n_seq.to_f).round(5), ci[0], ci[1], label]
       end
@@ -353,7 +512,7 @@ module ViralSeq
     end
     linkage_list = []
     link2.sort_by{|_key,value|value}.reverse.to_h.each do |k,v|
-      ci = ViralSeq.r_binom_CI(v, n_seq, temp_r_dir)
+      ci = ViralSeq.r_binom_CI(v, n_seq)
       label = v < cutoff ? "*" : ""
       linkage_list << [region, n_seq, k, v, (v/n_seq.to_f).round(5), ci[0], ci[1], label]
     end
@@ -389,7 +548,7 @@ module ViralSeq
 
     div_aa.each do |k,v|
       record = [region, k, n_seq]
-      $amino_acid_list.each do |amino_acid|
+      ViralSeq::AMINO_ACID_LIST.each do |amino_acid|
         aa_count = v[amino_acid]
         record << (aa_count.to_f/n_seq*100).round(4)
       end
@@ -404,7 +563,7 @@ module ViralSeq
   #only for MPID-DR MiSeq sequences
   #IN codon 53-174
   #return [substitution rate with 95% CI, halpotype abundance with 95% CI, amino acid sequence report spreadsheet]
-  def self.sdrm_in_bulk(sequences, cutoff = 0, temp_r_dir = File.dirname($0))
+  def self.sdrm_in_bulk(sequences, cutoff = 0)
     region = "IN"
     rf_label = 2
     start_codon_number = 53
@@ -434,7 +593,7 @@ module ViralSeq
       mut_list = mutation[1]
       count_mut_list = ViralSeq.count(mut_list)
       count_mut_list.each do |m,number|
-        ci = ViralSeq.r_binom_CI(number, n_seq, temp_r_dir)
+        ci = ViralSeq.r_binom_CI(number, n_seq)
         label = number < cutoff ? "*" : ""
         point_mutation_list << [region, n_seq, position, wt, m, number, (number/n_seq.to_f).round(5), ci[0], ci[1], label]
       end
@@ -456,7 +615,7 @@ module ViralSeq
     end
     linkage_list = []
     link2.sort_by{|_key,value|value}.reverse.to_h.each do |k,v|
-      ci = ViralSeq.r_binom_CI(v, n_seq, temp_r_dir)
+      ci = ViralSeq.r_binom_CI(v, n_seq)
       label = v < cutoff ? "*" : ""
       linkage_list << [region, n_seq, k, v, (v/n_seq.to_f).round(5), ci[0], ci[1], label]
     end
@@ -480,7 +639,7 @@ module ViralSeq
 
     div_aa.each do |k,v|
       record = [region, k, n_seq]
-      $amino_acid_list.each do |amino_acid|
+      ViralSeq::AMINO_ACID_LIST.each do |amino_acid|
         aa_count = v[amino_acid]
         record << (aa_count.to_f/n_seq*100).round(4)
       end
@@ -488,19 +647,6 @@ module ViralSeq
     end
 
     return [point_mutation_list, linkage_list, report_list]
-  end
-
-  # input a sequence hash, return a sequence hash with stop codons.
-  def self.stop_codon_seq_hash(seq_hash, rf = 0)
-    out_seq_hash = {}
-    seq_hash.each do |k,v|
-      sequence = Sequence.new(k,v)
-      sequence.get_aa_array(rf)
-      if sequence.aa_array.include?("*")
-        out_seq_hash[k] = v
-      end
-    end
-    return out_seq_hash
   end
 
 end

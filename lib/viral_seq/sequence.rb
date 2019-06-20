@@ -14,9 +14,50 @@
 #   ViralSeq::amino_acid_2
 #   ViralSeq::to_list
 #   ViralSeq::uniq_sequence_hash
+#   ViralSeq::stop_codon_seq_hash
 #   String#rc
 #   String#mutation
 #   String#nt_parser
+
+# ViralSeq::AMINO_ACID_LIST
+#   # Array of all amino acid one letter abbreviations
+
+# ViralSeq::Sequence
+#   # Sequence class
+# =USAGE
+#   # create a sequence object
+#   seq = ViralSeq::Sequence.new('my_sequence', 'ACCTAGGTTCGGAGC')
+#
+#   # print dna sequence
+#   puts seq.dna_sequence
+#
+#   # reserce complement sequence of DNA sequence, return as a string
+#   seq.rev_complement
+#
+#   # change @dna_sequence to reverse complement DNA sequence
+#   seq.rev_complement!
+#
+#   # generate amino acid sequences. either return string or array.
+#   # starting codon option 0, 1, 2 for 1st, 2nd, 3rd reading frame.
+#   # if sequence contains ambiguities, Sequence.get_aa_array will return all possible amino acids.
+#   seq.get_aa_sequence
+#   # or
+#   seq.get_aa_array
+#
+#   # print amino acid sequence
+#   puts seq.aa_sequence
+
+# ViralSeq.uniq_sequence_hash(input_sequence_hash, master_sequence_tag)
+#   # collapse sequence hash to unique sequence hash.
+#   # input_sequence_hash is a sequence Hash object {:name => :sequence, ...}
+#   # master_sequence_tag is the master tag for unique sequences
+#   # sequences will be named as (master_sequence_tag + "_" + Integer + "_" + Counts)
+# =USAGE
+#   sequences = {'>seq1' => 'AAAA','>seq2' => 'AAAA', '>seq3' => 'AAAA',
+#                '>seq4' => 'CCCC', '>seq5' => 'CCCC',
+#                '>seq6' => 'TTTT' }
+#   uniq_sequence = ViralSeq.uniq_sequence_hash(sequences)
+#   => {">sequence_1_3"=>"AAAA", ">sequence_2_2"=>"CCCC", ">sequence_3_1"=>"TTTT"}
 
 module ViralSeq
 
@@ -24,28 +65,6 @@ module ViralSeq
   AMINO_ACID_LIST = ["A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y", "*"]
 
   # sequence class
-  # =USAGE
-  #   # create a sequence object
-  #   seq = ViralSeq::Sequence.new('my_sequence', 'ACCTAGGTTCGGAGC')
-  #
-  #   # print dna sequence
-  #   puts seq.dna_sequence
-  #
-  #   # reserce complement sequence of DNA sequence, return as a string
-  #   seq.rev_complement
-  #
-  #   # change @dna_sequence to reverse complement DNA sequence
-  #   seq.rev_complement!
-  #
-  #   # generate amino acid sequences. either return string or array.
-  #   # starting codon option 0, 1, 2 for 1st, 2nd, 3rd reading frame.
-  #   # if sequence contains ambiguities, Sequence.get_aa_array will return all possible amino acids.
-  #   seq.get_aa_sequence
-  #   # or
-  #   seq.get_aa_array
-  #
-  #   # print amino acid sequence
-  #   puts seq.aa_sequence
 
   class Sequence
     def initialize (name = ">sequence",dna_sequence ="")
@@ -297,6 +316,19 @@ module ViralSeq
       n += 1
     end
     return new_seq
+  end
+
+  # input a sequence hash, return a sequence hash with stop codons.
+  def self.stop_codon_seq_hash(seq_hash, rf = 0)
+    out_seq_hash = {}
+    seq_hash.each do |k,v|
+      sequence = Sequence.new(k,v)
+      sequence.get_aa_array(rf)
+      if sequence.aa_array.include?("*")
+        out_seq_hash[k] = v
+      end
+    end
+    return out_seq_hash
   end
 
 end

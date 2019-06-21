@@ -1,6 +1,7 @@
 # viral_seq
 
 A Ruby Gem containing bioinformatics tools for processing viral NGS data.
+
 Specifically for Primer-ID sequencing and HIV drug resistance analysis.
 
 ## Installation

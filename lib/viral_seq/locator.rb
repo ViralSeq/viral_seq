@@ -16,7 +16,9 @@
 #   ViralSeq.sequence_locator(input_sequence, reference_options, path_to_muscle)
 #   # input_sequence: String of nucleotide sequence
 #   # reference_options: choose a reference genome from :HXB2 (default), :NL43, or :MAC239
-#   # path_to_muscle: path to the muscle executable. Default as 'muscle', add MUSCLE excutable path to $PATH to use the default setting or provide the path
+#   # path_to_muscle: path to the muscle executable.
+#   # Default as :false, will call MuscleBio to run Muscle
+#   # specify path_to_muscle if other source of muscle needed
 #   # function returns an array of
 #   #   start_location (Integer)
 #   #   end_location (Integer)
@@ -36,6 +38,9 @@
 #   # input_sequence: String of nucleotide sequence
 #   # start_position and end_position: Integer of the start and end reference number of the sub-sequence
 #   # reference_options and path_to_muscle are same as in ViralSeq.sequence_locator
+#   # path_to_muscle: path to the muscle executable.
+#   # Default as :false, will call MuscleBio to run Muscle
+#   # specify path_to_muscle if other source of muscle needed
 #   # example code
 #   seq = "CCTCAGATCACTCTTTGGCAACGACCCCTAGTTACAATAAGGGTAGGGGGGCAACTAAAGGAAGCCCTATTAGATACAGGAGCAGATGATACAGTATTAGAAGAAATAAATTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAATATGATCAGATACCCATAGAAATTTGTGGACATGAAGCTATAGGTACAGTATTAGTGGGACCTACACCTGTCAACATAATTGGGAGAAATCTGTTGACTCAGATTGGTTGCACTCTAAATTTT"
 #   p ViralSeq.sequence_clip(seq, 2333, 2433, :HXB2, 'muscle')
@@ -45,8 +50,10 @@
 #   ViralSeq.qc_hiv_seq_check(seq_hash, start_nt, end_nt, allow_indel?, reference_options, path_to_muscle)
 #   # Given a sequence hash, start and end nt positions to a chosen reference genome (default :HXB2),
 #   # and a boolean value for allowing indels,
+#   # path_to_muscle: path to the muscle executable.
+#   # Default as :false, will call MuscleBio to run Muscle
+#   # specify path_to_muscle if other source of muscle needed
 #   # return a sequence sub-hash that meets the the criteria
-#   ViralSeq.qc_hiv_seq_check(seq_hash, start_nt, end_nt, allow_indel?, reference_options, path_to_muscle)
 #   # example code
 #   sequence_hash = ViralSeq.fasta_to_hash('sample/sample_seq.fasta') # load the .fasta file as a sequence hash
 #   filtered_sequence_hash = ViralSeq.qc_hiv_seq_check(sequence_hash, 4384, 4751, false, :HXB2, 'muscle')
@@ -57,7 +64,7 @@
 
 module ViralSeq
 
-  def self.sequence_locator(seq='', ref_option = :HXB2, path_to_muscle = 'muscle')
+  def self.sequence_locator(seq='', ref_option = :HXB2, path_to_muscle = false)
 
     # ViralSeq.check_muscle(path_to_muscle)
     ori_ref = ViralSeq.check_ref(ref_option)
@@ -232,7 +239,7 @@ module ViralSeq
   end
 
   # sequence clip function
-  def self.sequence_clip(seq='', p1 = 0, p2 = 0, ref_option = :HXB2, path_to_muscle = 'muscle')
+  def self.sequence_clip(seq='', p1 = 0, p2 = 0, ref_option = :HXB2, path_to_muscle = false)
     loc = ViralSeq.sequence_locator(seq, ref_option, path_to_muscle)
     l1 = loc[0]
     l2 = loc[1]
@@ -262,7 +269,7 @@ module ViralSeq
   # and allow the sequence to contain indels
   # return a hash of filtered sequences
 
-  def self.qc_hiv_seq_check(seq_hash, start_nt, end_nt, indel=true, ref_option = :HXB2, path_to_muscle = 'muscle')
+  def self.qc_hiv_seq_check(seq_hash, start_nt, end_nt, indel=true, ref_option = :HXB2, path_to_muscle = false)
     seq_hash_unique = seq_hash.values.uniq
     seq_hash_unique_pass = []
     start_nt = start_nt..start_nt if start_nt.is_a?(Integer)

@@ -27,8 +27,11 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "bundler", "~> 2.0"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec", "~> 3.0"
-  # not sure if need rinruby
-  # spec.add_development_dependency "rinruby", "~> 2.0"
+
+  # muscle_bio gem required
+  spec.add_runtime_dependency "muscle_bio", "~> 0.4"
+
+
   spec.requirements << 'MUSCLE (http://www.drive5.com/muscle) required for some functions'
   spec.requirements << 'R required for some functions'
 end

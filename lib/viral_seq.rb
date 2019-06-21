@@ -37,3 +37,5 @@ require "viral_seq/a3g"
 require "viral_seq/sdrm_core"
 require "viral_seq/hcv_dr"
 require "viral_seq/nt_variation"
+
+require "muscle_bio"

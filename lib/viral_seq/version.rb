@@ -1,6 +1,6 @@
 # lib/version.rb
-# version info and histroy 
+# version info and histroy
 
 module ViralSeq
-  VERSION = "0.1.0"
+  VERSION = "0.3.0"
 end

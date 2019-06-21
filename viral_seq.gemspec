@@ -10,7 +10,8 @@ Gem::Specification.new do |spec|
   spec.email         = ["shuntai.zhou@gmail.com", "clarkmu@gmail.com"]
 
   spec.summary       = %q{A Ruby Gem containing bioinformatics tools for processing viral NGS data.}
-  spec.description   = %q{Specifically for Primer-ID sequencing and HIV drug resistance analysis.}
+  spec.description   = %q{A Ruby Gem with bioinformatics tools for processing viral NGS data.
+                          Specifically for Primer-ID sequencing and HIV drug resistance analysis.}
   spec.homepage      = "https://github.com/ViralSeq/viral_seq"
   spec.license       = "MIT"
 

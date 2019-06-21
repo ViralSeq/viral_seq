@@ -2,5 +2,5 @@
 # version info and histroy
 
 module ViralSeq
-  VERSION = "0.3.1"
+  VERSION = "0.3.2"
 end

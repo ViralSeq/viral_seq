@@ -1,4 +1,4 @@
-# viral_seq
+# ViralSeq
 
 A Ruby Gem containing bioinformatics tools for processing viral NGS data.
 

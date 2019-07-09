@@ -1,401 +1,149 @@
-# lib/math.rb
-
-# math and statistic functions
-# inlcuding the following methods
-#   ViralSeq::count
-#   ViralSeq::count_percentage
-#   ViralSeq::poisson_distribution
-#   ViralSeq::r_binom_CI
-#   Enumerable#median
-#   Enumerable#sum
-#   Enumerable#mean
-#   Enumerable#sample_variance
-#   Enumerable#stdev
-#   Enumerable#upper_quartile
-#   Enumerable#lower_quartile
-#   Integer#!
-#   Rubystats::FishersExactTest
-#   RandomGaussian::new
-#   RandomGaussian#rand
 
 module ViralSeq
 
-  # count elements in a array, return a hash of {:element1 => number1, :element2 => number2, ...}
-  # =Usage
-  #   array = %w{cat dog monkey cat cat cat monkey}
-  #   ViralSeq.count(array)
-  #   => {"cat"=>4, "dog"=>1, "monkey"=>2}
+  # math functions reqruied for ViralSeq
 
-  def self.count(array)
-    hash = Hash.new(0)
-    array.each do |element|
-      hash[element] +=1
-    end
-    return hash
-  end
+  module Math
 
-  # count elements in a array, return a hash of {:element1 => frequency1, :element2 => frequency2, ...}
-  # default decimal as 2
-  # =Usage
-  #   array = %w{cat dog monkey cat cat cat monkey}
-  #   ViralSeq.count_percentage(array)
-  #   => {"cat"=>0.57, "dog"=>0.14, "monkey"=>0.29}
+    # Generate values from the standard normal distribution with given mean and standard deviation
+    # @see http://en.wikipedia.org/wiki/Box-Muller_transform Wikipedia explanation
 
-  def self.count_percentage(array,decimal = 2)
-    hash1 = Hash.new(0)
-    array.each do |element|
-      hash1[element] += 1
-    end
-    total_elements = array.size
-    hash2 = Hash.new(0)
-    hash1.each do |key,value|
-      hash2[key] = (value/total_elements.to_f).round(decimal)
-    end
-    return hash2
-  end
+    class RandomGaussian
 
-  # poisson distribution. input lambda and maximum k, return a hash with keys as k
-  # default k value is 5, meaning calculate up to 5 events.
-  #
-  # Poisson Distribution (https://en.wikipedia.org/wiki/Poisson_distribution)
-  #   An event can occur 0, 1, 2, … times in an interval.
-  #   The average number of events in an interval is designated λ (lambda).
-  #   λ is the event rate, also called the rate parameter.
-  #   The probability of observing k events in an interval is given by the equation
-  #
-  #   P(k events in interval) = e^(-λ) * λ^k / k!
-  #
-  #   λ is the average number of events per interval
-  #   e is the number 2.71828... (Euler's number) the base of the natural logarithms
-  #   k takes values 0, 1, 2, …
-  #   k! = k × (k − 1) × (k − 2) × … × 2 × 1 is the factorial of k.
-  #
-  # =USAGE
-  #   # We assume the mutaiton rate is 0.005 (event rate λ),
-  #   # we would like to calculate the probablity of 3 mutations on one sequence
-  #   prob_hash = ViralSeq::poisson_distribution(0.005)
-  #   => {0=>0.9950124791926823, 1=>0.004975062395963412, 2=>1.243765598990853e-05, 3=>2.072942664984755e-08, 4=>2.5911783312309436e-11, 5=>2.591178331230944e-14}
-  #   prob_hash[3]
-  #   => 2.072942664984755e-08
+      # generate RandomGaussian instance with given mean and standard deviation
+      # @param mean [Float] mean value.
+      # @param sd [Float] standard deviation value.
 
-  def self.poisson_distribution(rate,k = 5)
-    out_hash = {}
-    (0..k).each do |n|
-      p = (rate**n * Math::E**(-rate))/!n
-      out_hash[n] = p
-    end
-    return out_hash
-  end
-
-
-  # require R pre-installed
-  # calculate binomial 95% confidence intervals by R. refer to R function binom.test
-  # input number x and n, return an array as [lower_interval, upper_interval]
-  #
-  # =USAGE
-  #   # mutation M184V found in 3 out of 923 sequences, the 95% confidence interval is
-  #   ViralSeq.r_binom_CI(3, 923)
-  #   => [0.02223, 0.19234]
-  #
-  def self.r_binom_CI(x= 0, n= 0)
-    r_output = `Rscript -e 'binom.test(#{x},#{n})$conf.int[1];binom.test(#{x},#{n})$conf.int[2]'`
-    lines = r_output.split "\n"
-    low = lines[0].chomp[4..-1].to_f
-    high = lines[1].chomp[4..-1].to_f
-    return [low.round(5), high.round(5)]
-  end
-
-end
-
-# statistic methods
-# :median :sum :mean :sample_variance :stdev :upper_quartile :lower_quartile
-# =USAGE
-#   array = [1,2,3,4,5,6,7,8,9,10]
-#   array.median
-#   => 5.5
-#   array.sum
-#   => 55
-#   array.mean
-#   => 5.5
-#   array.sample_variance
-#   => 9.166666666666666
-#   array.stdev
-#   => 3.0276503540974917
-#   array.upper_quartile
-#   => 7.5
-#   array.lower_quartile
-#   => 3.5
-
-module Enumerable
-  def median
-    len = self.length
-    sorted = self.sort
-    len % 2 == 1 ? sorted[len/2] : (sorted[len/2 - 1] + sorted[len/2]).to_f / 2
-  end
-
-  def sum
-     self.inject(0){|accum, i| accum + i }
-  end
-
-  def mean
-    self.sum/self.length.to_f
-  end
-
-  def sample_variance
-    m = self.mean
-    sum = self.inject(0){|accum, i| accum + (i-m)**2 }
-    sum/(self.length - 1).to_f
-  end
-
-  def stdev
-    return Math.sqrt(self.sample_variance)
-  end
-
-  def upper_quartile
-    return nil if self.empty?
-    sorted_array = self.sort
-    u = (0.25*(3*sorted_array.length))
-    if (u-u.truncate).is_a?(Integer)
-      return sorted_array[(u-u.truncate)-1]
-    else
-      sample = sorted_array[u.truncate.abs-1]
-      sample1 = sorted_array[(u.truncate.abs)]
-      return sample+((sample1-sample)*(u-u.truncate))
-    end
-  end
-
-  def lower_quartile
-    return nil if self.empty?
-    sorted_array = self.sort
-    u = 0.25*sorted_array.length + 1
-    if (u-u.truncate).is_a?(Integer)
-      return sorted_array[(u-u.truncate)-1]
-    else
-      sample = sorted_array[u.truncate.abs-1]
-      sample1 = sorted_array[(u.truncate.abs)]
-      return sample+((sample1-sample)*(u-u.truncate))
-    end
-  end
-end
-
-# factorial method for an Integer
-# Integer.!
-class Integer
-  def !
-    if self == 0
-      return 1
-    else
-      (1..self).inject(:*)
-    end
-  end
-end
-
-
-# Fisher's Exact Test Function Library
-#
-# Based on JavaScript version created by: Oyvind Langsrud
-# Ported to Ruby by Bryan Donovan
-
-module Rubystats
-  class FishersExactTest
-
-    def initialize
-      @sn11    = 0.0
-      @sn1_    = 0.0
-      @sn_1    = 0.0
-      @sn      = 0.0
-      @sprob   = 0.0
-
-      @sleft   = 0.0
-      @sright  = 0.0
-      @sless   = 0.0
-      @slarg   = 0.0
-
-      @left    = 0.0
-      @right   = 0.0
-      @twotail = 0.0
-    end
-
-    # Reference: "Lanczos, C. 'A precision approximation
-    # of the gamma function', J. SIAM Numer. Anal., B, 1, 86-96, 1964."
-    # Translation of  Alan Miller's FORTRAN-implementation
-    # See http://lib.stat.cmu.edu/apstat/245
-    def lngamm(z)
-      x = 0
-      x += 0.0000001659470187408462 / (z+7)
-      x += 0.000009934937113930748  / (z+6)
-      x -= 0.1385710331296526       / (z+5)
-      x += 12.50734324009056        / (z+4)
-      x -= 176.6150291498386        / (z+3)
-      x += 771.3234287757674        / (z+2)
-      x -= 1259.139216722289        / (z+1)
-      x += 676.5203681218835        / (z)
-      x += 0.9999999999995183
-
-      return(Math.log(x)-5.58106146679532777-z+(z-0.5) * Math.log(z+6.5))
-    end
-
-    def lnfact(n)
-      if n <= 1
-        return 0
-      else
-        return lngamm(n+1)
+      def initialize(mean = 0.0, sd = 1.0, rng = lambda { Kernel.rand })
+        @mean, @sd, @rng = mean, sd, rng
+        @compute_next_pair = false
       end
-    end
 
-    def lnbico(n,k)
-      return lnfact(n) - lnfact(k) - lnfact(n-k)
-    end
+      # generate a random number that falls in the pre-defined gaussian distribution
+      # @return [Float]
+      # @example generate 10 random number that falls in the a gaussian distribution with mean at 0 and standard deviation at 1.0
+      #   a = RandomGaussian.new
+      #   numbers = []
+      #   10.times {numbers << a.rand.round(5)}
+      #   numbers
+      #   => [-1.83457, 1.24439, -0.30109, 0.13977, 0.61556, 1.3548, 1.72878, 2.46171, 0.97031, -0.29496]
 
-    def hyper_323(n11, n1_, n_1, n)
-      return Math.exp(lnbico(n1_, n11) + lnbico(n-n1_, n_1-n11) - lnbico(n, n_1))
-    end
-
-    def hyper(n11)
-      return hyper0(n11, 0, 0, 0)
-    end
-
-    def hyper0(n11i,n1_i,n_1i,ni)
-      if n1_i == 0 and n_1i ==0 and ni == 0
-        unless n11i % 10 == 0
-          if n11i == @sn11+1
-            @sprob *= ((@sn1_ - @sn11)/(n11i.to_f))*((@sn_1 - @sn11)/(n11i.to_f + @sn - @sn1_ - @sn_1))
-            @sn11 = n11i
-            return @sprob
-          end
-          if n11i == @sn11-1
-            @sprob *= ((@sn11)/(@sn1_-n11i.to_f))*((@sn11+@sn-@sn1_-@sn_1)/(@sn_1-n11i.to_f))
-            @sn11 = n11i
-            return @sprob
-          end
+      def rand
+        if (@compute_next_pair = !@compute_next_pair)
+          theta = 2 * ::Math::PI * @rng.call
+          scale = @sd * ::Math.sqrt(-2 * Math.log(1 - @rng.call))
+          @g1 = @mean + scale * ::Math.sin(theta)
+          @g0 = @mean + scale * ::Math.cos(theta)
+        else
+          @g1
         end
-        @sn11 = n11i
-      else
-        @sn11 = n11i
-        @sn1_ = n1_i
-        @sn_1 = n_1i
-        @sn   = ni
       end
-      @sprob = hyper_323(@sn11,@sn1_,@sn_1,@sn)
-      return @sprob
+
     end
 
-    def exact(n11,n1_,n_1,n)
-
-      p = i = j = prob = 0.0
-
-      max = n1_
-      max = n_1 if n_1 < max
-      min = n1_ + n_1 - n
-      min = 0 if min < 0
-
-      if min == max
-        @sless  = 1
-        @sright = 1
-        @sleft  = 1
-        @slarg  = 1
-        return 1
+    # class for poisson distribution.
+    #   An event can occur 0, 1, 2, … times in an interval.
+    #   The average number of events in an interval is designated λ (lambda).
+    #   λ is the event rate, also called the rate parameter.
+    #   The probability of observing k events in an interval is given by the equation
+    #
+    #   P(k events in interval) = e^(-λ) * λ^k / k!
+    #
+    #   λ is the average number of events per interval
+    #   e is the number 2.71828... (Euler's number) the base of the natural logarithms
+    #   k takes values 0, 1, 2, …
+    #   k! = k × (k − 1) × (k − 2) × … × 2 × 1 is the factorial of k.
+    # @see https://en.wikipedia.org/wiki/Poisson_distribution Poisson Distribution (Wikipedia).
+    # @example given the mutation rate at 0.01 and sequence length of 1000 bp,
+    # calculate the probablity of 3 mutations on one sequence
+    #   new_poisson_dist = ViralSeq::Math::PoissonDist.new(0.01)
+    #   prob_hash = new_poisson_dist.poisson_hash
+    #   1000 * prob_hash[3].round(5)
+    #   => 0.00017
+    class PoissonDist
+      # initialize with given event rate λ, default events upper limit set to 5
+      def initialize(rate,k = 5)
+        @rate = rate
+        @k = k
+        @poisson_hash = {}
+        (0..k).each do |n|
+          p = (rate**n * ::Math::E**(-rate))/!n
+          @poisson_hash[n] = p
+        end
       end
 
-      prob = hyper0(n11,n1_,n_1,n)
-      @sleft = 0
+      # @return [Float] event rate λ
+      attr_accessor :rate
+      # @return [Integer] maxinum events number shows in @poisson_hash
+      attr_accessor :k
+      # @return [Hash] probablity hash of :event_number => :probablity
+      attr_reader :poisson_hash
+    end # end of PoissonDist
 
-      p = hyper(min)
-      i = min + 1
-      while p < (0.99999999 * prob)
-        @sleft += p
-        p = hyper(i)
-        i += 1
+    # Use R to calculate binomial 95% confidence intervals. Require R function binom.test.
+    # @example mutation M184V found in 3 out of 923 sequences, calculate 95% confidence interval
+    #   freq = ViralSeq::Math::BinomCI.new(3,923)
+    #   freq.mean.round(5)
+    #   => 0.00325
+    #   freq.lower.round(5)
+    #   => 0.00067
+    #   freq.upper.round(5)
+    #   => 0.00947
+
+    class BinomCI
+      # initialize with numerator @n1 and denominator @n2 as Integer
+      def initialize(n1, n2)
+        @n1 = n1
+        @n2 = n2
+        @mean = n1/n2.to_f
+        r_output = `Rscript -e 'binom.test(#{n1},#{n2})$conf.int[1];binom.test(#{n1},#{n2})$conf.int[2]'`
+        lines = r_output.split "\n"
+        @lower = lines[0].chomp[4..-1].to_f
+        @upper = lines[1].chomp[4..-1].to_f
       end
 
-      i -= 1
+      # @return [Integer] number of observations
+      attr_accessor :n1
+      # @return [Integer] total numbers
+      attr_accessor :n2
+      # @return [Float] mean
+      attr_reader :mean
+      # @return [Float] lower limit of 95% CI
+      attr_reader :lower
+      # @return [Float] upper limit of 95% CI
+      attr_reader :upper
 
-      if p < (1.00000001*prob)
-        @sleft += p
+    end # end of BinomCI
+
+
+    # A function to calcuate cut-off for offspring primer IDs.
+    # @see https://www.ncbi.nlm.nih.gov/pubmed/26041299 reference at Zhou et al. JVI 2016.
+    # @param m [Integer] PID abundance
+    # @param error_rate [Float] estimated platform error rate, the model supports error rate from 0.003 to 0.03.
+    # @return [Integer] an abundance cut-off (Integer) for offspring Primer IDs.
+
+    def self.calculate_pid_cut_off(m, error_rate = 0.02)
+      if m <= 10
+        return 2
+      end
+      n = 0
+      case error_rate
+      when 0...0.0075
+        n = -9.59*10**-27*m**6 + 3.27*10**-21*m**5 - 3.05*10**-16*m**4 + 1.2*10**-11*m**3 - 2.19*10**-7*m**2 + 0.004044*m + 2.273
+      when 0.0075...0.015
+        n = 1.09*10**-26*m**6 + 7.82*10**-22*m**5 - 1.93*10**-16*m**4 + 1.01*10**-11*m**3 - 2.31*10**-7*m**2 + 0.00645*m + 2.872
+      when 0.015..0.03
+        if m <= 8500
+          n = -1.24*10**-21*m**6 + 3.53*10**-17*m**5 - 3.90*10**-13*m**4 + 2.12*10**-9*m**3 - 6.06*10**-6*m**2 + 1.80*10**-2*m + 3.15
+        else
+          n = 0.0079 * m + 9.4869
+        end
       else
-        i -= 1
+        raise ArgumentError.new('Error_rate has be between 0 to 0.03')
       end
-
-      @sright = 0
-
-      p = hyper(max)
-      j = max - 1
-      while p < (0.99999999 * prob)
-        @sright += p
-        p = hyper(j)
-        j -= 1
-      end
-      j += 1
-
-      if p < (1.00000001*prob)
-        @sright += p
-      else
-        j += 1
-      end
-
-      if (i - n11).abs < (j - n11).abs
-        @sless = @sleft
-        @slarg = 1 - @sleft + prob
-      else
-        @sless = 1 - @sright + prob
-        @slarg = @sright
-      end
-      return prob
-    end
-
-    def calculate(n11_,n12_,n21_,n22_)
-      n11_ *= -1 if n11_ < 0
-      n12_ *= -1 if n12_ < 0
-      n21_ *= -1 if n21_ < 0
-      n22_ *= -1 if n22_ < 0
-      n1_     = n11_ + n12_
-      n_1     = n11_ + n21_
-      n       = n11_ + n12_ + n21_ + n22_
-      exact(n11_,n1_,n_1,n)
-      left    = @sless
-      right   = @slarg
-      twotail = @sleft + @sright
-      twotail = 1 if twotail > 1
-      values_hash = { :left =>left, :right =>right, :twotail =>twotail }
-      return values_hash
-    end
-  end
-end
-
-
-# generate values from the standard normal distribution with given mean and standard deviation
-# See http://en.wikipedia.org/wiki/Box-Muller_transform
-#
-# RandomGaussian.new(mean, sd, rng)
-#   # generate RandomGaussian instance with given mean and standard deviation
-#   # default value: mean = 0.0, sd = 1.0
-#
-# RandomGaussian.rand
-#   # generate a random number that falls in the pre-defined gaussian distribution
-# =USAGE
-#   # example
-#   a = RandomGaussian.new
-#   a.rand
-#   numbers = []
-#   10.times {numbers << a.rand.round(5)}
-#   numbers
-#   [-1.83457, 1.24439, -0.30109, 0.13977, 0.61556, 1.3548, 1.72878, 2.46171, 0.97031, -0.29496] 
-
-
-class RandomGaussian
-  def initialize(mean = 0.0, sd = 1.0, rng = lambda { Kernel.rand })
-    @mean, @sd, @rng = mean, sd, rng
-    @compute_next_pair = false
-  end
-
-  def rand
-    if (@compute_next_pair = !@compute_next_pair)
-      theta = 2 * Math::PI * @rng.call
-      scale = @sd * Math.sqrt(-2 * Math.log(1 - @rng.call))
-      @g1 = @mean + scale * Math.sin(theta)
-      @g0 = @mean + scale * Math.cos(theta)
-    else
-      @g1
-    end
-  end
-end
+      n = n.round
+      n = 2 if n < 3
+      return n
+    end # end of .calculate_pid_cut_off
+  end # end of Math
+end # end of ViralSeq

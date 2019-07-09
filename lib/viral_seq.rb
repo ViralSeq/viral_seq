@@ -18,24 +18,23 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-# viral_seq main
 module ViralSeq; end
 
-# load all modules
-
-require "viral_seq/version"
-require "viral_seq/sequence"
+# load all classes
+require "viral_seq/constant"
+require "viral_seq/enumerable"
+require "viral_seq/hash"
+require "viral_seq/hivdr"
+require "viral_seq/integer"
 require "viral_seq/math"
-require "viral_seq/fasta"
-require "viral_seq/misc"
-require "viral_seq/refseq"
-require "viral_seq/locator"
 require "viral_seq/muscle"
-require "viral_seq/tcs_core.rb"
-require "viral_seq/poisson_cutoff"
-require "viral_seq/a3g"
-require "viral_seq/sdrm_core"
-require "viral_seq/hcv_dr"
-require "viral_seq/nt_variation"
+require "viral_seq/pid"
+require "viral_seq/ref_seq"
+require "viral_seq/rubystats"
+require "viral_seq/seq_hash"
+require "viral_seq/seq_hash_pair"
+require "viral_seq/sequence"
+require "viral_seq/string"
+require "viral_seq/version"
 
 require "muscle_bio"

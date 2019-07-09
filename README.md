@@ -15,6 +15,12 @@ Load all ViralSeq classes by requiring 'viral_seq.rb'
     #!/usr/bin/env ruby
     require 'viral_seq'
 
+## Updates
+
+Version 1.0.0-07092019:
+
+    1. Rewrote the whole ViralSeq gem, grouping methods into modules and classes under main Module::ViralSeq
+
 ## Development
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/ViralSeq/viral_seq. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.

@@ -47,6 +47,11 @@ Examine for drug resistance mutations for HIV PR region
 
 ## Updates
 
+Version 1.0.4-07102019:
+
+    1. Use home directory (Dir.home) instead of the directory of the script file for temp MUSCLE file.
+    2. Fix bugs in bin `locator`
+
 Version 1.0.3-07102019:
 
     1. Bug fix.

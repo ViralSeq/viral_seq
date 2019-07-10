@@ -38,7 +38,7 @@ module ViralSeq
     #   => ["AAGGCGTAGGAC-", "-AAGCTTAGGACG"]
 
     def self.align(ref_seq = "", test_seq = "", path_to_muscle = false)
-      temp_dir=File.dirname($0)
+      temp_dir = Dir.home
       temp_file = temp_dir + "/_temp_muscle_in"
       temp_aln = temp_dir + "/_temp_muscle_aln"
       name = ">test"

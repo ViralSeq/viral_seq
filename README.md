@@ -47,6 +47,10 @@ Examine for drug resistance mutations for HIV PR region
 
 ## Updates
 
+Version 1.0.2-07102019:
+
+    1. Fixed a gem loading issue. 
+
 Version 1.0.1-07102019:
 
     1. Add keyword argument :model to ViralSeq::SeqHashPair#join2.

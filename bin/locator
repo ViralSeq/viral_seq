@@ -52,7 +52,7 @@ def myparser
   return options
 end
 
-puts "\nSequence Locator (RubyGem::ViralSeq) v1.0.1 by Shuntai Zhou"
+puts "\nSequence Locator (RubyGem::ViralSeq) v1.0.3 by Shuntai Zhou"
 puts "See details at https://github.com/ViralSeq/viral_seq\n"
 puts "Resembling Sequence Locator from LANL (https://www.hiv.lanl.gov/content/sequence/LOCATE/locate.html)\n\n"
 

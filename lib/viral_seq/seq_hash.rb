@@ -713,6 +713,43 @@ module ViralSeq
       self.sub(seq_pass)
     end # end of #hiv_seq_qc
 
+    # sequence locator for SeqHash object, resembling HIV Sequence Locator from LANL
+    # @param ref_option [Symbol], name of reference genomes, options are `:HXB2`, `:NL43`, `:MAC239`
+    # @return [Array] two dimensional array `[[],[],[],...]` for each sequence, including the following information:
+    #
+    #     title of the SeqHash object (String)
+    #
+    #     sequence taxa (String)
+    #
+    #     start_location (Integer)
+    #
+    #     end_location (Integer)
+    #
+    #     percentage_of_similarity_to_reference_sequence (Float)
+    #
+    #     containing_indel? (Boolean)
+    #
+    #     aligned_input_sequence (String)
+    #
+    #     aligned_reference_sequence (String)
+    # @see https://www.hiv.lanl.gov/content/sequence/LOCATE/locate.html LANL Sequence Locator
+    def sequence_locator(ref_option = :HXB2)
+      out_array = []
+      dna_seq = self.dna_hash
+      title = self.title
+
+      uniq_dna = dna_seq.uniq_hash
+
+      uniq_dna.each do |seq,names|
+        s = ViralSeq::Sequence.new('',seq)
+        loc = s.locator(ref_option)
+        names.each do |name|
+          out_array << ([title, name, ref_option.to_s] + loc)
+        end
+      end
+      return out_array
+    end # end of locator
+    alias_method :loc, :sequence_locator
 
     # Remove squences with residual offspring Primer IDs.
     #   Compare PID with sequences which have identical sequences.

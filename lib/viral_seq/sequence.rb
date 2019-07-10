@@ -142,13 +142,20 @@ module ViralSeq
     #   # current version only supports nucleotide sequence, not for amino acid sequence.
     # @param ref_option [Symbol], name of reference genomes, options are `:HXB2`, `:NL43`, `:MAC239`
     # @param path_to_muscle [String], path to the muscle executable, if not provided, use MuscleBio to run Muscle
-    # @return [Array] an array of the following info
-    #   #   start_location (Integer)
-    #   #   end_location (Integer)
-    #   #   percentage_of_similarity_to_reference_sequence (Float)
-    #   #   containing_indel? (Boolean)
-    #   #   aligned_input_sequence (String)
-    #   #   aligned_reference_sequence (String)
+    # @return [Array] an array of the following info:
+    #
+    #   start_location (Integer)
+    #
+    #   end_location (Integer)
+    #
+    #   percentage_of_similarity_to_reference_sequence (Float)
+    #
+    #   containing_indel? (Boolean)
+    #
+    #   aligned_input_sequence (String)
+    #
+    #   aligned_reference_sequence (String)
+    #
     # @example identify the location of the input sequence on the NL43 genome
     #   sequence = 'AGCAGATGATACAGTATTAGAAGAAATAAATTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAATATGATC'
     #   s = ViralSeq::Sequence.new('my_sequence', sequence)
@@ -349,7 +356,7 @@ module ViralSeq
     #   s = ViralSeq::Sequence.new('my_seq', seq)
     #   s.sequence_clip(2333, 2433, :HXB2).dna
     #   => "AGCAGATGATACAGTATTAGAAGAAATAAATTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAATATGATC"
-    
+
     def sequence_clip(p1 = 0, p2 = 0, ref_option = :HXB2, path_to_muscle = false)
       loc = self.locator(ref_option, path_to_muscle)
       l1 = loc[0]

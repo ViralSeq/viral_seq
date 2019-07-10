@@ -1,0 +1,102 @@
+#!/usr/bin/env ruby
+
+require 'viral_seq'
+require 'csv'
+require 'optparse'
+
+module ViralSeq
+  class SeqHash
+
+    def sequence_locator(ref_option = :HXB2)
+      out_array = []
+      dna_seq = self.dna_hash
+      title = self.title
+
+      uniq_dna = dna_seq.uniq_hash
+
+      uniq_dna.each do |seq,names|
+        s = ViralSeq::Sequence.new('',seq)
+        loc = s.locator(ref_option)
+        names.each do |name|
+          out_array << ([title, name, ref_option.to_s] + loc)
+        end
+      end
+      return out_array
+    end # end of locator
+    alias_method :loc, :sequence_locator
+  end
+end
+
+def myparser
+  options = {}
+  OptionParser.new do |opts|
+    opts.banner = "Usage: locator -i [nt_sequence_fasta_file] -o [locator_info_csv_file] -r [reference_genome_option]"
+
+    opts.on('-i', '--infile FASTA_FILE', 'nt sequence file in FASTA format') do |i|
+      options[:infile] = i
+    end
+
+    opts.on('-o', '--outfile CSV_FILE', 'output .csv file for locator info') do |o|
+      options[:outfile] = o
+    end
+
+    opts.on('-r', '--ref_option OPTION', 'reference genome option, choose from `HXB2` (default), `NL43`, `MAC239`') do |o|
+      options[:ref_option] = o.to_sym
+    end
+
+    opts.on("-h", "--help", "Prints this help") do
+      puts opts
+      exit
+    end
+  end.parse!
+  return options
+end
+
+puts "\nSequence Locator (RubyGem::ViralSeq) v1.0.1 by Shuntai Zhou"
+puts "See details at https://github.com/ViralSeq/viral_seq\n"
+puts "Resembling Sequence Locator from LANL (https://www.hiv.lanl.gov/content/sequence/LOCATE/locate.html)\n\n"
+
+ARGV << '-h' if ARGV.size == 0
+
+options = myparser
+
+begin
+  if options[:infile]
+    seq_file = options[:infile]
+  else
+    raise StandardError.new("Input file sequence file not found")
+  end
+
+  if options[:outfile]
+    csv_file = options[:outfile]
+  else
+    raise StandardError.new("Please provide path to output csv file")
+  end
+
+  unless File.exist?(seq_file)
+    raise StandardError.new("Input file sequence file not found")
+  end
+
+  seqs = ViralSeq::SeqHash.fa(seq_file)
+  opt =  options[:ref_option] ? options[:ref_option] : :HXB2
+
+  unless [:HXB2, :NL43, :MAC239].include? opt
+    puts "Reference option #{opt} not recognized, using `:HXB2` as the reference genome."
+    opt = :HXB2
+  end
+
+  locs = seqs.loc(opt)
+  head = ["title", "sequence", "ref", "start", "end", "similarity", "indel", "aligned_input", "aligned_ref"]
+  locs.unshift(head)
+  data = CSV.generate do |csv|
+    locs.each {|loc| csv << loc}
+  end
+
+  File.write(csv_file, data)
+rescue StandardError => e
+  puts e.message
+  puts "\n"
+  ARGV.clear
+  ARGV << '-h'
+  myparser
+end

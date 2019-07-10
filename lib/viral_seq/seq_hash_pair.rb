@@ -139,10 +139,10 @@ module ViralSeq
     #   my_seqhashpair = ViralSeq::SeqHashPair.new(paired_seq2)
     #   my_seqhashpair.join2.dna_hash
     #   => {">pair4"=>"AAAGGGGGGGGGGTT", ">pair5"=>"AAAAAAGGGGTTTTT", ">pair6"=>"AAACAAGGGGTTTTT"}
-    #   my_seqhashpair.join2(:indiv).dna_hash
+    #   my_seqhashpair.join2(model :indiv).dna_hash
     #   => {">pair4"=>"AAAGGGGGGGTT", ">pair5"=>"AAAAAAGGGGTTTTT", ">pair6"=>"AAACAAGGGGTTTTT"}
 
-    def join2(model = :con, diff = 0.0)
+    def join2(model: :con, diff: 0.0)
       seq_pair_hash = self.dna_hash
       begin
         raise ArgumentError.new(":diff has to be float or integer, input #{diff} invalid.") unless (diff.is_a? Integer or diff.is_a? Float)

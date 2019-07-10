@@ -149,7 +149,7 @@ RSpec.describe ViralSeq do
     expected_hash1 = {">pair4" => "AAAGGGGGGGGGGTT", ">pair5" => "AAAAAAGGGGTTTTT", ">pair6" => "AAACAAGGGGTTTTT"}
     expected_hash2 = {">pair4"=>"AAAGGGGGGGTT", ">pair5"=>"AAAAAAGGGGTTTTT", ">pair6"=>"AAACAAGGGGTTTTT"}
     expect(p2.join2.dna_hash).to eq expected_hash1
-    expect(p2.join2(:indiv).dna_hash).to eq expected_hash2
+    expect(p2.join2(model: :indiv).dna_hash).to eq expected_hash2
   end
 
   it "has a function to find APOBEC3g/f hypermutation sequences" do
@@ -220,5 +220,12 @@ RSpec.describe ViralSeq do
     in_p_cut_off = in_sequence.pm
     in_sdrm = in_sequence.sdrm_hiv_in(in_p_cut_off)
     expect(in_sdrm[1][0][3]).to eq 452
+  end
+
+  it "can do sequence locator on a SeqHash object" do
+    my_seqhash = ViralSeq::SeqHash.fa('spec/sample_files/sample_seq.fasta')
+    loc = my_seqhash.loc
+    expect(loc[0][3]).to eq 4384
+    expect(loc[4][5]).to eq 80.3
   end
 end

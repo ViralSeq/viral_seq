@@ -15,7 +15,44 @@ Load all ViralSeq classes by requiring 'viral_seq.rb'
     #!/usr/bin/env ruby
     require 'viral_seq'
 
+## Some Examples
+
+Load nucleotide sequences from a FASTA format sequence file
+
+    my_seqhash = ViralSeq::SeqHash.fa('my_seq_file.fasta')
+
+Make an alignment (using MUSCLE)
+
+    aligned_seqhash = my_seqhash.align
+
+Filter nucleotide sequences with the reference coordinates (HIV Protease)
+
+    qc_seqhash = aligned_seqhash.hiv_seq_qc(2253, 2549, false, :HXB2)
+
+Further filter out sequences with Apobec3g/f hypermutations
+
+    qc_seqhash = qc_seqhash.a3g
+
+Calculate nucleotide diveristy π
+
+    qc_seqhash.pi
+
+Calculate cut-off for minority variants based on Poisson model
+
+    cut_off = qc_seqhash.pm
+
+Examine for drug resistance mutations for HIV PR region
+
+    qc_seqhash.sdrm_hiv_pr(cut_off)
+
 ## Updates
+
+Version 1.0.1-07102019:
+
+    1. Add keyword argument :model to ViralSeq::SeqHashPair#join2.
+    2. Add method ViralSeq::SeqHash#sequence_locator (also: #loc), a function to locate sequences on HIV/SIV reference genomes, as HIV Sequence Locator from LANL.
+    3. Add executable 'locator'. An HIV/SIV sequence locator tool similar to LANL Sequence Locator.
+    4. update documentations
 
 Version 1.0.0-07092019:
 

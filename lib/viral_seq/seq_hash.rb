@@ -741,7 +741,6 @@ module ViralSeq
       title = self.title
 
       uniq_dna = dna_seq.uniq_hash
-      puts uniq_dna.size
 
       uniq_dna.each do |seq,names|
         s = ViralSeq::Sequence.new('',seq)
@@ -749,6 +748,7 @@ module ViralSeq
         s.rc!
         loc2 = s.locator(ref_option)
         loc1[2] >= loc2[2] ? (direction = :+; loc = loc1): (direction = :-; loc = loc2)
+    
         names.each do |name|
           out_array << ([title, name, ref_option.to_s, direction.to_s] + loc)
         end

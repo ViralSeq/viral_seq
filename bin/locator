@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 
 require 'viral_seq'
-require 'csv'
 require 'optparse'
 
 module ViralSeq
@@ -94,11 +93,12 @@ begin
   locs = seqs.loc(opt)
   head = ["title", "sequence", "ref", "direction", "start", "end", "similarity", "indel", "aligned_input", "aligned_ref"]
   locs.unshift(head)
-  data = CSV.generate do |csv|
-    locs.each {|loc| csv << loc}
+  File.open(csv_file, 'w') do |f|
+    locs.each do |line|
+      f.puts line.join(',')
+    end
   end
 
-  File.write(csv_file, data)
 rescue StandardError => e
   puts e.message
   puts "\n"

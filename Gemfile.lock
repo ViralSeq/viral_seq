@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    viral_seq (1.0.2)
+    viral_seq (1.0.4)
       muscle_bio (~> 0.4)
 
 GEM

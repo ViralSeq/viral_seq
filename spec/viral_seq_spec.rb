@@ -225,7 +225,7 @@ RSpec.describe ViralSeq do
   it "can do sequence locator on a SeqHash object" do
     my_seqhash = ViralSeq::SeqHash.fa('spec/sample_files/sample_seq.fasta')
     loc = my_seqhash.loc
-    expect(loc[0][3]).to eq 4384
-    expect(loc[4][5]).to eq 80.3
+    expect(loc[0][4]).to eq 4384
+    expect(loc[4][6]).to eq 80.3
   end
 end

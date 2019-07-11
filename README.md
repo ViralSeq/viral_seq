@@ -44,12 +44,18 @@ Load all ViralSeq classes by requiring 'viral_seq.rb'
 ### Examine for drug resistance mutations for HIV PR region
 
     qc_seqhash.sdrm_hiv_pr(cut_off)
-    
-### Use excutable `locator` to get the coordinates of the sequences on HIV/SIV reference genome from a FASTA file through a terminal
+
+### Use executable `locator` to get the coordinates of the sequences on HIV/SIV reference genome from a FASTA file through a terminal
 
     $ locator -i sequence.fasta -o sequence.fasta.csv
 
 ## Updates
+
+Version 1.0.5-07112019:
+
+    1. Update ViralSeq::SeqHash#sequence_locator.
+       Program will try to determine the direction (`+` or `-` of the query sequence)
+    2. update executable `locator` to have a column of `direction` in output .csv file
 
 Version 1.0.4-07102019:
 

@@ -48,11 +48,17 @@ def myparser
       puts opts
       exit
     end
+
+    opts.on("-v", "--version", "Version number of RubyGem::ViralSeq") do
+      puts opts
+      exit
+    end
+
   end.parse!
   return options
 end
 
-puts "\nSequence Locator (RubyGem::ViralSeq) #{ViralSeq::VERSION} by Shuntai Zhou"
+puts "\nSequence Locator (RubyGem::ViralSeq Version #{ViralSeq::VERSION}) by Shuntai Zhou"
 puts "See details at https://github.com/ViralSeq/viral_seq\n"
 puts "Resembling Sequence Locator from LANL (https://www.hiv.lanl.gov/content/sequence/LOCATE/locate.html)\n\n"
 
@@ -86,7 +92,7 @@ begin
   end
 
   locs = seqs.loc(opt)
-  head = ["title", "sequence", "ref", "start", "end", "similarity", "indel", "aligned_input", "aligned_ref"]
+  head = ["title", "sequence", "ref", "direction", "start", "end", "similarity", "indel", "aligned_input", "aligned_ref"]
   locs.unshift(head)
   data = CSV.generate do |csv|
     locs.each {|loc| csv << loc}

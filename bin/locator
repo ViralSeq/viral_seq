@@ -1,30 +1,8 @@
 #!/usr/bin/env ruby
 
 require 'viral_seq'
+require 'csv'
 require 'optparse'
-
-module ViralSeq
-  class SeqHash
-
-    def sequence_locator(ref_option = :HXB2)
-      out_array = []
-      dna_seq = self.dna_hash
-      title = self.title
-
-      uniq_dna = dna_seq.uniq_hash
-
-      uniq_dna.each do |seq,names|
-        s = ViralSeq::Sequence.new('',seq)
-        loc = s.locator(ref_option)
-        names.each do |name|
-          out_array << ([title, name, ref_option.to_s] + loc)
-        end
-      end
-      return out_array
-    end # end of locator
-    alias_method :loc, :sequence_locator
-  end
-end
 
 def myparser
   options = {}
@@ -93,12 +71,11 @@ begin
   locs = seqs.loc(opt)
   head = ["title", "sequence", "ref", "direction", "start", "end", "similarity", "indel", "aligned_input", "aligned_ref"]
   locs.unshift(head)
-  File.open(csv_file, 'w') do |f|
-    locs.each do |line|
-      f.puts line.join(',')
-    end
+  data = CSV.generate do |csv|
+    locs.each {|loc| csv << loc}
   end
 
+  File.write(csv_file, data)
 rescue StandardError => e
   puts e.message
   puts "\n"

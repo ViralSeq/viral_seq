@@ -10,10 +10,14 @@ Specifically for Primer-ID sequencing and HIV drug resistance analysis.
 
 ## Usage
 
-Load all ViralSeq classes by requiring 'viral_seq.rb'
+### Load all ViralSeq classes by requiring 'viral_seq.rb'
 
     #!/usr/bin/env ruby
     require 'viral_seq'
+    
+### Use executable `locator` to get the coordinates of the sequences on HIV/SIV reference genome from a FASTA file through a terminal
+
+    $ locator -i sequence.fasta -o sequence.fasta.csv
 
 ## Some Examples
 
@@ -44,10 +48,6 @@ Load all ViralSeq classes by requiring 'viral_seq.rb'
 ### Examine for drug resistance mutations for HIV PR region
 
     qc_seqhash.sdrm_hiv_pr(cut_off)
-
-### Use executable `locator` to get the coordinates of the sequences on HIV/SIV reference genome from a FASTA file through a terminal
-
-    $ locator -i sequence.fasta -o sequence.fasta.csv
 
 ## Updates
 

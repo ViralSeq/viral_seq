@@ -5,6 +5,8 @@ module ViralSeq
     # functions to identify SDRMs from a ViralSeq::SeqHash object at HIV PR region.
     #   works for MPID-DR protocol (dx.doi.org/10.17504/protocols.io.useewbe)
     #   PR codon 1-99
+    #   RT codon 34-122 (HXB2 2650-2914) and 152-236(3001-3257)
+    #   IN codon 53-174 (HXB2 4384-4751)
     # @param cutoff [Integer] cut-off for minimal abundance of a mutation to be called as valid mutation,
     #   can be obtained using ViralSeq::SeqHash#poisson_minority_cutoff function
     # @return [Array] three elements `[point_mutation_list, linkage_list, report_list]`

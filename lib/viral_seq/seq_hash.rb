@@ -166,6 +166,39 @@ module ViralSeq
       alias_method :array, :new_from_array
     end
 
+    # the size of nt sequence hash of the SeqHash object
+    # @return [Integer] size of nt sequence hash of the SeqHash object
+
+    def size
+      self.dna_hash.size
+    end
+
+    # combine SeqHash objects
+    # @param sh2 [ViralSeq::SeqHash] another SeqHash
+    # @return [ViralSeq::SeqHash] combined SeqHash
+
+    def +(sh2)
+      new_seqhash = ViralSeq::SeqHash.new
+      new_seqhash.dna_hash = self.dna_hash.merge(sh2.dna_hash)
+      new_seqhash.aa_hash = self.aa_hash.merge(sh2.aa_hash)
+      new_seqhash.title = self.title + "_with_" + sh2.title
+      new_seqhash.file = self.file + "," + sh2.file
+      return new_seqhash
+    end
+
+    # write the nt sequences to a FASTA format file
+    # @param file [String] path to the FASTA output file
+    # @return [NilClass]
+
+    def write_nt_fa(file)
+      File.open(file, 'w') do |f|
+        self.dna_hash.each do |k,v|
+          f.puts k
+          f.puts v
+        end
+      end
+    end
+
     # generate sequences in relaxed sequencial phylip format from a ViralSeq::SeqHash object
     # @return [String] relaxed sequencial phylip format in a String object
     # @example convert fasta format to relaxed sequencial phylip format
@@ -748,7 +781,7 @@ module ViralSeq
         s.rc!
         loc2 = s.locator(ref_option)
         loc1[2] >= loc2[2] ? (direction = :+; loc = loc1): (direction = :-; loc = loc2)
-    
+
         names.each do |name|
           out_array << ([title, name, ref_option.to_s, direction.to_s] + loc)
         end
@@ -999,6 +1032,21 @@ module ViralSeq
     end
 
 
+    # mutate @dna_hash based on the error_rate
+    # @param error_rate [Float] error rate used to mutate sequences.
+    # @return [ViralSeq::SeqHash] new SeqHash object of mutated sequences.
+
+    def mutation(error_rate = 0.01)
+      new_seqhash = ViralSeq::SeqHash.new
+      dna = {}
+      self.dna_hash.each do |name, seq|
+        dna[name + '_mut-' + error_rate.to_s] = seq.mutation(error_rate)
+      end
+      new_seqhash.dna_hash = dna
+      new_seqhash.title = self.title + "_mut-" + error_rate.to_s
+      new_seqhash.file = self.file
+      return new_seqhash
+    end
 
 
 

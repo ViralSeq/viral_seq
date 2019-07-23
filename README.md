@@ -51,6 +51,15 @@ Load all ViralSeq classes by requiring 'viral_seq.rb'
 
 ## Updates
 
+Version 1.0.6-07232019:
+
+    1. Several methods added to ViralSeq::SeqHash, including
+        ViralSeq::SeqHash#size
+        ViralSeq::SeqHash#+
+        ViralSeq::SeqHash#write_nt_fa
+        ViralSeq::SeqHash#mutation
+    2. Update documentations and rspec samples. 
+
 Version 1.0.5-07112019:
 
     1. Update ViralSeq::SeqHash#sequence_locator.

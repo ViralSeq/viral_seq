@@ -10,44 +10,44 @@ Specifically for Primer-ID sequencing and HIV drug resistance analysis.
 
 ## Usage
 
-Load all ViralSeq classes by requiring 'viral_seq.rb'
+#### Load all ViralSeq classes by requiring 'viral_seq.rb'
 
     #!/usr/bin/env ruby
     require 'viral_seq'
+    
+#### Use executable `locator` to get the coordinates of the sequences on HIV/SIV reference genome from a FASTA file through a terminal
+
+    $ locator -i sequence.fasta -o sequence.fasta.csv
 
 ## Some Examples
 
-### Load nucleotide sequences from a FASTA format sequence file
+#### Load nucleotide sequences from a FASTA format sequence file
 
     my_seqhash = ViralSeq::SeqHash.fa('my_seq_file.fasta')
 
-### Make an alignment (using MUSCLE)
+#### Make an alignment (using MUSCLE)
 
     aligned_seqhash = my_seqhash.align
 
-### Filter nucleotide sequences with the reference coordinates (HIV Protease)
+#### Filter nucleotide sequences with the reference coordinates (HIV Protease)
 
     qc_seqhash = aligned_seqhash.hiv_seq_qc(2253, 2549, false, :HXB2)
 
-### Further filter out sequences with Apobec3g/f hypermutations
+#### Further filter out sequences with Apobec3g/f hypermutations
 
     qc_seqhash = qc_seqhash.a3g
 
-### Calculate nucleotide diveristy π
+#### Calculate nucleotide diveristy π
 
     qc_seqhash.pi
 
-### Calculate cut-off for minority variants based on Poisson model
+#### Calculate cut-off for minority variants based on Poisson model
 
     cut_off = qc_seqhash.pm
 
-### Examine for drug resistance mutations for HIV PR region
+#### Examine for drug resistance mutations for HIV PR region
 
     qc_seqhash.sdrm_hiv_pr(cut_off)
-
-### Use executable `locator` to get the coordinates of the sequences on HIV/SIV reference genome from a FASTA file through a terminal
-
-    $ locator -i sequence.fasta -o sequence.fasta.csv
 
 ## Updates
 

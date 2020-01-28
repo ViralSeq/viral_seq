@@ -228,4 +228,14 @@ RSpec.describe ViralSeq do
     expect(loc[0][4]).to eq 4384
     expect(loc[4][6]).to eq 80.3
   end
+
+  it "can generate a DNA sequence position by position error table from a SeqHash object" do
+      array = %w{ AACCGGTT
+                  AGCCGGTT
+                  AACTGCTT
+                  AACCGTTA
+                  AACCGGTA }
+      my_seqhash = ViralSeq::SeqHash.array(array)
+      expect(my_seqhash.error_table[2][5]).to eq 0.2 
+  end
 end

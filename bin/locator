@@ -3,13 +3,14 @@
 require 'viral_seq'
 require 'csv'
 require 'optparse'
+require 'colorize'
 
 def myparser
   options = {}
   OptionParser.new do |opts|
-    opts.banner = "Usage: locator -i [nt_sequence_fasta_file] -o [locator_info_csv_file] -r [reference_genome_option]"
+    opts.banner = "#{"Usage:".red.bold} locator #{"-i".blue.bold} [nt_sequence_fasta_file] #{"-o".blue.bold} [locator_info_csv_file] #{"-r".blue.bold} [reference_genome_option]"
 
-    opts.on('-i', '--infile FASTA_FILE', 'nt sequence file in FASTA format') do |i|
+    opts.on('-i', '--infile FASTA_FILE', "#{"nt sequence".blue.bold} file in FASTA format") do |i|
       options[:infile] = i
     end
 
@@ -17,7 +18,7 @@ def myparser
       options[:outfile] = o
     end
 
-    opts.on('-r', '--ref_option OPTION', 'reference genome option, choose from `HXB2` (default), `NL43`, `MAC239`') do |o|
+    opts.on('-r', '--ref_option OPTION', "reference genome option, choose from #{"`HXB2` (default), `NL43`, `MAC239`".blue.bold}") do |o|
       options[:ref_option] = o.to_sym
     end
 
@@ -35,9 +36,9 @@ def myparser
   return options
 end
 
-puts "\nSequence Locator (RubyGem::ViralSeq Version #{ViralSeq::VERSION}) by Shuntai Zhou"
-puts "See details at https://github.com/ViralSeq/viral_seq\n"
-puts "Resembling Sequence Locator from LANL (https://www.hiv.lanl.gov/content/sequence/LOCATE/locate.html)\n\n"
+puts "\n" + "Sequence Locator (RubyGem::ViralSeq Version #{ViralSeq::VERSION})".red.bold + " by " + "Shuntai Zhou".blue.bold
+puts "See details at " +  "https://github.com/ViralSeq/viral_seq\n".blue
+puts "Resembling" + " Sequence Locator ".magenta.bold + "from LANL" + " (https://www.hiv.lanl.gov/content/sequence/LOCATE/locate.html)\n".blue
 
 ARGV << '-h' if ARGV.size == 0
 
@@ -47,7 +48,7 @@ begin
   if options[:infile]
     seq_file = options[:infile]
   else
-    raise StandardError.new("Input file sequence file not found")
+    raise StandardError.new("Input file sequence file not found".red.bold)
   end
 
   if options[:outfile]
@@ -57,14 +58,14 @@ begin
   end
 
   unless File.exist?(seq_file)
-    raise StandardError.new("Input file sequence file not found")
+    raise StandardError.new("Input file sequence file not found".red.bold)
   end
 
   seqs = ViralSeq::SeqHash.fa(seq_file)
   opt =  options[:ref_option] ? options[:ref_option] : :HXB2
 
   unless [:HXB2, :NL43, :MAC239].include? opt
-    puts "Reference option #{opt} not recognized, using `:HXB2` as the reference genome."
+    puts "Reference option `#{opt}` not recognized, using `HXB2` as the reference genome.".red.bold
     opt = :HXB2
   end
 
@@ -76,6 +77,7 @@ begin
   end
 
   File.write(csv_file, data)
+  puts "Output file found at #{csv_file.green.bold}"
 rescue StandardError => e
   puts e.message
   puts "\n"

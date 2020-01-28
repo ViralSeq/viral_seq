@@ -248,10 +248,12 @@ module ViralSeq
     def translate(codon_position = 0)
       seqs = self.dna_hash
       @aa_hash = {}
-      seqs.each do |name, seq|
-        s = ViralSeq::Sequence.new(name, seq)
+      seqs.uniq_hash.each do |seq, array_of_name|
+        s = ViralSeq::Sequence.new('name', seq)
         s.translate(codon_position)
-        @aa_hash[name] = s.aa_string
+        array_of_name.each do |name|
+          @aa_hash[name] = s.aa_string
+        end
       end
       return nil
     end # end of #translate
@@ -332,12 +334,13 @@ module ViralSeq
     def stop_codon(codon_position = 0)
       self.translate(codon_position)
       keys = []
-      self.aa_hash.each do |k,v|
-        keys << k if v.include?('*')
+      aa_seqs = self.aa_hash
+      aa_seqs.uniq_hash.each do |seq,array_of_name|
+        keys += array_of_name if seq.include?('*')
       end
       seqhash1 = self.sub(keys)
       seqhash1.title = self.title + "_stop"
-      keys2 = self.aa_hash.keys - keys
+      keys2 = aa_seqs.keys - keys
       seqhash2 = self.sub(keys2)
       return [seqhash1, seqhash2]
     end #end of #stop_codon
@@ -904,11 +907,11 @@ module ViralSeq
     # @return [ViralSeq::SeqHash] a new SeqHash object containing nt or aa sequences without gaps
     # @example gap strip for an array of sequences
     #   array = ["AACCGGTT", "A-CCGGTT", "AAC-GGTT", "AACCG-TT", "AACCGGT-"]
-    #   array = { AACCGGTT
-    #             A-CCGGTT
-    #             AAC-GGTT
-    #             AACCG-TT
-    #             AACCGGT- }
+    #   array = %w{ AACCGGTT
+    #               A-CCGGTT
+    #               AAC-GGTT
+    #               AACCG-TT
+    #               AACCGGT- }
     #   my_seqhash = ViralSeq::SeqHash.array(array)
     #   puts my_seqhash.gap_strip.dna_hash.values
     #     ACGT
@@ -963,12 +966,11 @@ module ViralSeq
     # @param (see #gap_strip)
     # @return [ViralSeq::SeqHash] a new SeqHash object containing nt or aa sequences without gaps at the ends
     # @example gap strip for an array of sequences only at the ends
-    #   array = ["AACCGGTT", "A-CCGGTT", "AAC-GGTT", "AACCG-TT", "AACCGGT-"]
-    #   array = { AACCGGTT
-    #             A-CCGGTT
-    #             AAC-GGTT
-    #             AACCG-TT
-    #             AACCGGT- }
+    #   array = %w{ AACCGGTT
+    #               A-CCGGTT
+    #               AAC-GGTT
+    #               AACCG-TT
+    #               AACCGGT- }
     #   my_seqhash = ViralSeq::SeqHash.array(array)
     #   puts my_seqhash.gap_strip_ends.dna_hash.values
     #     AACCGGT
@@ -1048,6 +1050,99 @@ module ViralSeq
       return new_seqhash
     end
 
+    # return an table of frequencies of nucleotides at each position.
+    # @param ref [String] a reference sequence to compare with, default as the sample consensus sequence
+    # @param head [Boolean] if the head of table is included.
+    # @return [Array] a two-dimension array of the frequency table,
+    #  including the following info:
+    #    position on the sequence (starting from 1)
+    #    consensus nucleotide
+    #    total sequence numbers
+    #    percentage of A, shows "-" if agrees with consensus
+    #    percentage of C, shows "-" if agrees with consensus
+    #    percentage of G, shows "-" if agrees with consensus
+    #    percentage of T, shows "-" if agrees with consensus
+    #
+    # @example error table for an array of sequences
+    #   array = %w{ AACCGGTT
+    #               AGCCGGTT
+    #               AACTGCTT
+    #               AACCGTTA
+    #               AACCGGTA }
+    #   my_seqhash = ViralSeq::SeqHash.array(array)
+    #   my_seqhash.error_table.each {|r| puts r.join(',')}
+    #     position,consensus,total_seq_number,A,C,G,T
+    #     1,A,5,-,,,
+    #     2,A,5,-,,0.2,
+    #     3,C,5,,-,,
+    #     4,C,5,,-,,0.2
+    #     5,G,5,,,-,
+    #     6,G,5,,0.2,-,0.2
+    #     7,T,5,,,,-
+    #     8,T,5,0.4,,,-
+
+    def error_table(ref = self.consensus, head = true)
+
+      table = []
+      if head
+        table << %w{
+          position
+          consensus
+          total_seq_number
+          A
+          C
+          G
+          T
+        }
+      end
+      ref_size = ref.size
+
+      (0..(ref_size - 1)).each do |position|
+        ref_base = ref[position]
+        nts = []
+
+        self.dna_hash.each do |_k,v|
+          nts << v[position]
+        end
+
+        freq = nts.count_freq
+        freq2 = {}
+
+        freq.each do |nt,c|
+          if nt == ref_base
+            freq2[nt] = '-'
+          else
+            freq2[nt] = (c/(self.size).to_f)
+          end
+        end
+
+        table << [(position + 1),ref_base,self.size,freq2['A'],freq2['C'],freq2['G'],freq2['T']]
+      end
+
+      return table
+
+    end # end of error_table
+
+    # randomly select n number of sequences from the orginal SeqHash object
+    # @param n [Integer] number of sequences to randomly select
+    # @return [ViralSeq::SeqHash] a new SeqHash object with randomly selected sequences
+
+    def random_select(n = 100)
+      new_sh = ViralSeq::SeqHash.new
+      dna_hash = self.dna_hash
+      aa_hash = self.aa_hash
+      qc_hash = self.qc_hash
+
+      keys = dna_hash.keys.sample(n)
+
+      keys.each do |k|
+        new_sh.dna_hash[k] = dna_hash[k]
+        new_sh.aa_hash[k] = aa_hash[k]
+        new_sh.qc_hash[k] = qc_hash[k]
+      end
+      new_sh.title = self.title + "_" + n.to_s
+      return new_sh
+    end
 
 
     # start of private functions

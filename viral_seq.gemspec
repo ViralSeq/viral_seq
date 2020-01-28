@@ -31,5 +31,9 @@ Gem::Specification.new do |spec|
 
   # muscle_bio gem required
   spec.add_runtime_dependency "muscle_bio", "~> 0.4"
+
+  # colorize gem required
+  spec.add_runtime_dependency "colorize", "~> 0.1"
+
   spec.requirements << 'R required for some functions'
 end

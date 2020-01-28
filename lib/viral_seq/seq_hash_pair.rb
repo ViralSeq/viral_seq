@@ -7,7 +7,7 @@ module ViralSeq
   # @example join the paired-end sequences with an overlap of 100 bp
   #   my_seqhashpair.join1(100)
   # @example join the paired-end sequences with unknown overlap, each pair of sequences has its own overlap size
-  #   my_seqhashpair.join1(:indiv)
+  #   my_seqhashpair.join2(model: :indiv)
 
   class SeqHashPair
 
@@ -104,17 +104,21 @@ module ViralSeq
       raise ArgumentError.new(":overlap has to be Integer, input #{overlap} invalid.") unless overlap.is_a? Integer
       raise ArgumentError.new(":diff has to be float or integer, input #{diff} invalid.") unless (diff.is_a? Integer or diff.is_a? Float)
       joined_seq = {}
-      seq_pair_hash.each do |seq_name, seq_pair|
+      seq_pair_hash.uniq_hash.each do |seq_pair, seq_names|
         r1_seq = seq_pair[0]
         r2_seq = seq_pair[1]
         if overlap.zero?
-          joined_seq[seq_name] = r1_seq + r2_seq
+          joined_sequence = r1_seq + r2_seq
         elsif r1_seq[-overlap..-1].compare_with(r2_seq[0,overlap]) <= (overlap * diff)
-          joined_seq[seq_name] = r1_seq + r2_seq[overlap..-1]
+          joined_sequence= r1_seq + r2_seq[overlap..-1]
         else
           next
         end
+        seq_names.each do |seq_name|
+          joined_seq[seq_name] = joined_sequence
+        end
       end
+
       joined_seq_hash = ViralSeq::SeqHash.new
       joined_seq_hash.dna_hash = joined_seq
       joined_seq_hash.title = self.title + "_joined"
@@ -139,7 +143,7 @@ module ViralSeq
     #   my_seqhashpair = ViralSeq::SeqHashPair.new(paired_seq2)
     #   my_seqhashpair.join2.dna_hash
     #   => {">pair4"=>"AAAGGGGGGGGGGTT", ">pair5"=>"AAAAAAGGGGTTTTT", ">pair6"=>"AAACAAGGGGTTTTT"}
-    #   my_seqhashpair.join2(model :indiv).dna_hash
+    #   my_seqhashpair.join2(model: :indiv).dna_hash
     #   => {">pair4"=>"AAAGGGGGGGTT", ">pair5"=>"AAAAAAGGGGTTTTT", ">pair6"=>"AAACAAGGGGTTTTT"}
 
     def join2(model: :con, diff: 0.0)

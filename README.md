@@ -14,7 +14,7 @@ Specifically for Primer-ID sequencing and HIV drug resistance analysis.
 
     #!/usr/bin/env ruby
     require 'viral_seq'
-    
+
 #### Use executable `locator` to get the coordinates of the sequences on HIV/SIV reference genome from a FASTA file through a terminal
 
     $ locator -i sequence.fasta -o sequence.fasta.csv
@@ -51,6 +51,13 @@ Specifically for Primer-ID sequencing and HIV drug resistance analysis.
 
 ## Updates
 
+Version 1.0.7-01282020:
+
+    1. Several methods added, including
+        ViralSeq::SeqHash#error_table
+        ViralSeq::SeqHash#random_select
+    2. Improved performance for several functions.
+
 Version 1.0.6-07232019:
 
     1. Several methods added to ViralSeq::SeqHash, including
@@ -58,7 +65,7 @@ Version 1.0.6-07232019:
         ViralSeq::SeqHash#+
         ViralSeq::SeqHash#write_nt_fa
         ViralSeq::SeqHash#mutation
-    2. Update documentations and rspec samples. 
+    2. Update documentations and rspec samples.
 
 Version 1.0.5-07112019:
 

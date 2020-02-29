@@ -51,6 +51,17 @@ Specifically for Primer-ID sequencing and HIV drug resistance analysis.
 
 ## Updates
 
+Version 1.0.8-02282020:
+
+    1. TCS pipeline added as executable.
+        tcs  -  main TCS pipeline script.
+        tcs_json_generator  -  step-by-step script to generate json file for tcs pipeline.
+
+    2. Methods added:
+        ViralSeq::SeqHash#trim
+
+    3. Bug fix for several methods.
+
 Version 1.0.7-01282020:
 
     1. Several methods added, including

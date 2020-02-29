@@ -130,8 +130,8 @@ module ViralSeq
           end
         end
       end
-      sequence_hash = Hash[*sequence_a]
-      quality_hash = Hash[*quality_a]
+      sequence_hash = Hash[sequence_a.each_slice(2).to_a]
+      quality_hash = Hash[quality_a.each_slice(2).to_a]
 
       seq_hash = ViralSeq::SeqHash.new
       seq_hash.dna_hash = sequence_hash
@@ -181,6 +181,7 @@ module ViralSeq
       new_seqhash = ViralSeq::SeqHash.new
       new_seqhash.dna_hash = self.dna_hash.merge(sh2.dna_hash)
       new_seqhash.aa_hash = self.aa_hash.merge(sh2.aa_hash)
+      new_seqhash.qc_hash = self.qc_hash.merge(sh2.qc_hash)
       new_seqhash.title = self.title + "_with_" + sh2.title
       new_seqhash.file = self.file + "," + sh2.file
       return new_seqhash
@@ -1144,6 +1145,27 @@ module ViralSeq
       return new_sh
     end
 
+    # trim dna sequences based on the provided reference coordinates.
+    # @param start_nt [Integer,Range,Array] start nt position(s) on the refernce genome, can be single number (Integer) or a range of Integers (Range), or an Array
+    # @param end_nt [Integer,Range,Array] end nt position(s) on the refernce genome,can be single number (Integer) or a range of Integers (Range), or an Array
+    # @param ref_option [Symbol], name of reference genomes, options are `:HXB2`, `:NL43`, `:MAC239`
+    # @param path_to_muscle [String], path to the muscle executable, if not provided, use MuscleBio to run Muscle
+    # @return [ViralSeq::SeqHash] a new ViralSeq::SeqHash object with trimmed sequences
+    
+    def trim(start_nt, end_nt, ref_option = :HXB2, path_to_muscle = false)
+      seq_hash = self.dna_hash.dup
+      seq_hash_unique = seq_hash.uniq_hash
+      trimmed_seq_hash = {}
+      seq_hash_unique.each do |seq, names|
+        trimmed_seq = ViralSeq::Sequence.new('', seq).sequence_clip(start_nt, end_nt, ref_option, path_to_muscle).dna
+        names.each do |name|
+          trimmed_seq_hash[name] = trimmed_seq
+        end
+      end
+      return_seq_hash = self.dup
+      return_seq_hash.dna_hash = trimmed_seq_hash
+      return return_seq_hash
+    end
 
     # start of private functions
     private

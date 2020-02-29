@@ -211,7 +211,7 @@ module ViralSeq
     # {minimal overlap set to 4. }
     def overlap_matrix(sequence1, sequence2)
       min_overlap = 4
-      max_overlap = [sequence1.size, sequence2.size].max
+      max_overlap = [sequence1.size, sequence2.size].min
       matrix_hash = {}
       (min_overlap..max_overlap).each do |overlap|
         matrix_hash[overlap] = sequence1[-overlap..-1].compare_with(sequence2[0, overlap])

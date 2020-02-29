@@ -1,4 +1,4 @@
-# addition methods for Class::Hash required for ViralSeq
+# additional methods for Class::Hash required for ViralSeq
 
 class Hash
 

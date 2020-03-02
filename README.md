@@ -19,6 +19,16 @@ Specifically for Primer-ID sequencing and HIV drug resistance analysis.
 
     $ locator -i sequence.fasta -o sequence.fasta.csv
 
+
+#### Use executable `tcs` pipeline to process Primer ID MiSeq sequencing data. Parameter json file can be generated using `tcs_json_generator` or at https://tcs-dr-dept-tcs.cloudapps.unc.edu/generator.php
+
+    $ tcs params.json
+
+#### Use executable `tcs_json_generator` to generate params .json file for the `tcs` pipeline.
+
+    $ tcs_json_generator
+
+
 ## Some Examples
 
 #### Load nucleotide sequences from a FASTA format sequence file

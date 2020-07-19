@@ -313,22 +313,22 @@ module ViralSeq
 
     # screen for sequences with stop codons.
     # @param (see #translate)
-    # @return [Array] of two elements [seqhash_stop_codon, seqhash_no_stop_codon],
+    # @return [Hash] of two SeqHash objects {with_stop_codon: seqHash, without_stop_codon: seqHash},
     #
-    #   # seqhash_stop_codon: ViralSeq::SeqHash object with stop codons
-    #   # seqhash_no_stop_codon: ViralSeq::SeqHash object without stop codons
+    #   # :with_stop_codon : ViralSeq::SeqHash object with stop codons
+    #   # :without_stop_codon: ViralSeq::SeqHash object without stop codons
     # @example given a hash of sequences, return a sub-hash with sequences only contains stop codons
     #   my_seqhash = ViralSeq::SeqHash.fa('my_fasta_file.fasta')
     #   my_seqhash.dna_hash
     #   => {">seq1"=>"ATAAGAACG", ">seq2"=>"ATATGAACG", ">seq3"=>"ATGAGAACG", ">seq4"=>"TATTAGACG", ">seq5"=>"CGCTGAACG"}
-    #   stop_codon_seqhash = my_seqhash.stop_codon[0]
+    #   stop_codon_seqhash = my_seqhash.stop_codon[:with_stop_codon]
     #   stop_codon_seqhash.dna_hash
     #   => {">seq2"=>"ATATGAACG", ">seq4"=>"TATTAGACG", ">seq5"=>"CGCTGAACG"}
     #   stop_codon_seqhash.aa_hash
     #   => {">seq2"=>"I*T", ">seq4"=>"Y*T", ">seq5"=>"R*T"}
     #   stop_codon_seqhash.title
     #   => "my_fasta_file_stop"
-    #   filtered_seqhash = my_seqhash.stop_codon[1]
+    #   filtered_seqhash = my_seqhash.stop_codon[:without_stop_codon]
     #   filtered_seqhash.aa_hash
     #   {">seq1"=>"IRT", ">seq3"=>"MRT"}
 
@@ -343,7 +343,10 @@ module ViralSeq
       seqhash1.title = self.title + "_stop"
       keys2 = aa_seqs.keys - keys
       seqhash2 = self.sub(keys2)
-      return [seqhash1, seqhash2]
+      return {
+        with_stop_codon: seqhash1,
+        without_stop_codon: seqhash2
+      }
     end #end of #stop_codon
 
 
@@ -399,10 +402,10 @@ module ViralSeq
     #   # 2. Poisson distribution of G to A mutations at A3G positions, outliers sequences
     #   # note:  criteria 2 only applies on a sequence file containing more than 20 sequences,
     #   #        b/c Poisson model does not do well on small sample size.
-    # @return [Array] three values.
-    #   first value, `array[0]`: a ViralSeq:SeqHash object for sequences with hypermutations
-    #   second value, `array[1]`: a ViralSeq:SeqHash object for sequences without hypermutations
-    #   third value, `array[2]`: a two-demensional array `[[a,b], [c,d]]` for statistic_info, including the following information,
+    # @return [Hash] three paris.
+    #   :a3g_seq: a ViralSeq:SeqHash object for sequences with hypermutations
+    #   :filtered_seq : a ViralSeq:SeqHash object for sequences without hypermutations
+    #   :stats : a two-demensional array `[[a,b], [c,d]]` for statistic_info, including the following information,
     #     # sequence tag
     #     # G to A mutation numbers at potential a3g positions
     #     # total potential a3g G positions
@@ -413,17 +416,17 @@ module ViralSeq
     # @example identify apobec3gf mutations from a sequence fasta file
     #   my_seqhash = ViralSeq::SeqHash.fa('spec/sample_files/sample_a3g_sequence1.fasta')
     #   hypermut = my_seqhash.a3g
-    #   hypermut[0].dna_hash.keys
+    #   hypermut[:a3g_seq].dna_hash.keys
     #   => [">Seq7", ">Seq14"]
-    #   hypermut[1].dna_hash.keys
+    #   hypermut[:filtered_seq].dna_hash.keys
     #   => [">Seq1", ">Seq2", ">Seq5"]
-    #   hypermut[2]
+    #   hypermut[:stats]
     #   => [[">Seq7", 23, 68, 1, 54, 18.26, 4.308329383112348e-06], [">Seq14", 45, 68, 9, 54, 3.97, 5.2143571971582974e-08]]
     #
     # @example identify apobec3gf mutations from another sequence fasta file
     #   my_seqhash = ViralSeq::SeqHash.fa('spec/sample_files/sample_a3g_sequence2.fasta')
     #   hypermut = my_seqhash.a3g
-    #   hypermut[2]
+    #   hypermut[:stats]
     #   => [[">CTAACACTCA_134_a3g-sample2", 4, 35, 0, 51, Infinity, 0.02465676660128911], [">ATAGTGCCCA_60_a3g-sample2", 4, 35, 1, 51, 5.83, 0.1534487353839561]]
     #   # notice sequence ">ATAGTGCCCA_60_a3g-sample2" has a p value at 0.15, greater than 0.05,
     #   # but it is still called as hypermutation sequence b/c it's Poisson outlier sequence.
@@ -516,7 +519,10 @@ module ViralSeq
       hm_seq_hash.title = self.title + "_hypermut"
       hm_seq_hash.file = self.file
       filtered_seq_hash = self.sub(self.dna_hash.keys - hm_hash.keys)
-      return [hm_seq_hash, filtered_seq_hash, hm_hash.values]
+      return { a3g_seq: hm_seq_hash,
+               filtered_seq: filtered_seq_hash,
+               stats: hm_hash.values
+              }
     end #end of #a3g_hypermut
 
     alias_method :a3g, :a3g_hypermut
@@ -730,6 +736,7 @@ module ViralSeq
 
       seq_hash_unique.each do |seq|
         loc = ViralSeq::Sequence.new('', seq).locator(ref_option, path_to_muscle)
+        next unless loc # if locator tool fails, skip this seq.
         if start_nt.include?(loc[0]) && end_nt.include?(loc[1])
           if indel
             seq_hash_unique_pass << seq
@@ -1151,7 +1158,7 @@ module ViralSeq
     # @param ref_option [Symbol], name of reference genomes, options are `:HXB2`, `:NL43`, `:MAC239`
     # @param path_to_muscle [String], path to the muscle executable, if not provided, use MuscleBio to run Muscle
     # @return [ViralSeq::SeqHash] a new ViralSeq::SeqHash object with trimmed sequences
-    
+
     def trim(start_nt, end_nt, ref_option = :HXB2, path_to_muscle = false)
       seq_hash = self.dna_hash.dup
       seq_hash_unique = seq_hash.uniq_hash

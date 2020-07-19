@@ -157,8 +157,8 @@ RSpec.describe ViralSeq do
     sequences2 = ViralSeq::SeqHash.fa('spec/sample_files/sample_a3g_sequence2.fasta')
     hypermut1 = sequences1.a3g
     hypermut2 = sequences2.a3g
-    expect(hypermut1[0].dna_hash.keys).to eq [">Seq7", ">Seq14"]
-    expect(hypermut2[0].dna_hash.keys).to eq [">CTAACACTCA_134_a3g-sample2", ">ATAGTGCCCA_60_a3g-sample2"]
+    expect(hypermut1[:a3g_seq].dna_hash.keys).to eq [">Seq7", ">Seq14"]
+    expect(hypermut2[:a3g_seq].dna_hash.keys).to eq [">CTAACACTCA_134_a3g-sample2", ">ATAGTGCCCA_60_a3g-sample2"]
   end
 
   it "has a function to identify HCV NS5A drug resistance mutations given a sequence" do
@@ -236,6 +236,6 @@ RSpec.describe ViralSeq do
                   AACCGTTA
                   AACCGGTA }
       my_seqhash = ViralSeq::SeqHash.array(array)
-      expect(my_seqhash.error_table[2][5]).to eq 0.2 
+      expect(my_seqhash.error_table[2][5]).to eq 0.2
   end
 end

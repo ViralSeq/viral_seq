@@ -2,6 +2,7 @@
 
 # TCS pipeline JSON params generator.
 
+require 'viral_seq'
 require 'colorize'
 require 'json'
 
@@ -26,10 +27,8 @@ def get_ref
         end
 end
 
-TCS_VERSION = "2.0.0"
-
 puts "\n" + '-'*58
-puts '| JSON Parameter Generator for ' + "TCS #{TCS_VERSION}".red.bold + " by " + "Shuntai Zhou".blue.bold + ' |'
+puts '| JSON Parameter Generator for ' + "TCS #{ViralSeq::TCS_VERSION}".red.bold + " by " + "Shuntai Zhou".blue.bold + ' |'
 puts '-'*58 + "\n"
 
 param = {}
@@ -48,8 +47,8 @@ else
 end
 
 param[:primer_pairs] = []
-continue = true
-while continue
+
+loop do
   data = {}
   puts "Enter the name for the sequenced region: "
   print '> '
@@ -147,14 +146,11 @@ while continue
     data[:end_join] = false
   end
 
+  param[:primer_pairs] << data
   print "Do you wish to conintue? Y/N \n> "
   continue_sig = gets.chomp.rstrip
-  if continue_sig =~ /y|yes/i
-    continue = true
-  else
-    continue = false
-  end
-  param[:primer_pairs] << data
+  break unless continue_sig =~ /y|yes/i
+
 end
 
 puts "\nYour JSON string is:"

@@ -29,69 +29,6 @@ require 'viral_seq'
 require 'json'
 require 'colorize'
 
-# updated the ViralSeq module. Push with the new version.
-
-module ViralSeq
-  class SeqHash
-    def self.new_from_fastq(fastq_file)
-      count = 0
-      sequence_a = []
-      quality_a = []
-      count_seq = 0
-
-      File.open(fastq_file,'r') do |file|
-        file.readlines.collect do |line|
-          count +=1
-          count_m = count % 4
-          if count_m == 1
-            line.tr!('@','>')
-            sequence_a << line.chomp
-            quality_a << line.chomp
-            count_seq += 1
-          elsif count_m == 2
-            sequence_a << line.chomp
-          elsif count_m == 0
-            quality_a << line.chomp
-          end
-        end
-      end
-      sequence_hash = Hash[sequence_a.each_slice(2).to_a]
-      quality_hash = Hash[quality_a.each_slice(2).to_a]
-
-      seq_hash = ViralSeq::SeqHash.new
-      seq_hash.dna_hash = sequence_hash
-      seq_hash.qc_hash = quality_hash
-      seq_hash.title = File.basename(fastq_file,".*")
-      seq_hash.file = fastq_file
-      return seq_hash
-    end # end of ::new_from_fastq
-
-    class << self
-      alias_method :fq, :new_from_fastq
-    end
-  end
-end
-
-module ViralSeq
-  class SeqHash
-    def trim(start_nt, end_nt, ref_option = :HXB2, path_to_muscle = false)
-      seq_hash = self.dna_hash.dup
-      seq_hash_unique = seq_hash.uniq_hash
-      trimmed_seq_hash = {}
-      seq_hash_unique.each do |seq, names|
-        trimmed_seq = ViralSeq::Sequence.new('', seq).sequence_clip(start_nt, end_nt, ref_option, path_to_muscle).dna
-        names.each do |name|
-          trimmed_seq_hash[name] = trimmed_seq
-        end
-      end
-      return_seq_hash = self.dup
-      return_seq_hash.dna_hash = trimmed_seq_hash
-      return return_seq_hash
-    end
-  end
-end
-
-# end of additonal methods. Delete before publish
 
 # calculate consensus cutoff
 
@@ -127,12 +64,9 @@ def calculate_cut_off(m, error_rate = 0.02)
   return n
 end
 
-
-TCS_VERSION = "2.0.0"
-
-puts "\n" + '-'*58
-puts '| JSON Parameter Generator for ' + "TCS #{TCS_VERSION}".red.bold + " by " + "Shuntai Zhou".blue.bold + ' |'
-puts '-'*58 + "\n"
+puts "\n" + '-'*50
+puts '| The TCS Pipeline ' + "Version #{ViralSeq::TCS_VERSION}".red.bold + " by " + "Shuntai Zhou".blue.bold + ' |'
+puts '-'*50 + "\n"
 
 unless ARGV[0]
   raise "No JSON param file found. Script terminated."
@@ -173,7 +107,7 @@ def unzip_r(indir, f)
 end
 runtime_log_file = File.join(indir,"runtime.log")
 log = File.open(runtime_log_file, "w")
-log.puts "TSC pipeline Version " + TCS_VERSION.to_s
+log.puts "TSC pipeline Version " + ViralSeq::TCS_VERSION.to_s
 log.puts "viral_seq Version " + ViralSeq::VERSION.to_s
 log.puts Time.now.to_s + "\t" + "Start TCS pipeline..."
 
@@ -224,7 +158,7 @@ end
 
 primers.each do |primer|
   summary_json = {}
-  summary_json[:tcs_version] = TCS_VERSION
+  summary_json[:tcs_version] = ViralSeq::TCS_VERSION
   summary_json[:viralseq_version] = ViralSeq::VERSION
   summary_json[:runtime] = Time.now.to_s
 
@@ -233,6 +167,9 @@ primers.each do |primer|
 
   cdna_primer = primer[:cdna]
   forward_primer = primer[:forward]
+
+  export_raw = primer[:export_raw]
+
   unless cdna_primer
     log.puts Time.now.to_s + "\t" + region + " does not have cDNA primer sequence. #{region} skipped."
   end
@@ -363,9 +300,29 @@ primers.each do |primer|
   out_dir_consensus = File.join(out_dir_set, "consensus")
   Dir.mkdir(out_dir_consensus) unless File.directory?(out_dir_consensus)
 
-  outfile_r1 = File.join(out_dir_consensus, 'r1.txt')
-  outfile_r2 = File.join(out_dir_consensus, 'r2.txt')
+  outfile_r1 = File.join(out_dir_consensus, 'r1.fasta')
+  outfile_r2 = File.join(out_dir_consensus, 'r2.fasta')
   outfile_log = File.join(out_dir_set, 'log.json')
+
+  # if export_raw is true, create dir for raw sequence
+  if export_raw
+    out_dir_raw = File.join(out_dir_set, "raw")
+    Dir.mkdir(out_dir_raw) unless File.directory?(out_dir_raw)
+    outfile_raw_r1 = File.join(out_dir_raw, 'r1.raw.fasta')
+    outfile_raw_r2 = File.join(out_dir_raw, 'r2.raw.fasta')
+    raw_r1_f = File.open(outfile_raw_r1, 'w')
+    raw_r2_f = File.open(outfile_raw_r2, 'w')
+
+    bio_r1.keys.each do |k|
+      raw_r1_f.puts k + "_r1"
+      raw_r2_f.puts k + "_r2"
+      raw_r1_f.puts bio_r1[k]
+      raw_r2_f.puts bio_r2[k].rc
+    end
+
+    raw_r1_f.close
+    raw_r2_f.close
+  end
 
   # create TCS
 
@@ -456,19 +413,30 @@ primers.each do |primer|
     f.puts JSON.pretty_generate(pid_json)
   end
 
-  if primer[:end_join]
-    log.puts Time.now.to_s + "\t" +  "Start end-pairing for TCS..."
-    shp = ViralSeq::SeqHashPair.fa(out_dir_consensus)
-    case primer[:end_join_option]
+  def end_join(dir, option, overlap)
+    shp = ViralSeq::SeqHashPair.fa(dir)
+    case option
     when 1
-      joined_sh = shp.join1(primer[:overlap])
+      joined_sh = shp.join1()
     when 3
       joined_sh = shp.join2
     when 4
       joined_sh = shp.join2(model: :indiv)
     end
+    return joined_sh
+  end
+
+  if primer[:end_join]
+    log.puts Time.now.to_s + "\t" +  "Start end-pairing for TCS..."
+    shp = ViralSeq::SeqHashPair.fa(out_dir_consensus)
+    joined_sh = end_join(out_dir_consensus, primer[:end_join_option], primer[:overlap])
     log.puts Time.now.to_s + "\t" + "Paired TCS number: " + joined_sh.size.to_s
     summary_json[:combined_tcs] = joined_sh.size
+
+    if export_raw
+      joined_sh_raw = end_join(out_dir_raw, primer[:end_join_option], primer[:overlap])
+    end
+
   else
     File.open(outfile_log, "w") do |f|
       f.puts JSON.pretty_generate(summary_json)
@@ -501,8 +469,28 @@ primers.each do |primer|
         joined_seq[seq_name] = seq + new_r2_seq[seq_name]
       end
       joined_sh = ViralSeq::SeqHash.new(joined_seq)
+
+      if export_raw
+        r1_sh_raw = ViralSeq::SeqHash.fa(outfile_raw_r1)
+        r2_sh_raw = ViralSeq::SeqHash.fa(outfile_raw_r2)
+        r1_sh_raw = r1_sh_raw.hiv_seq_qc(ref_start, (0..(ViralSeq::RefSeq.get(ref_genome).size - 1)), indel, ref_genome)
+        r2_sh_raw = r2_sh_raw.hiv_seq_qc((0..(ViralSeq::RefSeq.get(ref_genome).size - 1)), ref_end, indel, ref_genome)
+        new_r1_seq_raw = r1_sh_raw.dna_hash.each_with_object({}) {|(k, v), h| h[k[0..-4]] = v}
+        new_r2_seq_raw = r2_sh_raw.dna_hash.each_with_object({}) {|(k, v), h| h[k[0..-4]] = v}
+        joined_seq_raw = {}
+        new_r1_seq_raw.each do |seq_name, seq|
+          next unless seq
+          next unless new_r2_seq_raw[seq_name]
+          joined_seq_raw[seq_name] = seq + new_r2_seq_raw[seq_name]
+        end
+        joined_sh_raw = ViralSeq::SeqHash.new(joined_seq_raw)
+      end
     else
       joined_sh = joined_sh.hiv_seq_qc(ref_start, ref_end, indel, ref_genome)
+
+      if export_raw
+        joined_sh_raw = joined_sh.hiv_seq_qc(ref_start, ref_end, indel, ref_genome)
+      end
     end
     log.puts Time.now.to_s + "\t" + "Paired TCS number after QC based on reference genome: " + joined_sh.size.to_s
     summary_json[:combined_tcs_after_qc] = joined_sh.size
@@ -512,7 +500,10 @@ primers.each do |primer|
       trim_ref = primer[:trim_ref].to_sym
       joined_sh = joined_sh.trim(trim_start, trim_end, trim_ref)
     end
-    joined_sh.write_nt_fa(File.join(out_dir_consensus, "combined.txt"))
+    joined_sh.write_nt_fa(File.join(out_dir_consensus, "combined.fasta"))
+    if export_raw
+      joined_sh_raw.write_nt_fa(File.join(out_dir_raw, "combined.fasta"))
+    end
   end
 
   File.open(outfile_log, "w") do |f|

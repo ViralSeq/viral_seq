@@ -9,7 +9,7 @@ module ViralSeq
   #     # align with MUSCLE
   #   filtered_seqhash = aligned_pr_seqhash.hiv_seq_qc(2253, 2549, false, :HXB2)
   #     # filter nt sequences with the reference coordinates
-  #   filtered_seqhash = aligned_pr_seqhash.stop_codon[1]
+  #   filtered_seqhash = aligned_pr_seqhash.stop_codon[:without_stop_codon]
   #     # return a new ViralSeq::SeqHash object without stop codons
   #   filtered_seqhash = filtered_seqhash.a3g[1]
   #     # further filter out sequences with A3G hypermutations
@@ -398,7 +398,7 @@ module ViralSeq
     #   # control pattern: G[YN|RC] -> A[YN|RC]
     #   # use the sample consensus to determine potential a3g sites
     #   # Two criteria to identify hypermutation
-    #   # 1. Fisher's exact test on the frequencies of G to A mutation at A3G positons vs. non-A3G positions
+    #   # 1. Fisher's exact test on the frequencies of G to A mutation at A3G positions vs. non-A3G positions
     #   # 2. Poisson distribution of G to A mutations at A3G positions, outliers sequences
     #   # note:  criteria 2 only applies on a sequence file containing more than 20 sequences,
     #   #        b/c Poisson model does not do well on small sample size.

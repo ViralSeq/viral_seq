@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 # TCS pipeline for Primer ID sequencing data analysis.
 
 # Copyright (c) 2020 Shuntai Zhou (shuntai.zhou@gmail.com)

@@ -4,78 +4,91 @@ A Ruby Gem containing bioinformatics tools for processing viral NGS data.
 
 Specifically for Primer-ID sequencing and HIV drug resistance analysis.
 
-## Installation
+## Install
 
+```bash
     $ gem install viral_seq
+```
 
 ## Usage
 
-#### Load all ViralSeq classes by requiring 'viral_seq.rb'
+### Excutables
+
+Use executable `locator` to get the coordinates of the sequences on HIV/SIV reference genome from a FASTA file through a terminal
+
+```bash
+    $ locator -i sequence.fasta -o sequence.fasta.csv
+```
+
+Use executable `tcs` pipeline to process Primer ID MiSeq sequencing data.
+
+```bash
+    $ tcs -p params.json # run TCS pipeline with params.json
+    $ tcs -j # CLI to generate params.json
+    $ tcs -h # print out the help
+```
+
+## Some Examples
+
+Load all ViralSeq classes by requiring 'viral_seq.rb' in your Ruby scripts.
 
 ```ruby
 #!/usr/bin/env ruby
 require 'viral_seq'
 ```
 
-#### Use executable `locator` to get the coordinates of the sequences on HIV/SIV reference genome from a FASTA file through a terminal
-
-    $ locator -i sequence.fasta -o sequence.fasta.csv
-
-
-#### Use executable `tcs` pipeline to process Primer ID MiSeq sequencing data. Parameter json file can be generated using `tcs_json_generator` or at https://tcs-dr-dept-tcs.cloudapps.unc.edu/generator.php
-
-    $ tcs params.json
-
-#### Use executable `tcs_json_generator` to generate params .json file for the `tcs` pipeline.
-
-    $ tcs_json_generator
-
-
-## Some Examples
-
-#### Load nucleotide sequences from a FASTA format sequence file
+Load nucleotide sequences from a FASTA format sequence file
 
 ```ruby
 my_seqhash = ViralSeq::SeqHash.fa('my_seq_file.fasta')
 ```
 
-#### Make an alignment (using MUSCLE)
+Make an alignment (using MUSCLE)
 
 ```ruby
 aligned_seqhash = my_seqhash.align
 ```
 
-#### Filter nucleotide sequences with the reference coordinates (HIV Protease)
+Filter nucleotide sequences with the reference coordinates (HIV Protease)
 
 ```ruby
 qc_seqhash = aligned_seqhash.hiv_seq_qc(2253, 2549, false, :HXB2)
 ```
 
-#### Further filter out sequences with Apobec3g/f hypermutations
+Further filter out sequences with Apobec3g/f hypermutations
 
 ```ruby
 qc_seqhash = qc_seqhash.a3g
 ```
 
-#### Calculate nucleotide diveristy π
+Calculate nucleotide diveristy π
 
 ```ruby
 qc_seqhash.pi
 ```
 
-#### Calculate cut-off for minority variants based on Poisson model
+Calculate cut-off for minority variants based on Poisson model
 
 ```ruby
 cut_off = qc_seqhash.pm
 ```
 
-#### Examine for drug resistance mutations for HIV PR region
+Examine for drug resistance mutations for HIV PR region
 
 ```ruby
 qc_seqhash.sdrm_hiv_pr(cut_off)
 ```
 
 ## Updates
+
+### Version 1.1.0-11112020:
+
+  1. Modularize TCS pipeline. Move key functions into /viral_seq/tcs_core.rb
+  2. `tcs_json_generator` is removed. This CLI is delivered within the `tcs` pipeline, by running `tcs -j`. The scripts are included in the /viral_seq/tcs_json.rb
+  3. consensus model now includes a true simple majority model, where no nt needs to be over 50% to be called.
+  4. a few optimizations.
+  5. TCS 2.1.0 delivered.
+  6. Tried parallel processing. Cannot achieve the goal because `parallel` gem by default can't pool data from memory of child processors and `in_threads` does not help with the speed. 
 
 ### Version 1.0.9-07182020:
 

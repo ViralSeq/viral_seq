@@ -80,6 +80,12 @@ module ViralSeq
       alias_method :fa, :new_from_fasta
     end
 
+    # the size of nt sequence hash of the SeqHashPair object
+    # @return [Integer] size of nt sequence hash of the SeqHash object
+    def size
+      self.dna_hash.size
+    end
+
     # Pair-end join function for KNOWN overlap size.
     # @param overlap [Integer] how many bases are overlapped. `0` means no overlap, R1 and R2 will be simply put together.
     # @param diff [Integer, Float] the maximum mismatch rate allowed for the overlapping region. default at 0.0, i.e. no mis-match allowed.

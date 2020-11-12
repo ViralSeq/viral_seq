@@ -1,5 +1,3 @@
-#!/usr/bin/env ruby
-
 # TCS pipeline for Primer ID sequencing data analysis.
 
 # Copyright (c) 2020 Shuntai Zhou (shuntai.zhou@gmail.com)
@@ -28,114 +26,79 @@
 require 'viral_seq'
 require 'json'
 require 'colorize'
+require 'OptionParser'
 
+options = {}
 
-# calculate consensus cutoff
+banner = '-'*50 + "\n" +
+        '| The TCS Pipeline ' + "Version #{ViralSeq::TCS_VERSION}".red.bold + " by " + "Shuntai Zhou".blue.bold + ' |' + "\n" +
+        '-'*50 + "\n"
 
-def calculate_cut_off(m, error_rate = 0.02)
-  n = 0
-  case error_rate
-  when 0.005...0.015
-    if m <= 10
-      n = 2
-    else
-      n = 1.09*10**-26*m**6 + 7.82*10**-22*m**5 - 1.93*10**-16*m**4 + 1.01*10**-11*m**3 - 2.31*10**-7*m**2 + 0.00645*m + 2.872
-    end
-
-  when 0...0.005
-    if m <= 10
-      n = 2
-    else
-      n = -9.59*10**-27*m**6 + 3.27*10**-21*m**5 - 3.05*10**-16*m**4 + 1.2*10**-11*m**3 - 2.19*10**-7*m**2 + 0.004044*m + 2.273
-    end
-
-  else
-    if m <= 10
-      n = 2
-    elsif m <= 8500
-      n = -1.24*10**-21*m**6 + 3.53*10**-17*m**5 - 3.90*10**-13*m**4 + 2.12*10**-9*m**3 - 6.06*10**-6*m**2 + 1.80*10**-2*m + 3.15
-    else
-      n = 0.0079 * m + 9.4869
-    end
+OptionParser.new do |opts|
+  opts.banner = banner + "Usage: tcs -j"
+  opts.on "-j", "--json_generator", "Command line interfac to generate new params json file" do |j|
+    options[:json_generator] = true
   end
 
-  n = n.round
-  n = 2 if n < 3
-  return n
+  opts.on("-p", "--params PARAMS_JSON", "Execute the pipeline with input params json file") do |p|
+    options[:params_json] = p
+  end
+
+  opts.on("-h", "--help", "Prints this help") do
+    puts opts
+    exit
+  end
+
+  opts.on("-v", "--version", "Version info") do
+    puts "tcs version: " + ViralSeq::TCS_VERSION.red.bold
+    puts "viral_seq version: " + ViralSeq::VERSION.red.bold
+    exit
+  end
+
+  # opts.on("--no-parallel", "toggle off parallel processing") do
+  #   options[:no_parallel] = true
+  # end
+end.parse!
+
+if options[:json_generator]
+  params = ViralSeq::TcsJson.generate
+elsif (options[:params_json] && File.exist?(options[:params_json]))
+  params = JSON.parse(File.read(options[:params_json]), symbolize_names: true)
+else
+  abort "No params JSON file found. Script terminated.".red
 end
-
-puts "\n" + '-'*50
-puts '| The TCS Pipeline ' + "Version #{ViralSeq::TCS_VERSION}".red.bold + " by " + "Shuntai Zhou".blue.bold + ' |'
-puts '-'*50 + "\n"
-
-unless ARGV[0]
-  raise "No JSON param file found. Script terminated."
-end
-
-params = JSON.parse(File.read(ARGV[0]), symbolize_names: true)
 
 indir = params[:raw_sequence_dir]
 
 unless File.exist?(indir)
-  raise "No input sequence directory found. Script terminated."
+  abort "No input sequence directory found. Script terminated.".red.bold
 end
 
-libname = File.basename(indir)
+# log file
 
-# obtain R1 and R2 file path
-files = []
-Dir.chdir(indir) do
-  files = Dir.glob("*")
-end
-
-if files.empty?
-  raise "Input dir does not contain files. Script terminated."
-end
-
-r1_f = ""
-r2_f = ""
-
-# unzip .fasta.gz
-def unzip_r(indir, f)
-  r_file = indir + "/" + f
-  if f =~ /.gz/
-    `gzip -d #{r_file}`
-    new_f = f.sub ".gz", ""
-    r_file = File.join(indir, new_f)
-  end
-  return r_file
-end
 runtime_log_file = File.join(indir,"runtime.log")
 log = File.open(runtime_log_file, "w")
 log.puts "TSC pipeline Version " + ViralSeq::TCS_VERSION.to_s
 log.puts "viral_seq Version " + ViralSeq::VERSION.to_s
 log.puts Time.now.to_s + "\t" + "Start TCS pipeline..."
 
+libname = File.basename indir
 
-files.each do |f|
-  t = f.split("_")
-  if t.size == 1
-    tag = f
-  else
-    tag = f.split("_")[1..-1].join("_")
-  end
+seq_files = ViralSeq::TcsCore.r1r2 indir
 
-  if tag =~ /r1/i
-    r1_f = unzip_r(indir, f)
-  elsif tag =~ /r2/i
-    r2_f = unzip_r(indir, f)
-  end
+if seq_files[:r1_file].size > 0 and seq_files[:r2_file].size > 0
+  r1_f = seq_files[:r1_file]
+  r2_f = seq_files[:r2_file]
+elsif seq_files[:r1_file].size > 0 and seq_files[:r2_file].empty?
+  exit_sig = "Missing R2 file. Aborted."
+elsif seq_files[:r2_file].size > 0 and seq_files[:r1_file].empty?
+  exit_sig = "Missing R1 file. Aborted."
+else
+  exit_sig = "Cannot determine R1 R2 file in #{indir}. Aborted."
 end
 
-
-unless File.exist?(r1_f)
-  log.puts "R1 file not found. Script terminated."
-  raise "R1 file not found. Script terminated."
-end
-
-unless File.exist?(r2_f)
-  log.puts "R2 file not found. Script terminated."
-  raise "R2 file not found. Script terminated."
+if exit_sig
+  ViralSeq::TcsCore.log_and_abort log, exit_sig
 end
 
 r1_fastq_sh = ViralSeq::SeqHash.fq(r1_f)
@@ -152,9 +115,9 @@ end
 
 primers = params[:primer_pairs]
 if primers.empty?
-  log.puts "No primer information. Script terminated."
-  raise "No primer information. Script terminated."
+  ViralSeq::TcsCore.log_and_abort log, "No primer information. Script terminated."
 end
+
 
 primers.each do |primer|
   summary_json = {}
@@ -179,66 +142,25 @@ primers.each do |primer|
   summary_json[:cdan_primer] = cdna_primer
   summary_json[:forward_primer] = forward_primer
 
-  primer[:majority] ? majority_cut_off = primer[:majority] : majority_cut_off = 0.5
+  primer[:majority] ? majority_cut_off = primer[:majority] : majority_cut_off = 0
   summary_json[:majority_cut_off] = majority_cut_off
 
   summary_json[:total_raw_sequence] = raw_sequence_number
 
   log.puts Time.now.to_s + "\t" +  "Porcessing #{region}..."
 
-  r1_raw = r1_fastq_sh.dna_hash
-  r2_raw = r2_fastq_sh.dna_hash
-
+  # filter R1
   log.puts Time.now.to_s + "\t" +  "filtering R1..."
-  # obtain biological forward primer sequence
-  if forward_primer.match(/(N+)(\w+)$/)
-    forward_n = $1.size
-    forward_bio_primer = $2
-  else
-    forward_n = 0
-    forward_bio_primer = forward_primer
-  end
-  forward_bio_primer_size = forward_bio_primer.size
-  forward_starting_number = forward_n + forward_bio_primer_size
-
-  # filter R1 sequences with forward primers.
-  forward_primer_ref = forward_bio_primer.nt_parser
-  r1_passed_seq = {}
-  r1_raw.each do |name,seq|
-    next if seq[1..-2] =~ /N/ # sequences with ambiguities except the 1st and last position removed
-    next if seq =~ /A{11}/ # a string of poly-A indicates adaptor sequence
-    next if seq =~ /T{11}/ # a string of poly-T indicates adaptor sequence
-
-    primer_region_seq = seq[forward_n, forward_bio_primer_size]
-    if primer_region_seq =~ forward_primer_ref
-      r1_passed_seq[name.split("\s")[0]] = seq
-    end
-  end
+  filter_r1 = ViralSeq::TcsCore.filter_r1(r1_fastq_sh, forward_primer)
+  r1_passed_seq = filter_r1[:r1_passed_seq]
   log.puts Time.now.to_s + "\t" +  "R1 filtered: #{r1_passed_seq.size.to_s}"
-
   summary_json[:r1_filtered_raw] = r1_passed_seq.size
 
+  # filter R2
   log.puts Time.now.to_s + "\t" +  "filtering R2..."
-  # obtain biological reverse primer sequence
-  cdna_primer.match(/(N+)(\w+)$/)
-  pid_length = $1.size
-  cdna_bio_primer = $2
-  cdna_bio_primer_size = cdna_bio_primer.size
-  reverse_starting_number = pid_length + cdna_bio_primer_size
-
-  # filter R2 sequences with cDNA primers.
-  cdna_primer_ref = cdna_bio_primer.nt_parser
-  r2_passed_seq = {}
-  r2_raw.each do |name, seq|
-    next if seq[1..-2] =~ /N/ # sequences with ambiguities except the 1st and last position removed
-    next if seq =~ /A{11}/ # a string of poly-A indicates adaptor sequence
-    next if seq =~ /T{11}/ # a string of poly-T indicates adaptor sequence
-
-    primer_region_seq = seq[pid_length, cdna_bio_primer_size]
-    if primer_region_seq =~ cdna_primer_ref
-      r2_passed_seq[name.split("\s")[0]] = seq
-    end
-  end
+  filter_r2 = ViralSeq::TcsCore.filter_r2(r2_fastq_sh, cdna_primer)
+  r2_passed_seq = filter_r2[:r2_passed_seq]
+  pid_length = filter_r2[:pid_length]
   log.puts Time.now.to_s + "\t" +  "R2 filtered: #{r2_passed_seq.size.to_s}"
   summary_json[:r2_filtered_raw] = r2_passed_seq.size
 
@@ -257,8 +179,8 @@ primers.each do |primer|
     r2_seq = r2_passed_seq[seqtag]
     pid = r2_seq[0, pid_length]
     id[seqtag] = pid
-    bio_r2[seqtag] = r2_seq[reverse_starting_number..-2]
-    bio_r1[seqtag] = r1_seq[forward_starting_number..-2]
+    bio_r2[seqtag] = r2_seq[filter_r2[:reverse_starting_number]..-2]
+    bio_r1[seqtag] = r1_seq[filter_r1[:forward_starting_number]..-2]
   end
 
   # TCS cut-off
@@ -278,11 +200,10 @@ primers.each do |primer|
   end
 
   max_id = primer_id_dis.keys.sort[-5..-1].mean
-  consensus_cutoff = calculate_cut_off(max_id,error_rate)
+  consensus_cutoff = ViralSeq::TcsCore.calculate_cut_off(max_id,error_rate)
   log.puts Time.now.to_s + "\t" +  "Consensus cut-off is #{consensus_cutoff.to_s}"
   summary_json[:consensus_cutoff] = consensus_cutoff
   summary_json[:length_of_pid] = pid_length
-
   log.puts Time.now.to_s + "\t" +  "Creating consensus..."
 
   # Primer ID over the cut-off
@@ -355,6 +276,8 @@ primers.each do |primer|
     consensus_name = ">" + primer_id + "_" + seq_with_same_primer_id.size.to_s + "_" + libname + "_" + region
     r1_consensus = ViralSeq::SeqHash.array(r1_sub_seq).consensus(majority_cut_off)
     r2_consensus = ViralSeq::SeqHash.array(r2_sub_seq).consensus(majority_cut_off)
+
+    # hide the following two lines if allowing sequence to have ambiguities.
     next if r1_consensus =~ /[^ATCG]/
     next if r2_consensus =~ /[^ATCG]/
 
@@ -404,6 +327,7 @@ primers.each do |primer|
   f1.close
   f2.close
 
+  # Primer ID distribution in .json file
   out_pid_json = File.join(out_dir_set, 'primer_id.json')
   pid_json = {}
   pid_json[:primer_id_in_use] = Hash[*(primer_id_in_use.sort_by {|k, v| [-v,k]}.flatten)]
@@ -413,11 +337,14 @@ primers.each do |primer|
     f.puts JSON.pretty_generate(pid_json)
   end
 
+  # start end-join
   def end_join(dir, option, overlap)
     shp = ViralSeq::SeqHashPair.fa(dir)
     case option
     when 1
       joined_sh = shp.join1()
+    when 2
+      joined_sh = shp.join1(overlap)
     when 3
       joined_sh = shp.join2
     when 4
@@ -489,9 +416,10 @@ primers.each do |primer|
       joined_sh = joined_sh.hiv_seq_qc(ref_start, ref_end, indel, ref_genome)
 
       if export_raw
-        joined_sh_raw = joined_sh.hiv_seq_qc(ref_start, ref_end, indel, ref_genome)
+        joined_sh_raw = joined_sh_raw.hiv_seq_qc(ref_start, ref_end, indel, ref_genome)
       end
     end
+
     log.puts Time.now.to_s + "\t" + "Paired TCS number after QC based on reference genome: " + joined_sh.size.to_s
     summary_json[:combined_tcs_after_qc] = joined_sh.size
     if primer[:trim]
@@ -499,10 +427,11 @@ primers.each do |primer|
       trim_end = primer[:trim_ref_end]
       trim_ref = primer[:trim_ref].to_sym
       joined_sh = joined_sh.trim(trim_start, trim_end, trim_ref)
-    end
-    joined_sh.write_nt_fa(File.join(out_dir_consensus, "combined.fasta"))
-    if export_raw
-      joined_sh_raw.write_nt_fa(File.join(out_dir_raw, "combined.fasta"))
+      joined_sh.write_nt_fa(File.join(out_dir_consensus, "combined.fasta"))
+      if export_raw
+        joined_sh_raw = joined_sh_raw.trim(trim_start, trim_end, trim_ref)
+        joined_sh_raw.write_nt_fa(File.join(out_dir_raw, "combined.raw.fasta"))
+      end
     end
   end
 

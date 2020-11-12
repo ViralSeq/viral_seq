@@ -351,7 +351,7 @@ module ViralSeq
 
 
     # create one consensus sequence from @dna_hash with an optional majority cut-off for mixed bases.
-    # @param cutoff [Float] majority cut-off for calling consensus bases. defult at simple majority (0.5), position with 15% "A" and 85% "G" will be called as "G" with 20% cut-off and as "R" with 10% cut-off.
+    # @param cutoff [Float] majority cut-off for calling consensus bases. defult at (0.5), position with 15% "A" and 85% "G" will be called as "G" with 20% cut-off and as "R" with 10% cut-off. Using (0) will return use simply majority rule (no cutoff)
     # @return [String] consensus sequence
     # @example consensus sequence from an array of sequences.
     #   seq_array = %w{ ATTTTTTTTT
@@ -383,11 +383,18 @@ module ViralSeq
         base_count = all_base.count_freq
         max_base_list = []
 
-        base_count.each do |k,v|
-          if v/seq_size.to_f >= cutoff
-            max_base_list << k
+        if cutoff.zero?
+          max_count = base_count.values.max
+          max_base_hash = base_count.select {|_k,v| v == max_count}
+          max_base_list = max_base_hash.keys
+        else
+          base_count.each do |k,v|
+            if v/seq_size.to_f >= cutoff
+              max_base_list << k
+            end
           end
         end
+
         consensus_seq += call_consensus_base(max_base_list)
       end
       return consensus_seq

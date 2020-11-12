@@ -35,5 +35,8 @@ require_relative "viral_seq/seq_hash_pair"
 require_relative "viral_seq/sequence"
 require_relative "viral_seq/string"
 require_relative "viral_seq/version"
+require_relative "viral_seq/tcs_core"
+require_relative "viral_seq/tcs_json"
+
 
 require "muscle_bio"

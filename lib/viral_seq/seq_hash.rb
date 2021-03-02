@@ -549,7 +549,7 @@ module ViralSeq
       if sequences.size == 0
         return 0
       else
-        cut_off = 1
+        cut_off = Float::INFINITY
         l = sequences[0].size
         rate = sequences.size * error_rate
         count_mut = variant_for_poisson(sequences)
@@ -558,7 +558,7 @@ module ViralSeq
 
         poisson_hash.each do |k,v|
           cal = l * v
-          obs = count_mut[k] ? count_mut[k] : 0
+          obs = count_mut[k] ? count_mut[k] : 1
           if obs >= fold_cutoff * cal
             cut_off = k
             break

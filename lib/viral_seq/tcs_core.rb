@@ -104,14 +104,16 @@ module ViralSeq
       # sort array of file names to determine if there is potential errors
       # input name_array array of file names
       # output hash { }
-
+      # need to change for each file name have an error code. and a bool to show if all pass
       def validate_file_name(name_array)
-        errors = { file_type_error: [] ,
+        errors = {
+                   file_type_error: [] ,
                    missing_r1_file: [] ,
                    missing_r2_file: [] ,
                    extra_r1_r2_file: [],
                    no_region_tag: [] ,
-                   multiple_region_tag: []}
+                   multiple_region_tag: []
+                 }
 
         passed_libs = {}
 

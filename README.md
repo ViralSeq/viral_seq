@@ -78,8 +78,16 @@ Examine for drug resistance mutations for HIV PR region
 ```ruby
 qc_seqhash.sdrm_hiv_pr(cut_off)
 ```
+## Known issues
+
+  1. have a conflict with rails.
 
 ## Updates
+
+### Version 1.1.1-03022021
+
+  1. Fixed a issue when calculating Poisson cutoff for minority mutations `ViralSeq::SeqHash.pm`.
+  2. fixed an issue loading class 'OptionParser'in some ruby environments.
 
 ### Version 1.1.0-11112020:
 
@@ -88,7 +96,7 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
   3. consensus model now includes a true simple majority model, where no nt needs to be over 50% to be called.
   4. a few optimizations.
   5. TCS 2.1.0 delivered.
-  6. Tried parallel processing. Cannot achieve the goal because `parallel` gem by default can't pool data from memory of child processors and `in_threads` does not help with the speed. 
+  6. Tried parallel processing. Cannot achieve the goal because `parallel` gem by default can't pool data from memory of child processors and `in_threads` does not help with the speed.
 
 ### Version 1.0.9-07182020:
 

@@ -28,7 +28,7 @@
 require 'viral_seq'
 require 'json'
 require 'colorize'
-require 'OptionParser'
+require 'optparse'
 
 options = {}
 
@@ -317,8 +317,12 @@ primers.each do |primer|
   f1 = File.open(outfile_r1, 'w')
   f2 = File.open(outfile_r2, 'w')
   primer_id_in_use = {}
-  r1_seq_length = consensus_filtered.values[0][0].size
-  r2_seq_length = consensus_filtered.values[0][1].size
+  if n_con > 0
+    r1_seq_length = consensus_filtered.values[0][0].size
+    r2_seq_length = consensus_filtered.values[0][1].size
+  else
+    next
+  end
   log.puts Time.now.to_s + "\t" + "R1 sequence #{r1_seq_length} bp"
   log.puts Time.now.to_s + "\t" + "R1 sequence #{r2_seq_length} bp"
   consensus_filtered.each do |seq_name,seq|

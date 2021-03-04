@@ -67,7 +67,7 @@ module ViralSeq
         @k = k
         @poisson_hash = {}
         (0..k).each do |n|
-          p = (rate**n * ::Math::E**(-rate))/!n
+          p = (rate**n * ::Math::E**(-rate))/n.factorial
           @poisson_hash[n] = p
         end
       end
@@ -155,9 +155,9 @@ class Integer
   # factorial method for an Integer
   # @return [Integer] factorial for given Integer
   # @example factorial for 5
-  #   !5
+  #   5.factorial
   #   => 120
-  def !
+  def factorial
     if self == 0
       return 1
     else

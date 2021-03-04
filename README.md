@@ -80,21 +80,26 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 ```
 ## Known issues
 
-  1. have a conflict with rails.
-  2. Update on 03032021. Still have conflict. But in rails gem file, can just use `requires: false` globally and only require "viral_seq" when the module is needed in controller.
+  1. ~~have a conflict with rails.~~
+  2. ~~Update on 03032021. Still have conflict. But in rails gem file, can just use `requires: false` globally and only require "viral_seq" when the module is needed in controller.~~
+  3. The conflict seems to be resovled. It was from a combination of using `!` as a function for factorial and the gem name `viral_seq`. @_@
 
 ## Updates
 
-### Version 1.1.2-03032021
+### Version 1.0.13-03032021
+
+  1. Fixed the conflict with rails.
+
+### Version 1.0.12-03032021
 
   1. Fixed an issue that may cause conflicts with ActiveRecord.
 
-### Version 1.1.1-03022021
+### Version 1.0.11-03022021
 
   1. Fixed an issue when calculating Poisson cutoff for minority mutations `ViralSeq::SeqHash.pm`.
   2. fixed an issue loading class 'OptionParser'in some ruby environments.
 
-### Version 1.1.0-11112020:
+### Version 1.0.10-11112020:
 
   1. Modularize TCS pipeline. Move key functions into /viral_seq/tcs_core.rb
   2. `tcs_json_generator` is removed. This CLI is delivered within the `tcs` pipeline, by running `tcs -j`. The scripts are included in the /viral_seq/tcs_json.rb

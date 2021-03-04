@@ -3,10 +3,6 @@
 #   array = [1,2,3,4,5,6,7,8,9,10]
 #   array.median
 #   => 5.5
-# @example sum
-#   array = [1,2,3,4,5,6,7,8,9,10]
-#   array.sum
-#   => 55
 # @example average number (mean)
 #   array = [1,2,3,4,5,6,7,8,9,10]
 #   array.mean
@@ -43,12 +39,6 @@ module Enumerable
     len = self.length
     sorted = self.sort
     len % 2 == 1 ? sorted[len/2] : (sorted[len/2 - 1] + sorted[len/2]).to_f / 2
-  end
-
-  # generate summed value
-  # @return [Numeric] summed value
-  def sum
-     self.inject(0){|accum, i| accum + i }
   end
 
   # generate mean number

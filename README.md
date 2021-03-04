@@ -81,12 +81,17 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 ## Known issues
 
   1. have a conflict with rails.
+  2. Update on 03032021. Still have conflict. But in rails gem file, can just use `requires: false` globally and only require "viral_seq" when the module is needed in controller.
 
 ## Updates
 
+### Version 1.1.2-03032021
+
+  1. Fixed an issue that may cause conflicts with ActiveRecord.
+
 ### Version 1.1.1-03022021
 
-  1. Fixed a issue when calculating Poisson cutoff for minority mutations `ViralSeq::SeqHash.pm`.
+  1. Fixed an issue when calculating Poisson cutoff for minority mutations `ViralSeq::SeqHash.pm`.
   2. fixed an issue loading class 'OptionParser'in some ruby environments.
 
 ### Version 1.1.0-11112020:

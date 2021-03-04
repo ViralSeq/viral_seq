@@ -2,6 +2,6 @@
 # version info and histroy
 
 module ViralSeq
-  VERSION = "1.0.11"
+  VERSION = "1.0.12"
   TCS_VERSION = "2.1.1"
 end

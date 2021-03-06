@@ -102,9 +102,9 @@ module ViralSeq
       end
 
       # sort array of file names to determine if there is potential errors
-      # input name_array array of file names
-      # output hash { }
-      # need to change for each file name have an error code. and a bool to show if all pass
+      # @param name_array [Array] array of file names
+      # @return [hash] name check results
+
       def validate_file_name(name_array)
         errors = {
                    file_type_error: [] ,
@@ -165,6 +165,13 @@ module ViralSeq
           end
         end
 
+        file_name_with_lib_name = {}
+        passed_libs.each do |lib_name, files|
+          files.each do |f|
+            file_name_with_lib_name[f] = lib_name
+          end
+        end
+
         passed_names = []
 
         passed_libs.values.each { |names| passed_names += names}
@@ -175,7 +182,27 @@ module ViralSeq
           pass = true
         end
 
-        return { errors: errors, all_pass: pass, passed_names: passed_names, passed_libs: passed_libs }
+        file_name_with_error_type = {}
+
+        errors.each do |type, files|
+          files.each do |f|
+            file_name_with_error_type[f] ||= []
+            file_name_with_error_type[f] << type.to_s.tr("_", "\s")
+          end
+        end
+
+        file_check = []
+
+        name_array.each do |name|
+          file_check_hash = {}
+          file_check_hash[:fileName] = name
+          file_check_hash[:errors] = file_name_with_error_type[name]
+          file_check_hash[:libName] = file_name_with_lib_name[name]
+
+          file_check << file_check_hash
+        end
+
+        return { allPass: pass, files: file_check }
       end
 
       # filter r1 raw sequences for non-specific primers.

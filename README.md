@@ -86,6 +86,10 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
+### Version 1.0.14-03052021
+
+  1. Add a function `ViralSeq::TcsCore.validate_file_name` to check MiSeq paired-end file names.
+
 ### Version 1.0.13-03032021
 
   1. Fixed the conflict with rails.

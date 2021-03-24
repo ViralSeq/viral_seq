@@ -15,7 +15,9 @@ Specifically for Primer-ID sequencing and HIV drug resistance analysis.
 ### Excutables
 
 ### `tcs`  
-Use executable `tcs` pipeline to process Primer ID MiSeq sequencing data.
+Use executable `tcs` pipeline to process **Primer ID MiSeq sequencing** data.
+
+**Illustration of the Primer ID Sequencing**
 
 
 ![Primer ID Sequencing](https://storage.googleapis.com/tcs-dr-public/pid.png)
@@ -24,6 +26,7 @@ Use executable `tcs` pipeline to process Primer ID MiSeq sequencing data.
 [Primer ID JID paper](https://doi.org/10.21769/BioProtoc.3938)  
 [Primer ID MiSeq protocol](https://doi.org/10.1128/JVI.00522-15)
 
+Example commands:
 ```bash
     $ tcs -p params.json # run TCS pipeline with params.json
     $ tcs -j # CLI to generate params.json

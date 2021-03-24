@@ -110,19 +110,21 @@ module ViralSeq
       raise ArgumentError.new(":overlap has to be Integer, input #{overlap} invalid.") unless overlap.is_a? Integer
       raise ArgumentError.new(":diff has to be float or integer, input #{diff} invalid.") unless (diff.is_a? Integer or diff.is_a? Float)
       joined_seq = {}
-      seq_pair_hash.uniq_hash.each do |seq_pair, seq_names|
+      seq_pair_hash.each do |seq_name,seq_pair|
         r1_seq = seq_pair[0]
         r2_seq = seq_pair[1]
         if overlap.zero?
           joined_sequence = r1_seq + r2_seq
+        elsif diff.zero?
+          if r1_seq[-overlap..-1] == r2_seq[0,overlap]
+            joined_sequence= r1_seq + r2_seq[overlap..-1]
+          end
         elsif r1_seq[-overlap..-1].compare_with(r2_seq[0,overlap]) <= (overlap * diff)
           joined_sequence= r1_seq + r2_seq[overlap..-1]
         else
           next
         end
-        seq_names.each do |seq_name|
-          joined_seq[seq_name] = joined_sequence
-        end
+        joined_seq[seq_name] = joined_sequence
       end
 
       joined_seq_hash = ViralSeq::SeqHash.new

@@ -1,0 +1,68 @@
+{
+  "raw_sequence_dir": "MyExampleDir",
+  "platform_error_rate": 0.02,
+  "primer_pairs": [
+    {
+      "region": "RT",
+      "cdna": "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCTNNNNNNNNNNNCAGTCACTATAGGCTGTACTGTCCATTTATC",
+      "forward": "GCCTCCCTCGCGCCATCAGAGATGTGTATAAGAGACAGNNNNGGCCATTGACAGAAGAAAAAATAAAAGC",
+      "majority": 0.5,
+      "end_join": true,
+      "end_join_option": 1,
+      "overlap": 0,
+      "TCS_QC": true,
+      "ref_genome": "HXB2",
+      "ref_start": 2648,
+      "ref_end": 3257,
+      "indel": true,
+      "trim": false
+    },
+    {
+      "region": "PR",
+      "cdna": "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCTNNNNNNNNNCAGTTTAACTTTTGGGCCATCCATTCC",
+      "forward": "GCCTCCCTCGCGCCATCAGAGATGTGTATAAGAGACAGNNNNTCAGAGCAGACCAGAGCCAACAGCCCCA",
+      "majority": 0.5,
+      "end_join": true,
+      "end_join_option": 3,
+      "TCS_QC": true,
+      "ref_genome": "HXB2",
+      "ref_start": 0,
+      "ref_end": 2591,
+      "indel": true,
+      "trim": true,
+      "trim_ref": "HXB2",
+      "trim_ref_start": 2253,
+      "trim_ref_end": 2549
+    },
+    {
+      "region": "IN",
+      "cdna": "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCTNNNNNNNNNNNATCGAATACTGCCATTTGTACTGC",
+      "forward": "GCCTCCCTCGCGCCATCAGAGATGTGTATAAGAGACAGNNNNAAAAGGAGAAGCCATGCATG",
+      "majority": 0.5,
+      "end_join": true,
+      "end_join_option": 3,
+      "overlap": 171,
+      "TCS_QC": true,
+      "ref_genome": "HXB2",
+      "ref_start": 4384,
+      "ref_end": 4751,
+      "indel": false,
+      "trim": false
+    },
+    {
+      "region": "V1V3",
+      "cdna": "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCTNNNNNNNNNNNCAGTCCATTTTGCTYTAYTRABVTTACAATRTGC",
+      "forward": "GCCTCCCTCGCGCCATCAGAGATGTGTATAAGAGACAGNNNNTTATGGGATCAAAGCCTAAAGCCATGTGTA",
+      "majority": 0.5,
+      "end_join": true,
+      "end_join_option": 1,
+      "overlap": 0,
+      "TCS_QC": true,
+      "ref_genome": "HXB2",
+      "ref_start": 6585,
+      "ref_end": 7208,
+      "indel": true,
+      "trim": false
+    }
+  ]
+}

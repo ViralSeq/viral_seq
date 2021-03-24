@@ -1,0 +1,83 @@
+#!/usr/bin/env ruby
+
+# pool run logs from one batch of tcs jobs
+# file structure:
+#   batch_tcs_jobs/
+#   ├── lib1
+#   ├── lib2
+#   ├── lib3
+#   ├── lib4
+#   ├── ...
+#
+# command example:
+#   $ tcs_log batch_tcs_jobs
+
+require 'viral_seq'
+require 'pathname'
+require 'json'
+require 'fileutils'
+
+indir = ARGV[0].chomp
+indir_basename = File.basename(indir)
+indir_dirname = File.dirname(indir)
+
+tcs_dir = File.join(indir_dirname, (indir_basename + "_tcs"))
+Dir.mkdir(tcs_dir) unless File.directory?(tcs_dir)
+
+libs = []
+Dir.chdir(indir) {libs = Dir.glob("*")}
+
+outdir2 = File.join(tcs_dir, "combined_TCS_per_lib")
+outdir3 = File.join(tcs_dir, "TCS_per_region")
+outdir4 = File.join(tcs_dir, "combined_TCS_per_region")
+
+Dir.mkdir(outdir2) unless File.directory?(outdir2)
+Dir.mkdir(outdir3) unless File.directory?(outdir3)
+Dir.mkdir(outdir4) unless File.directory?(outdir4)
+
+log_file = File.join(tcs_dir,"log.csv")
+log = File.open(log_file,'w')
+log.puts "lib name,Region,Raw Sequences per barcode,R1 Raw,R2 Raw,Paired Raw,Cutoff,PID Length,Consensus1,Consensus2,Distinct to Raw,Resampling index,Combined TCS,Combined TCS after QC"
+
+libs.each do |lib|
+  Dir.mkdir(File.join(outdir2, lib)) unless File.directory?(File.join(outdir2, lib))
+  fasta_files = []
+  json_files = []
+  Dir.chdir(File.join(indir, lib)) do
+     fasta_files = Dir.glob("**/*.fasta")
+     json_files = Dir.glob("**/log.json")
+  end
+  fasta_files.each do |f|
+    path_array = Pathname(f).each_filename.to_a
+    region = path_array[0]
+    if path_array[-1] == "combined.fasta"
+      FileUtils.cp(File.join(indir, lib, f), File.join(outdir2, lib, (lib + "_" + region)))
+      Dir.mkdir(File.join(outdir4,region)) unless File.directory?(File.join(outdir4,region))
+      FileUtils.cp(File.join(indir, lib, f), File.join(outdir4, region, (lib + "_" + region)))
+    else
+      Dir.mkdir(File.join(outdir3,region)) unless File.directory?(File.join(outdir3,region))
+      Dir.mkdir(File.join(outdir3,region, lib)) unless File.directory?(File.join(outdir3,region, lib))
+      FileUtils.cp(File.join(indir, lib, f), File.join(outdir3, region, lib, (lib + "_" + region + "_" + path_array[-1])))
+    end
+  end
+
+  json_files.each do |f|
+    json_log = JSON.parse(File.read(File.join(indir, lib, f)), symbolize_names: true)
+    log.print [lib,
+               json_log[:primer_set_name],
+               json_log[:total_raw_sequence],
+               json_log[:r1_filtered_raw],
+               json_log[:r2_filtered_raw],
+               json_log[:paired_raw_sequence],
+               json_log[:consensus_cutoff],
+               json_log[:length_of_pid],
+               json_log[:total_tcs_with_ambiguities],
+               json_log[:total_tcs],
+               json_log[:distinct_to_raw],
+               json_log[:resampling_param],
+               json_log[:combined_tcs],
+               json_log[:combined_tcs_after_qc],
+             ].join(',') + "\n"
+  end
+end
+log.close

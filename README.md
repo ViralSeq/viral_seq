@@ -14,19 +14,48 @@ Specifically for Primer-ID sequencing and HIV drug resistance analysis.
 
 ### Excutables
 
-Use executable `locator` to get the coordinates of the sequences on HIV/SIV reference genome from a FASTA file through a terminal
-
-```bash
-    $ locator -i sequence.fasta -o sequence.fasta.csv
-```
-
+### `tcs`  
 Use executable `tcs` pipeline to process Primer ID MiSeq sequencing data.
+
+*Reference reading on Primer ID sequencing*  
+[Primer ID JID paper](https://doi.org/10.21769/BioProtoc.3938)  
+[Primer ID MiSeq protocol](https://doi.org/10.1128/JVI.00522-15)
 
 ```bash
     $ tcs -p params.json # run TCS pipeline with params.json
     $ tcs -j # CLI to generate params.json
     $ tcs -h # print out the help
 ```
+---
+### `tcs_log`
+
+Use `tcs_log` script to pool run logs and TCS fasta files after one batch of `tcs` jobs.
+
+
+Example file structure:  
+```
+batch_tcs_jobs/  
+      ├── lib1  
+      ├── lib2  
+      ├── lib3  
+      ├── lib4  
+      ├── ...  
+```
+
+Example command:
+```bash
+    $ tcs_log batch_tcs_jobs
+```
+
+---
+
+### `locator`  
+Use executable `locator` to get the coordinates of the sequences on HIV/SIV reference genome from a FASTA file through a terminal
+
+```bash
+    $ locator -i sequence.fasta -o sequence.fasta.csv
+```
+---
 
 ## Some Examples
 
@@ -85,6 +114,13 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
   3. The conflict seems to be resovled. It was from a combination of using `!` as a function for factorial and the gem name `viral_seq`. @_@
 
 ## Updates
+
+### Version 1.0.15-03242021
+
+  1. Optimized the algorithm of end-join.
+  2. Fixed a bug in the `tcs` pipeline that sometimes combined tcs files are not saved.
+  3. Added `tcs_log` command to pool run logs and tcs files from one batch of tcs jobs.
+  4. Added the preset of MPID-HIVDR params file ***dr.json*** in /doc 
 
 ### Version 1.0.14-03052021
 

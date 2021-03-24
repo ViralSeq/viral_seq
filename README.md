@@ -4,12 +4,12 @@ A Ruby Gem containing bioinformatics tools for processing viral NGS data.
 
 Specifically for Primer ID sequencing and HIV drug resistance analysis.
 
-**Illustration of the Primer ID Sequencing**
+## Illustration for the Primer ID Sequencing
 
 
 ![Primer ID Sequencing](https://storage.googleapis.com/tcs-dr-public/pid.png)
 
-*Reference reading on Primer ID sequencing*  
+### Reference readings on the Primer ID sequencing
 [Primer ID JID paper](https://doi.org/10.21769/BioProtoc.3938)  
 [Primer ID MiSeq protocol](https://doi.org/10.1128/JVI.00522-15)
 

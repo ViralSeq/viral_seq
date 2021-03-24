@@ -17,6 +17,9 @@ Specifically for Primer-ID sequencing and HIV drug resistance analysis.
 ### `tcs`  
 Use executable `tcs` pipeline to process Primer ID MiSeq sequencing data.
 
+
+![Primer ID Sequencing](https://storage.googleapis.com/tcs-dr-public/pid.png)
+
 *Reference reading on Primer ID sequencing*  
 [Primer ID JID paper](https://doi.org/10.21769/BioProtoc.3938)  
 [Primer ID MiSeq protocol](https://doi.org/10.1128/JVI.00522-15)
@@ -120,7 +123,7 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
   1. Optimized the algorithm of end-join.
   2. Fixed a bug in the `tcs` pipeline that sometimes combined tcs files are not saved.
   3. Added `tcs_log` command to pool run logs and tcs files from one batch of tcs jobs.
-  4. Added the preset of MPID-HIVDR params file ***dr.json*** in /doc 
+  4. Added the preset of MPID-HIVDR params file ***dr.json*** in /doc
 
 ### Version 1.0.14-03052021
 

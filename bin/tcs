@@ -29,6 +29,7 @@ require 'viral_seq'
 require 'json'
 require 'colorize'
 require 'optparse'
+
 options = {}
 
 banner = '-'*50 + "\n" +

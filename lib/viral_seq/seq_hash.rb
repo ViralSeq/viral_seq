@@ -394,7 +394,6 @@ module ViralSeq
             end
           end
         end
-
         consensus_seq += call_consensus_base(max_base_list)
       end
       return consensus_seq

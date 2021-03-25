@@ -121,6 +121,13 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
+
+### Version 1.0.16-03252021
+
+  1. Add `platform_format` option in the json generator of the `tcs` Pipeline.
+  Users can choose from 3 MiSeq platforms for processing their sequencing data.
+  MiSeq 300x7x300 is the default option.
+
 ### Version 1.0.15-03242021
 
   1. Optimized the algorithm of end-join.

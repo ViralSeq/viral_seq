@@ -29,7 +29,7 @@ require 'viral_seq'
 require 'json'
 require 'colorize'
 require 'optparse'
-
+require '/Users/shuntaiz/Documents/work/Deep_sequencing/Ruby/GITHUB/ViralSeq/lib/viral_seq/tcs_json.rb'
 options = {}
 
 banner = '-'*50 + "\n" +
@@ -113,6 +113,12 @@ if params[:platform_error_rate]
   error_rate = params[:platform_error_rate]
 else
   error_rate = 0.02
+end
+
+if params[:platform_format]
+  $platform_sequencing_length = params[:platform_format]
+else
+  $platform_sequencing_length = 300
 end
 
 primers = params[:primer_pairs]
@@ -273,7 +279,6 @@ primers.each do |primer|
       r1_sub_seq << bio_r1[seq_name]
       r2_sub_seq << bio_r2[seq_name]
     end
-
     #consensus name including the Primer ID and number of raw sequences of that Primer ID, library name and setname.
     consensus_name = ">" + primer_id + "_" + seq_with_same_primer_id.size.to_s + "_" + libname + "_" + region
     r1_consensus = ViralSeq::SeqHash.array(r1_sub_seq).consensus(majority_cut_off)

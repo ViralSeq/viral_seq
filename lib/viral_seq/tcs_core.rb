@@ -305,7 +305,9 @@ module ViralSeq
       end
 
       def general_filter(seq)
-        if seq[1..-2] =~ /N/ # sequences with ambiguities except the 1st and last position removed
+        if seq.size < $platform_sequencing_length
+          return false
+        elsif seq[1..-2] =~ /N/ # sequences with ambiguities except the 1st and last position removed
           return false
         elsif seq =~ /A{11}/ # a string of poly-A indicates adaptor sequence
           return false

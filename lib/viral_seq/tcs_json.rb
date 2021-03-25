@@ -13,6 +13,22 @@ module ViralSeq
         print '> '
         param[:raw_sequence_dir] = gets.chomp.rstrip
 
+        puts "Choose MiSeq Platform (1-3):\n1. 150x7x150\n2. 250x7x250\n3. 300x7x300 (default)"
+        print "> "
+        pf_option = gets.chomp.rstrip
+        # while ![1,2,3].include?(pf_option.to_i)
+        #   print "Entered MiSeq Platform #{pf_option.red.bold} not valid (choose 1-3), try again\n> "
+        #   pf_option = gets.chomp.rstrip
+        # end
+        case pf_option.to_i
+        when 1
+          param[:platform_format] = 150
+        when 2
+          param[:platform_format] = 250
+        else
+          param[:platform_format] = 300
+        end
+
         puts 'Enter the estimated platform error rate (for TCS cut-off calculation), default as ' + '0.02'.red.bold
         print '> '
         input_error = gets.chomp.rstrip.to_f
@@ -52,12 +68,12 @@ module ViralSeq
           if ej =~ /y|yes/i
             data[:end_join] = true
 
-            print "End-join option? Choose from (1-4):\n
-            1: simple join, no overlap
-            2: known overlap \n
-            3: unknow overlap, use sample consensus to determine overlap, all sequence pairs have same overlap\n
-            4: unknow overlap, determine overlap by individual sequence pairs, sequence pairs can have different overlap\n
-            > "
+            puts "End-join option? Choose from (1-4):"
+            puts "1: simple join, no overlap"
+            puts "2: known overlap"
+            puts "3: unknow overlap, use sample consensus to determine overlap, all sequence pairs have same overlap"
+            puts "4: unknow overlap, determine overlap by individual sequence pairs, sequence pairs can have different overlap"
+            print "> "
             ej_option = gets.chomp.rstrip
             while ![1,2,3,4].include?(ej_option.to_i)
               puts "Entered end-join option #{ej_option.red.bold} not valid (choose 1-4), try again"
@@ -138,7 +154,12 @@ module ViralSeq
         if save_option =~ /y|yes/i
           print "Path to save JSON file:\n> "
           path = gets.chomp.rstrip
-          File.open(path, 'w') {|f| f.puts JSON.pretty_generate(param)}
+          while !validate_path_name(path)
+            print "Entered path no valid, try again.\n".red.bold
+            print "Path to save JSON file:\n> "
+            path = gets.chomp.rstrip
+          end
+          File.open(validate_path_name(path), 'w') {|f| f.puts JSON.pretty_generate(param)}
         end
 
         print "\nDo you wish to execute tcs pipeline with the input params now? Y/N \n> "
@@ -147,7 +168,7 @@ module ViralSeq
         if rsp =~ /y/i
           return param
         else
-          abort "Params json file generated. You can execute tcs pipeline using `tcs -p [params.json]`"
+          abort "Params json file generated. You can execute tcs pipeline using `tcs -p [params.json]`".blue
         end
 
       end
@@ -172,7 +193,17 @@ module ViralSeq
               when 3
                 :MAC239
               end
-      end
-    end
+      end # end of get_ref
+
+      def validate_path_name(path)
+        if path.empty?
+          return false
+        elsif File.directory? path
+          return File.join(path, 'params.json')
+        elsif File.directory?(File.dirname(path))
+          return path
+        end
+      end # end of validate_path_name
+    end # end of class << self
   end # end TcsJson
 end # end main module

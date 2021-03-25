@@ -29,7 +29,6 @@ require 'viral_seq'
 require 'json'
 require 'colorize'
 require 'optparse'
-require '/Users/shuntaiz/Documents/work/Deep_sequencing/Ruby/GITHUB/ViralSeq/lib/viral_seq/tcs_json.rb'
 options = {}
 
 banner = '-'*50 + "\n" +

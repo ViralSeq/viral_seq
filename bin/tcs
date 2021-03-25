@@ -29,6 +29,8 @@ require 'viral_seq'
 require 'json'
 require 'colorize'
 require 'optparse'
+require '/Users/shuntaiz/Documents/work/Deep_sequencing/Ruby/GITHUB/ViralSeq/lib/viral_seq/seq_hash_pair.rb'
+require '/Users/shuntaiz/Documents/work/Deep_sequencing/Ruby/GITHUB/ViralSeq/lib/viral_seq/seq_hash.rb'
 
 options = {}
 
@@ -369,6 +371,7 @@ primers.each do |primer|
     shp = ViralSeq::SeqHashPair.fa(out_dir_consensus)
     joined_sh = end_join(out_dir_consensus, primer[:end_join_option], primer[:overlap])
     log.puts Time.now.to_s + "\t" + "Paired TCS number: " + joined_sh.size.to_s
+
     summary_json[:combined_tcs] = joined_sh.size
 
     if export_raw

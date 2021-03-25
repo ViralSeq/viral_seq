@@ -123,7 +123,11 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ### Version 1.0.17-03252021
 
-  1. clean up `tcs`.
+  1. fixed a bug in the end-joining algorithm.
+
+### Version 1.0.17-03252021
+
+  1. cleaned up `tcs`.
 
 ### Version 1.0.16-03252021
 

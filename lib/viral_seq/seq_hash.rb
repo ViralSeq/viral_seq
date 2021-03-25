@@ -741,6 +741,7 @@ module ViralSeq
       seq_hash_unique_pass = []
 
       seq_hash_unique.each do |seq|
+        next if seq.nil?
         loc = ViralSeq::Sequence.new('', seq).locator(ref_option, path_to_muscle)
         next unless loc # if locator tool fails, skip this seq.
         if start_nt.include?(loc[0]) && end_nt.include?(loc[1])

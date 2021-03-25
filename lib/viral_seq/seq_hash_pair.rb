@@ -124,7 +124,7 @@ module ViralSeq
         else
           next
         end
-        joined_seq[seq_name] = joined_sequence
+        joined_seq[seq_name] = joined_sequence if joined_sequence
       end
 
       joined_seq_hash = ViralSeq::SeqHash.new

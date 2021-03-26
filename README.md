@@ -1,5 +1,7 @@
 # ViralSeq
 
+[![Join the chat at https://gitter.im/viral_seq/community](https://badges.gitter.im/viral_seq/community.svg)](https://gitter.im/viral_seq/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 A Ruby Gem containing bioinformatics tools for processing viral NGS data.
 
 Specifically for Primer ID sequencing and HIV drug resistance analysis.

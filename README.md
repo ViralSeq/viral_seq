@@ -121,26 +121,15 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
-### Version 1.0.17-03252021
+### Version 1.1.0-03252021
 
-  1. fixed a bug in the end-joining algorithm.
-
-### Version 1.0.17-03252021
-
-  1. cleaned up `tcs`.
-
-### Version 1.0.16-03252021
-
-  1. Add `platform_format` option in the json generator of the `tcs` Pipeline.
-  Users can choose from 3 MiSeq platforms for processing their sequencing data.
-  MiSeq 300x7x300 is the default option.
-
-### Version 1.0.15-03242021
-
-  1. Optimized the algorithm of end-join.
-  2. Fixed a bug in the `tcs` pipeline that sometimes combined tcs files are not saved.
-  3. Added `tcs_log` command to pool run logs and tcs files from one batch of tcs jobs.
-  4. Added the preset of MPID-HIVDR params file ***dr.json*** in /doc
+    1. Optimized the algorithm of end-join.
+    2. Fixed a bug in the `tcs` pipeline that sometimes combined tcs files are not saved.
+    3. Added `tcs_log` command to pool run logs and tcs files from one batch of tcs jobs.
+    4. Added the preset of MPID-HIVDR params file ***dr.json*** in /doc.
+    5. Add `platform_format` option in the json generator of the `tcs` Pipeline.
+    Users can choose from 3 MiSeq platforms for processing their sequencing data.
+    MiSeq 300x7x300 is the default option.
 
 ### Version 1.0.14-03052021
 

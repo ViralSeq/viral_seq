@@ -29,8 +29,6 @@ require 'viral_seq'
 require 'json'
 require 'colorize'
 require 'optparse'
-require '/Users/shuntaiz/Documents/work/Deep_sequencing/Ruby/GITHUB/ViralSeq/lib/viral_seq/seq_hash_pair.rb'
-require '/Users/shuntaiz/Documents/work/Deep_sequencing/Ruby/GITHUB/ViralSeq/lib/viral_seq/seq_hash.rb'
 
 options = {}
 

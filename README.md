@@ -1,5 +1,9 @@
 # ViralSeq
 
+[![Gem](https://img.shields.io/gem/v/viral_seq)](https://rubygems.org/gems/viral_seq)
+![GitHub](https://img.shields.io/github/license/viralseq/viral_seq)
+![Gem](https://img.shields.io/gem/dt/viral_seq?color=%23E9967A)
+![GitHub last commit](https://img.shields.io/github/last-commit/viralseq/viral_seq?color=%2300BFFF)
 [![Join the chat at https://gitter.im/viral_seq/community](https://badges.gitter.im/viral_seq/community.svg)](https://gitter.im/viral_seq/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 A Ruby Gem containing bioinformatics tools for processing viral NGS data.

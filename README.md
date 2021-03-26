@@ -16,8 +16,9 @@ Specifically for Primer ID sequencing and HIV drug resistance analysis.
 ![Primer ID Sequencing](./docs/assets/img/cover.jpg)
 
 ### Reference readings on the Primer ID sequencing
-[Primer ID JID paper](https://doi.org/10.21769/BioProtoc.3938)  
-[Primer ID MiSeq protocol](https://doi.org/10.1128/JVI.00522-15)
+[Explantion of Primer ID sequencing](https://doi.org/10.21769/BioProtoc.3938)  
+[Primer ID MiSeq protocol](https://doi.org/10.1128/JVI.00522-15)  
+[Application of Primer ID sequencing in COVID-19 research](https://doi.org/10.1126/scitranslmed.abb5883)
 
 ## Install
 

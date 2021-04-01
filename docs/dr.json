@@ -1,5 +1,4 @@
 {
-  "raw_sequence_dir": "MyExampleDir",
   "platform_error_rate": 0.02,
   "primer_pairs": [
     {

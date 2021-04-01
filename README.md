@@ -36,9 +36,18 @@ Use executable `tcs` pipeline to process **Primer ID MiSeq sequencing** data.
 Example commands:
 ```bash
     $ tcs -p params.json # run TCS pipeline with params.json
+    $ tcs -p params.json -i DIRECTORY
+    # run TCS pipeline with params.json and DIRECTORY
+    # if DIRECTORY is not defined in params.json
+    $ tcs -dr -i DIRECTORY
+    # run tcs-dr (MPID HIV drug resistance sequencing) pipeline
+    # DIRECTORY needs to be given.
     $ tcs -j # CLI to generate params.json
     $ tcs -h # print out the help
 ```
+
+[sample params.json for the tcs-dr pipeline](./docs/dr.json)
+
 ---
 ### `tcs_log`
 
@@ -127,6 +136,13 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
   3. The conflict seems to be resovled. It was from a combination of using `!` as a function for factorial and the gem name `viral_seq`. @_@
 
 ## Updates
+
+### Version 1.1.1-03292021
+
+  1. Added warning when paired_raw_sequence less than 0.1% of total_raw_sequence.
+  2. Added option `-i WORKING_DIRECTORY` to the `tcs` script.
+  If the `params.json` file does not contain the path to the working directory, it will append path to the run params.
+  3. Added option `-dr` to the `tcs` script.
 
 ### Version 1.1.0-03252021
 

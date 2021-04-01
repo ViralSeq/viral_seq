@@ -46,6 +46,14 @@ OptionParser.new do |opts|
     options[:params_json] = p
   end
 
+  opts.on("-i", "--input PATH_TO_WORKING_DIRECTORY", "Path to the working directory") do |p|
+    options[:input] = p
+  end
+
+  opts.on("-dr", "--dr_pipeline", "HIV drug resistance MPID pipeline") do |p|
+    options[:dr] = true
+  end
+
   opts.on("-h", "--help", "Prints this help") do
     puts opts
     exit
@@ -64,15 +72,21 @@ end.parse!
 
 if options[:json_generator]
   params = ViralSeq::TcsJson.generate
+elsif options[:dr]
+  params = ViralSeq::TcsDr::PARAMS
 elsif (options[:params_json] && File.exist?(options[:params_json]))
   params = JSON.parse(File.read(options[:params_json]), symbolize_names: true)
 else
   abort "No params JSON file found. Script terminated.".red
 end
 
-indir = params[:raw_sequence_dir]
+if options[:input]
+  indir = options[:input]
+else
+  indir = params[:raw_sequence_dir]
+end
 
-unless File.exist?(indir)
+unless indir and File.exist?(indir)
   abort "No input sequence directory found. Script terminated.".red.bold
 end
 
@@ -129,6 +143,7 @@ end
 
 primers.each do |primer|
   summary_json = {}
+  summary_json[:warnings] = []
   summary_json[:tcs_version] = ViralSeq::TCS_VERSION
   summary_json[:viralseq_version] = ViralSeq::VERSION
   summary_json[:runtime] = Time.now.to_s
@@ -181,6 +196,10 @@ primers.each do |primer|
   paired_seq_number = common_keys.size
   log.puts Time.now.to_s + "\t" +  "Paired raw sequences are : #{paired_seq_number.to_s}"
   summary_json[:paired_raw_sequence] = paired_seq_number
+  if paired_seq_number < raw_sequence_number * 0.001
+    summary_json[:warnings] <<
+      "WARNING: Filtered raw sequneces less than 0.1% of the total raw sequences. Possible contamination."
+  end
 
   common_keys.each do |seqtag|
     r1_seq = r1_passed_seq[seqtag]

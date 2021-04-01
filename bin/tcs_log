@@ -37,8 +37,26 @@ Dir.mkdir(outdir4) unless File.directory?(outdir4)
 
 log_file = File.join(tcs_dir,"log.csv")
 log = File.open(log_file,'w')
-log.puts "lib name,Region,Raw Sequences per barcode,R1 Raw,R2 Raw,Paired Raw,Cutoff,PID Length,Consensus1,Consensus2,Distinct to Raw,Resampling index,Combined TCS,Combined TCS after QC"
 
+header = %w{
+  lib_name
+  Region
+  Raw_Sequences_per_barcode
+  R1_Raw
+  R2_Raw
+  Paired_Raw
+  Cutoff
+  PID_Length
+  Consensus1
+  Consensus2
+  Distinct_to_Raw
+  Resampling_index
+  Combined_TCS
+  Combined_TCS_after_QC
+  WARNINGS
+}
+
+log.puts header.join(',')
 libs.each do |lib|
   Dir.mkdir(File.join(outdir2, lib)) unless File.directory?(File.join(outdir2, lib))
   fasta_files = []
@@ -77,6 +95,7 @@ libs.each do |lib|
                json_log[:resampling_param],
                json_log[:combined_tcs],
                json_log[:combined_tcs_after_qc],
+               json_log[:warnings],
              ].join(',') + "\n"
   end
 end

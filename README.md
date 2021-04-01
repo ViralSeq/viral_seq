@@ -137,7 +137,7 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
-### Version 1.1.1-03292021
+### Version 1.1.1-04012021
 
   1. Added warning when paired_raw_sequence less than 0.1% of total_raw_sequence.
   2. Added option `-i WORKING_DIRECTORY` to the `tcs` script.

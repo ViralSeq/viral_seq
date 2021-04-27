@@ -29,11 +29,22 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "rspec", "~> 3.0"
 
+  # This gem will work with Ruby version 2.5.0 or greater...
+  spec.required_ruby_version = '>= 2.5'
+  # This gem will work with RubyGem version 1.3.6 or greater...
+  spec.required_rubygems_version = '>= 1.3.6'
+
   # muscle_bio gem required
   spec.add_runtime_dependency "muscle_bio", "~> 0.4"
 
   # colorize gem required
   spec.add_runtime_dependency "colorize", "~> 0.1"
+
+  spec.add_runtime_dependency "prawn", "~> 2.3", '>= 2.3.0'
+
+  spec.add_runtime_dependency "prawn-table", "~> 0.2", '>= 0.2.0'
+
+  spec.add_runtime_dependency "combine_pdf", "~> 1.0", '>= 1.0.0'
 
   spec.requirements << 'R required for some functions'
 end

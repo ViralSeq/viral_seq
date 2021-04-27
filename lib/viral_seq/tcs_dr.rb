@@ -16,7 +16,7 @@ module ViralSeq
                   :ref_genome=>"HXB2",
                   :ref_start=>2648,
                   :ref_end=>3257,
-                  :indel=>true,
+                  :indel=>false,
                   :trim=>false},
                  {:region=>"PR",
                   :cdna=>

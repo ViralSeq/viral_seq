@@ -1,6 +1,6 @@
 
 module ViralSeq
-  class SDRM
+  class SeqHash
 
     # functions to identify SDRMs from a ViralSeq::SeqHash object at HIV PR region.
     #   works for MPID-DR protocol (dx.doi.org/10.17504/protocols.io.useewbe)

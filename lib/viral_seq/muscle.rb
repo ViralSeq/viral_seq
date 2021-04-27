@@ -39,8 +39,9 @@ module ViralSeq
 
     def self.align(ref_seq = "", test_seq = "", path_to_muscle = false)
       temp_dir = Dir.home
-      temp_file = File.join(temp_dir, "_temp_muscle_in")
-      temp_aln = File.join(temp_dir, "_temp_muscle_aln")
+      temp_name = "_"  + SecureRandom.alphanumeric
+      temp_file = File.join(temp_dir, temp_name)
+      temp_aln = File.join(temp_dir, (temp_name + "_aln"))
       name = ">test"
       temp_in = File.open(temp_file,"w")
       temp_in.puts ">ref"

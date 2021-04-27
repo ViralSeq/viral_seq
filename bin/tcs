@@ -59,6 +59,10 @@ OptionParser.new do |opts|
     exit
   end
 
+  opts.on("--keep-original", "keep raw sequence files") do
+    options[:keep] = true
+  end
+
   opts.on("-v", "--version", "Version info") do
     puts "tcs version: " + ViralSeq::TCS_VERSION.red.bold
     puts "viral_seq version: " + ViralSeq::VERSION.red.bold
@@ -155,6 +159,7 @@ primers.each do |primer|
   forward_primer = primer[:forward]
 
   export_raw = primer[:export_raw]
+  limit_raw = primer[:limit_raw]
 
   unless cdna_primer
     log.puts Time.now.to_s + "\t" + region + " does not have cDNA primer sequence. #{region} skipped."
@@ -261,7 +266,13 @@ primers.each do |primer|
     raw_r1_f = File.open(outfile_raw_r1, 'w')
     raw_r2_f = File.open(outfile_raw_r2, 'w')
 
-    bio_r1.keys.each do |k|
+    if limit_raw
+      raw_keys = bio_r1.keys.sample(limit_raw.to_i)
+    else
+      raw_keys = bio_r1.keys
+    end
+
+    raw_keys.each do |k|
       raw_r1_f.puts k + "_r1"
       raw_r2_f.puts k + "_r2"
       raw_r1_f.puts bio_r1[k]
@@ -474,9 +485,11 @@ primers.each do |primer|
   end
 end
 
-log.puts Time.now.to_s + "\t" + "Removing raw sequence files..."
-File.unlink(r1_f)
-File.unlink(r2_f)
+unless options[:keep]
+  log.puts Time.now.to_s + "\t" + "Removing raw sequence files..."
+  File.unlink(r1_f)
+  File.unlink(r2_f)
+end
 log.puts Time.now.to_s + "\t" + "TCS pipeline successfuly exercuted."
 log.close
 puts "DONE!"

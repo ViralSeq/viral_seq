@@ -137,6 +137,12 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
+### Version 1.1.2-04262021
+
+  1. Added function `ViralSeq::DRMs.sdrm_json` to export SDRM as json object.
+  2. Added a random string to the temp file names for `muscle_bio` to avoid issues when running scripts in parallel.
+  3. Added `--keep-original` flag to the `tcs` pipeline. 
+
 ### Version 1.1.1-04012021
 
   1. Added warning when paired_raw_sequence less than 0.1% of total_raw_sequence.

@@ -70,6 +70,34 @@ Example command:
 ```
 
 ---
+### `tcs_sdrm`
+
+Use `tcs_sdrm` pipeline for HIV-1 drug resistance mutation and recency
+
+Example command:
+```bash
+    $ tcs_sdrm libs_dir
+```
+
+lib_dir file structure:
+```
+libs_dir/
+├── lib1
+  ├── lib1_RT
+  ├── lib1_PR
+  ├── lib1_IN
+  ├── lib1_V1V3
+├── lib2
+  ├── lib1_RT
+  ├── lib1_PR
+  ├── lib1_IN
+  ├── lib1_V1V3
+├── ...
+```
+
+Output data in a new dir as 'libs_dir_SDRM'
+
+---
 
 ### `locator`  
 Use executable `locator` to get the coordinates of the sequences on HIV/SIV reference genome from a FASTA file through a terminal

@@ -1,0 +1,398 @@
+#!/usr/bin/env ruby
+# tcs/sdrm pipeline for HIV-1 drug resistance mutation and recency
+#
+# command example:
+#   $ tcs_sdrm libs_dir
+#
+# lib_dir file structure:
+#   libs_dir
+#   ├── lib1
+#     ├── lib1_RT
+#     ├── lib1_PR
+#     ├── lib1_IN
+#     ├── lib1_V1V3
+#   ├── lib2
+#     ├── lib1_RT
+#     ├── lib1_PR
+#     ├── lib1_IN
+#     ├── lib1_V1V3
+#   ├── ...
+#
+# output data in a new dir as 'libs_dir_SDRM'
+
+require 'viral_seq'
+require 'json'
+require 'csv'
+require 'fileutils'
+require 'prawn'
+require 'prawn/table'
+require 'combine_pdf'
+
+def abstract_line(data)
+  return_data = data[3] + data[2] + data[4] + ":" +
+                (data[6].to_f * 100).round(2).to_s + "(" +
+                (data[7].to_f * 100).round(2).to_s + "-" +
+                (data[8].to_f * 100).round(2).to_s + "); "
+end
+
+# run params
+log = []
+
+log << { time: Time.now }
+log << { viral_seq_version: ViralSeq::VERSION }
+log << { tcs_version: ViralSeq::TCS_VERSION }
+r_version = `R --version`.split("\n")[0]
+log << { R_version: r_version}
+sdrm_list = {}
+sdrm_list[:nrti] = ViralSeq::DRMs.sdrm_json(:nrti)
+sdrm_list[:nnrti] = ViralSeq::DRMs.sdrm_json(:nnrti)
+sdrm_list[:hiv_pr] = ViralSeq::DRMs.sdrm_json(:hiv_pr)
+sdrm_list[:hiv_in] = ViralSeq::DRMs.sdrm_json(:hiv_in)
+log << { sdrm_list: sdrm_list }
+
+# input dir
+indir = ARGV[0]
+libs = Dir[indir + "/*"]
+log << { processed_libs: libs }
+
+#output dir
+outdir = indir + "_SDRM"
+Dir.mkdir(outdir) unless File.directory?(outdir)
+
+libs.each do |lib|
+
+  r_script = ViralSeq::R_SCRIPT.dup
+
+  next unless File.directory?(lib)
+
+  lib_name = File.basename(lib)
+  out_lib_dir = File.join(outdir, lib_name)
+  Dir.mkdir(out_lib_dir) unless File.directory?(out_lib_dir)
+
+  sub_seq_files = Dir[lib + "/*"]
+
+  seq_summary_file = File.join(out_lib_dir, (lib_name + "_summary.csv"))
+  seq_summary_out = File.open(seq_summary_file, "w")
+  seq_summary_out.puts 'Region,TCS,TCS with A3G/F hypermutation,TCS with stop codon,' +
+                       'TCS w/o hypermutation and stop codon,' +
+                       'Poisson cutoff for minority mutation (>=),Pi,Dist20'
+
+  point_mutation_file = File.join(out_lib_dir, (lib_name + "_substitution.csv"))
+  point_mutation_out = File.open(point_mutation_file, "w")
+  point_mutation_out.puts "region,TCS,AA position,wild type,mutation," +
+                          "number,percentage,95% CI low, 95% CI high, notes"
+
+  linkage_file = File.join(out_lib_dir, (lib_name + "_linkage.csv"))
+  linkage_out = File.open(linkage_file, "w")
+  linkage_out.puts "region,TCS,mutation linkage,number," +
+                   "percentage,95% CI low, 95% CI high, notes"
+
+  aa_report_file = File.join(out_lib_dir, (lib_name + "_aa.csv"))
+  aa_report_out = File.open(aa_report_file, "w")
+  aa_report_out.puts "region,ref.aa.positions,TCS.number," +
+                     ViralSeq::AMINO_ACID_LIST.join(",")
+
+  summary_json_file = File.join(out_lib_dir, (lib_name + "_summary.json"))
+  summary_json_out = File.open(summary_json_file,"w")
+
+  filtered_seq_dir = File.join(out_lib_dir, (lib_name + "_filtered_seq"))
+  Dir.mkdir(filtered_seq_dir) unless File.directory?(filtered_seq_dir)
+
+  aln_seq_dir = File.join(out_lib_dir, (lib_name + "_aln_seq"))
+  Dir.mkdir(aln_seq_dir) unless File.directory?(aln_seq_dir)
+
+  point_mutation_list = []
+  linkage_list = []
+  aa_report_list = []
+  summary_hash = {}
+
+  sub_seq_files.each do |sub_seq|
+    seq_basename = File.basename(sub_seq)
+    seqs = ViralSeq::SeqHash.fa(sub_seq)
+    next if seqs.size < 3
+    if seq_basename =~ /V1V3/i
+      summary_hash[:V1V3] = "#{seqs.size.to_s},NA,NA,NA,NA"
+      FileUtils.cp(sub_seq, filtered_seq_dir)
+    elsif seq_basename =~ /PR/i
+      a3g_check = seqs.a3g
+      a3g_seqs = a3g_check[:a3g_seq]
+      a3g_filtered_seqs = a3g_check[:filtered_seq]
+      stop_codon_check = a3g_filtered_seqs.stop_codon
+      stop_codon_seqs = stop_codon_check[:with_stop_codon]
+      filtered_seqs = stop_codon_check[:without_stop_codon]
+      poisson_minority_cutoff = filtered_seqs.pm
+      summary_hash[:PR] = [
+                            seqs.size.to_s,
+                            a3g_seqs.size.to_s,
+                            stop_codon_seqs.size.to_s,
+                            filtered_seqs.size.to_s,
+                            poisson_minority_cutoff.to_s
+                          ].join(',')
+      next if filtered_seqs.size < 3
+      filtered_seqs.write_nt_fa(File.join(filtered_seq_dir,seq_basename))
+
+      sdrm = filtered_seqs.sdrm_hiv_pr(poisson_minority_cutoff)
+      point_mutation_list += sdrm[0]
+      linkage_list += sdrm[1]
+      aa_report_list += sdrm[2]
+
+    elsif seq_basename =~/IN/i
+      a3g_check = seqs.a3g
+      a3g_seqs = a3g_check[:a3g_seq]
+      a3g_filtered_seqs = a3g_check[:filtered_seq]
+      stop_codon_check = a3g_filtered_seqs.stop_codon(2)
+      stop_codon_seqs = stop_codon_check[:with_stop_codon]
+      filtered_seqs = stop_codon_check[:without_stop_codon]
+      poisson_minority_cutoff = filtered_seqs.pm
+      summary_hash[:IN] = [
+                            seqs.size.to_s,
+                            a3g_seqs.size.to_s,
+                            stop_codon_seqs.size.to_s,
+                            filtered_seqs.size.to_s,
+                            poisson_minority_cutoff.to_s
+                          ].join(',')
+      next if filtered_seqs.size < 3
+      filtered_seqs.write_nt_fa(File.join(filtered_seq_dir,seq_basename))
+
+      sdrm = filtered_seqs.sdrm_hiv_in(poisson_minority_cutoff)
+      point_mutation_list += sdrm[0]
+      linkage_list += sdrm[1]
+      aa_report_list += sdrm[2]
+
+    elsif seq_basename =~/RT/i
+      rt_seq1 = {}
+      rt_seq2 = {}
+      seqs.dna_hash.each do |k,v|
+        rt_seq1[k] = v[0,267]
+        rt_seq2[k] = v[267..-1]
+      end
+      rt1 = ViralSeq::SeqHash.new(rt_seq1)
+      rt2 = ViralSeq::SeqHash.new(rt_seq2)
+      rt1_a3g = rt1.a3g
+      rt2_a3g = rt2.a3g
+      hypermut_seq_rt1 = rt1_a3g[:a3g_seq]
+      hypermut_seq_rt2 = rt2_a3g[:a3g_seq]
+      rt1_stop_codon = rt1.stop_codon(1)[:with_stop_codon]
+      rt2_stop_codon = rt2.stop_codon(2)[:with_stop_codon]
+      hypermut_seq_keys = (hypermut_seq_rt1.dna_hash.keys | hypermut_seq_rt2.dna_hash.keys)
+      stop_codon_seq_keys = (rt1_stop_codon.dna_hash.keys | rt2_stop_codon.dna_hash.keys)
+      reject_keys = (hypermut_seq_keys | stop_codon_seq_keys)
+      filtered_seqs = ViralSeq::SeqHash.new(seqs.dna_hash.reject {|k,v| reject_keys.include?(k) })
+      poisson_minority_cutoff = filtered_seqs.pm
+      summary_hash[:RT] = [
+                            seqs.size.to_s,
+                            hypermut_seq_keys.size.to_s,
+                            stop_codon_seq_keys.size.to_s,
+                            filtered_seqs.size.to_s,
+                            poisson_minority_cutoff.to_s
+                          ].join(',')
+      next if filtered_seqs.size < 3
+      filtered_seqs.write_nt_fa(File.join(filtered_seq_dir,seq_basename))
+
+      sdrm = filtered_seqs.sdrm_hiv_rt(poisson_minority_cutoff)
+      point_mutation_list += sdrm[0]
+      linkage_list += sdrm[1]
+      aa_report_list += sdrm[2]
+    end
+  end
+
+  point_mutation_list.each do |record|
+    point_mutation_out.puts record.join(",")
+  end
+  linkage_list.each do |record|
+    linkage_out.puts record.join(",")
+  end
+  aa_report_list.each do |record|
+    aa_report_out.puts record.join(",")
+  end
+
+  filtered_seq_files = Dir[filtered_seq_dir + "/*"]
+
+  out_r_csv = File.join(out_lib_dir, (lib_name + "_pi.csv"))
+  out_r_pdf = File.join(out_lib_dir, (lib_name + "_pi.pdf"))
+
+  if filtered_seq_files.size > 0
+    filtered_seq_files.each do |seq_file|
+      filtered_sh = ViralSeq::SeqHash.fa(seq_file)
+      next if filtered_sh.size < 3
+      aligned_sh = filtered_sh.random_select(1000).align
+      aligned_sh.write_nt_fa(File.join(aln_seq_dir, File.basename(seq_file)))
+    end
+
+    r_script.gsub!(/PATH_TO_FASTA/,aln_seq_dir)
+    File.unlink(out_r_csv) if File.exist?(out_r_csv)
+    File.unlink(out_r_pdf) if File.exist?(out_r_pdf)
+    r_script.gsub!(/OUTPUT_CSV/,out_r_csv)
+    r_script.gsub!(/OUTPUT_PDF/,out_r_pdf)
+    r_script_file = File.join(out_lib_dir, "/pi.R")
+    File.open(r_script_file,"w") {|line| line.puts r_script}
+    print `Rscript #{r_script_file} 1> /dev/null 2> /dev/null`
+    if File.exist?(out_r_csv)
+      pi_csv = File.readlines(out_r_csv)
+      pi_csv.each do |line|
+        line.chomp!
+        data = line.split(",")
+        tag = data[0].split("_")[-1].gsub(/\W/,"").to_sym
+        summary_hash[tag] += "," + data[1].to_f.round(4).to_s + "," + data[2].to_f.round(4).to_s
+      end
+      [:PR, :RT, :IN, :V1V3].each do |regions|
+        next unless summary_hash[regions]
+        seq_summary_out.puts regions.to_s + "," + summary_hash[regions]
+      end
+      File.unlink(out_r_csv)
+    end
+    File.unlink(r_script_file)
+  end
+
+  seq_summary_out.close
+  point_mutation_out.close
+  linkage_out.close
+  aa_report_out.close
+
+  summary_lines = File.readlines(seq_summary_file)
+  summary_lines.shift
+
+  tcs_PR = 0
+  tcs_RT = 0
+  tcs_IN = 0
+  tcs_V1V3 = 0
+  pi_RT = 0.0
+  pi_V1V3 = 0.0
+  dist20_RT = 0.0
+  dist20_V1V3 = 0.0
+  summary_lines.each do |line|
+      data = line.chomp.split(",")
+      if data[0] == "PR"
+          tcs_PR = data[4].to_i
+      elsif data[0] == "RT"
+          tcs_RT = data[4].to_i
+          pi_RT = data[6].to_f
+          dist20_RT = data[7].to_f
+      elsif data[0] == "IN"
+          tcs_IN = data[4].to_i
+      elsif data[0] == "V1V3"
+          tcs_V1V3 = data[1].to_i
+          pi_V1V3 = data[6].to_f
+          dist20_V1V3 = data[7].to_f
+      end
+  end
+
+  recency = ViralSeq::Recency.define(
+                              tcs_RT: tcs_RT,
+                              tcs_V1V3: tcs_V1V3,
+                              pi_RT: pi_RT,
+                              dist20_RT: dist20_RT,
+                              pi_V1V3: pi_V1V3,
+                              dist20_V1V3: dist20_V1V3
+                              )
+
+  sdrm_lines = File.readlines(point_mutation_file)
+  sdrm_lines.shift
+  sdrm_PR = ""
+  sdrm_RT = ""
+  sdrm_IN = ""
+  sdrm_lines.each do |line|
+      data = line.chomp.split(",")
+      next if data[-1] == "*"
+      if data[0] == "PR"
+          sdrm_PR += abstract_line(data)
+      elsif data[0] =~ /NRTI/
+          sdrm_RT += abstract_line(data)
+      elsif data[0] == "IN"
+          sdrm_IN += abstract_line(data)
+      end
+  end
+
+  summary_json = [
+    sample_id: lib_name,
+    tcs_PR: tcs_PR,
+    tcs_RT: tcs_RT,
+    tcs_IN: tcs_IN,
+    tcs_V1V3: tcs_V1V3,
+    pi_RT: pi_RT,
+    dist20_RT: dist20_RT,
+    dist20_V1V3: dist20_V1V3,
+    recency: recency,
+    sdrm_PR: sdrm_PR,
+    sdrm_RT: sdrm_RT,
+    sdrm_IN: sdrm_IN
+  ]
+
+  summary_json_out.puts JSON.pretty_generate(summary_json)
+  summary_json_out.close
+
+  csvs = [
+    {
+      name: "summary",
+      title: "Summary",
+      file: seq_summary_file,
+      newPDF: "",
+      table_width: [65,55,110,110,110,110,60,60],
+      extra_text: ""
+    },
+    {
+      name: "substitution",
+      title: "Surveillance Drug Resistance Mutations",
+      file: point_mutation_file,
+      newPDF: "",
+      table_width: [65,55,85,80,60,65,85,85,85,45],
+      extra_text: "* Mutation below Poisson cut-off for minority mutations"
+    },
+    {
+      name: "linkage",
+      title: "Mutation Linkage",
+      file: linkage_file,
+      newPDF: "",
+      table_width: [55,50,250,60,80,80,80,45],
+      extra_text: "* Mutation below Poisson cut-off for minority mutations"
+    }
+  ]
+
+  csvs.each do |csv|
+    file_name = File.join(out_lib_dir, (csv[:name] + ".pdf"))
+    next unless File.exist? csv[:file]
+    Prawn::Document.generate(file_name, :page_layout => :landscape) do |pdf|
+      pdf.text((File.basename(lib, ".*") + ': ' + csv[:title]),
+      :size => 20,
+      :align => :center,
+      :style => :bold)
+      pdf.move_down 20
+      table_data = CSV.open(csv[:file]).to_a
+      header = table_data.first
+      pdf.table(table_data,
+        :header => header,
+        :position => :center,
+        :column_widths => csv[:table_width],
+        :row_colors => ["B6B6B6", "FFFFFF"],
+        :cell_style => {:align => :center, :size => 10}) do |table|
+        table.row(0).style :font_style => :bold, :size => 12 #, :background_color => 'ff00ff'
+      end
+      pdf.move_down 5
+      pdf.text(csv[:extra_text], :size => 8, :align => :justify,)
+    end
+    csv[:newPDF] = file_name
+  end
+
+  pdf = CombinePDF.new
+  csvs.each do |csv|
+    pdf << CombinePDF.load(csv[:newPDF]) if File.exist?(csv[:newPDF])
+  end
+  pdf << CombinePDF.load(out_r_pdf) if File.exist?(out_r_pdf)
+
+  pdf.number_pages location: [:bottom_right],
+  number_format: "Swanstrom\'s lab HIV SDRM Pipeline, version #{$sdrm_version_number} by S.Z. and M.U.C.   Page %s",
+  font_size: 6,
+  opacity: 0.5
+
+  pdf.save File.join(out_lib_dir, (lib_name + ".pdf"))
+
+  csvs.each do |csv|
+    File.unlink csv[:newPDF]
+  end
+end
+
+log_file = indir + "_sdrm_log.json"
+
+File.open(log_file, 'w') { |f| f.puts JSON.pretty_generate(log) }
+
+FileUtils.touch(File.join(outdir, ".done"))

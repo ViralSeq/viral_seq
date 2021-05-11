@@ -90,7 +90,7 @@ module ViralSeq
 
       # function to export SDRM positions as json object
       # @param (see #sdrm_hash)
-      # @return [String] json String of SDRM positions
+      # @return [Array] json Array of SDRM positions
 
       def sdrm_json(options)
         sdrm = ViralSeq::DRMs.sdrm_hash(options)
@@ -102,7 +102,7 @@ module ViralSeq
           mutation[:mutationCodons] = muts[1]
           json_array << mutation
         end
-        JSON.pretty_generate(json_array)
+        return json_array
       end
     end
   end

@@ -11,7 +11,7 @@ module ViralSeq
   #     # filter nt sequences with the reference coordinates
   #   filtered_seqhash = aligned_pr_seqhash.stop_codon[:without_stop_codon]
   #     # return a new ViralSeq::SeqHash object without stop codons
-  #   filtered_seqhash = filtered_seqhash.a3g[1]
+  #   filtered_seqhash = filtered_seqhash.a3g[:filtered_seq]
   #     # further filter out sequences with A3G hypermutations
   #   filtered_seqhash.pi
   #     # return pairwise diveristy π
@@ -185,6 +185,25 @@ module ViralSeq
       new_seqhash.title = self.title + "_with_" + sh2.title
       new_seqhash.file = self.file + "," + sh2.file
       return new_seqhash
+    end
+
+    # sample a certain number of sequences from a SeqHash object
+    # @param n [Integer] number of sequences to sample
+    # @return [ViralSeq::SeqHash] sampled SeqHash
+
+    def sample(n = 1)
+      keys = self.dna_hash.keys
+      sampled_keys = keys.sample(n)
+      sampled_nt = {}
+      sampled_aa = {}
+      sampled_qc = {}
+      sampled_title = self.title + "_sampled_" + n.to_s
+      sampled_keys.each do |k|
+        sampled_nt[k] = self.dna_hash[k]
+        sampled_aa[k] = self.aa_hash[k]
+        sampled_qc[k] = self.qc_hash[k]
+      end
+      return ViralSeq::SeqHash.new(sampled_nt, sampled_aa, sampled_qc, sampled_title, self.file)
     end
 
     # write the nt sequences to a FASTA format file
@@ -582,8 +601,8 @@ module ViralSeq
         temp_dir=File.dirname($0)
       end
 
-      temp_file = temp_dir + "/_temp_muscle_in"
-      temp_aln = temp_dir + "/_temp_muscle_aln"
+      temp_file = File.join(temp_dir, "_temp_muscle_in")
+      temp_aln = File.join(temp_dir, "_temp_muscle_aln")
       File.open(temp_file, 'w'){|f| seq_hash.each {|k,v| f.puts k; f.puts v}}
       if path_to_muscle
         unless ViralSeq.check_muscle?(path_to_muscle)
@@ -808,7 +827,7 @@ module ViralSeq
     end # end of locator
     alias_method :loc, :sequence_locator
 
-    # Remove squences with residual offspring Primer IDs.
+    # Remove sequences with residual offspring Primer IDs.
     #   Compare PID with sequences which have identical sequences.
     #   PIDs differ by 1 base will be recognized. If PID1 is x time (cutoff) greater than PID2, PID2 will be disgarded.
     #     each sequence tag starting with ">" and the Primer ID sequence
@@ -1155,6 +1174,7 @@ module ViralSeq
         new_sh.aa_hash[k] = aa_hash[k]
         new_sh.qc_hash[k] = qc_hash[k]
       end
+      new_sh.file = self.file
       new_sh.title = self.title + "_" + n.to_s
       return new_sh
     end

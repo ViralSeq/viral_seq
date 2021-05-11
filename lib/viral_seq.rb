@@ -39,6 +39,7 @@ require_relative "viral_seq/tcs_core"
 require_relative "viral_seq/tcs_json"
 require_relative "viral_seq/tcs_dr"
 require_relative "viral_seq/sdrm"
+require_relative "viral_seq/recency"
 
 require "muscle_bio"
 require "json"

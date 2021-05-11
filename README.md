@@ -109,7 +109,7 @@ qc_seqhash = aligned_seqhash.hiv_seq_qc(2253, 2549, false, :HXB2)
 Further filter out sequences with Apobec3g/f hypermutations
 
 ```ruby
-qc_seqhash = qc_seqhash.a3g
+qc_seqhash = qc_seqhash.a3g[:filtered_seq]
 ```
 
 Calculate nucleotide diveristy π
@@ -137,11 +137,22 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
+### Version 1.2.0-05102021
+
+  1. Added `tcs_sdrm` pipeline as an excutable.
+  `tcs_sdrm` processes `tcs`-processed HIV MPID-NGS data for drug resistance mutations, recency and phylogentic analysis.
+
+  2. Added function ViralSeq::SeqHash#sample.
+
+  3. Added recency determining function `ViralSeq::Recency::define`
+
+  4. Fixed a few bugs related to `tcs_sdrm`.
+
 ### Version 1.1.2-04262021
 
   1. Added function `ViralSeq::DRMs.sdrm_json` to export SDRM as json object.
   2. Added a random string to the temp file names for `muscle_bio` to avoid issues when running scripts in parallel.
-  3. Added `--keep-original` flag to the `tcs` pipeline. 
+  3. Added `--keep-original` flag to the `tcs` pipeline.
 
 ### Version 1.1.1-04012021
 

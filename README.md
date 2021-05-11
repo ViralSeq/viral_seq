@@ -1,6 +1,6 @@
 # ViralSeq
 
-[![Gem Version](https://badge.fury.io/rb/viral_seq.svg)](https://rubygems.org/gems/viral_seq)
+[![Gem Version](https://img.shields.io/gem/v/viral_seq?color=%2300e673&style=flat-square)](https://rubygems.org/gems/viral_seq)
 ![GitHub](https://img.shields.io/github/license/viralseq/viral_seq)
 ![Gem](https://img.shields.io/gem/dt/viral_seq?color=%23E9967A)
 ![GitHub last commit](https://img.shields.io/github/last-commit/viralseq/viral_seq?color=%2300BFFF)

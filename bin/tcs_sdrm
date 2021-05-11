@@ -28,6 +28,10 @@ require 'prawn'
 require 'prawn/table'
 require 'combine_pdf'
 
+unless ARGV[0] && File.directory?(ARGV[0])
+  abort "No sequence data provided. `tcs_sdrm` pipeline aborted. "
+end
+
 def abstract_line(data)
   return_data = data[3] + data[2] + data[4] + ":" +
                 (data[6].to_f * 100).round(2).to_s + "(" +

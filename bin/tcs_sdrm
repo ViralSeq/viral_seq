@@ -32,6 +32,14 @@ unless ARGV[0] && File.directory?(ARGV[0])
   abort "No sequence data provided. `tcs_sdrm` pipeline aborted. "
 end
 
+begin
+  r_version = `R --version`.split("\n")[0]
+  r_check = `R -e '#{ViralSeq::R_SCRIPT_CHECK_PACKAGES}' > /dev/null 2>&1`
+rescue Errno::ENOENT
+  abort '"R" is not installed. Install R at https://www.r-project.org/' +
+        "\n`tcs_sdrm` pipeline aborted."
+end
+
 def abstract_line(data)
   return_data = data[3] + data[2] + data[4] + ":" +
                 (data[6].to_f * 100).round(2).to_s + "(" +
@@ -45,7 +53,6 @@ log = []
 log << { time: Time.now }
 log << { viral_seq_version: ViralSeq::VERSION }
 log << { tcs_version: ViralSeq::TCS_VERSION }
-r_version = `R --version`.split("\n")[0]
 log << { R_version: r_version}
 sdrm_list = {}
 sdrm_list[:nrti] = ViralSeq::DRMs.sdrm_json(:nrti)
@@ -395,7 +402,7 @@ libs.each do |lib|
   end
 end
 
-log_file = indir + "_sdrm_log.json"
+log_file = File.join(File.dirname(indir), "sdrm_log.json")
 
 File.open(log_file, 'w') { |f| f.puts JSON.pretty_generate(log) }
 

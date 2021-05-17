@@ -3,6 +3,13 @@ module ViralSeq
   # array for all amino acid one letter abbreviations
   AMINO_ACID_LIST = ["A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y", "*"]
 
+  # R script to check if the required libraries are installed, if not, install the missing libraries
+  
+  R_SCRIPT_CHECK_PACKAGES = 'dir.create(path = Sys.getenv("R_LIBS_USER"), showWarnings = FALSE, recursive = TRUE);' +
+                            'packages <- c("ggplot2", "phangorn", "ape", "scales", "ggforce", "cowplot", "magrittr", "gridExtra");' +
+                            'install.packages(setdiff(packages, rownames(installed.packages())), lib = Sys.getenv("R_LIBS_USER"), repos = "https://cran.rstudio.com/")'
+
+
   # R script for tcs_sdrm script
 
   R_SCRIPT = 'setwd("PATH_TO_FASTA")

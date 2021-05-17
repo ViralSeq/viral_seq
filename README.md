@@ -72,7 +72,7 @@ Example command:
 ---
 ### `tcs_sdrm`
 
-Use `tcs_sdrm` pipeline for HIV-1 drug resistance mutation and recency
+Use `tcs_sdrm` pipeline for HIV-1 drug resistance mutation and recency.
 
 Example command:
 ```bash
@@ -96,6 +96,16 @@ libs_dir/
 ```
 
 Output data in a new dir as 'libs_dir_SDRM'
+
+
+**Note: [R](https://www.r-project.org/) and the following R libraries are required:**
+- phangorn
+- ape
+- scales
+- ggforce
+- cowplot
+- magrittr
+- gridExtra
 
 ---
 
@@ -164,6 +174,10 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
   3. The conflict seems to be resovled. It was from a combination of using `!` as a function for factorial and the gem name `viral_seq`. @_@
 
 ## Updates
+
+### Version 1.2.1-05172021
+
+  1. Added a function in R to check and install missing R packages for `tcs_sdrm` pipeline.
 
 ### Version 1.2.0-05102021
 

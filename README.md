@@ -31,7 +31,7 @@ Specifically for Primer ID sequencing and HIV drug resistance analysis.
 ### Excutables
 
 ### `tcs`  
-Use executable `tcs` pipeline to process **Primer ID MiSeq sequencing** data.
+Use executable `tcs` pipeline (v2.3.2) to process **Primer ID MiSeq sequencing** data.
 
 Example commands:
 ```bash
@@ -174,6 +174,11 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
   3. The conflict seems to be resovled. It was from a combination of using `!` as a function for factorial and the gem name `viral_seq`. @_@
 
 ## Updates
+
+### Version 1.2.2-05272021
+
+  1. Fixed a bug in the `tcs` pipeline that sometimes causes `SystemStackError`.
+  `tcs` pipeline upgraded to v2.3.2
 
 ### Version 1.2.1-05172021
 

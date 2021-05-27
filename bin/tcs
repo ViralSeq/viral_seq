@@ -371,9 +371,21 @@ primers.each do |primer|
   # Primer ID distribution in .json file
   out_pid_json = File.join(out_dir_set, 'primer_id.json')
   pid_json = {}
-  pid_json[:primer_id_in_use] = Hash[*(primer_id_in_use.sort_by {|k, v| [-v,k]}.flatten)]
-  pid_json[:primer_id_distribution] = Hash[*(primer_id_dis.sort_by{|k,v| k}.flatten)]
-  pid_json[:primer_id_frequency] = Hash[*(primer_id_count.sort_by {|k, v| [-v,k]}.flatten)]
+  pid_json[:primer_id_in_use] = {}
+  primer_id_in_use.sort_by {|k, v| [-v,k]}.each do |k,v|
+    pid_json[:primer_id_in_use][k] = v
+  end
+
+  pid_json[:primer_id_distribution] = {}
+  primer_id_dis.sort_by{|k,v| k}.each do |k,v|
+    pid_json[:primer_id_distribution][k] = v
+  end
+
+  pid_json[:primer_id_frequency] = {}
+  primer_id_count.sort_by {|k,v| [-v,k]}.each do |k,v|
+    pid_json[:primer_id_frequency][k] = v
+  end
+
   File.open(out_pid_json, 'w') do |f|
     f.puts JSON.pretty_generate(pid_json)
   end
@@ -490,6 +502,6 @@ unless options[:keep]
   File.unlink(r1_f)
   File.unlink(r2_f)
 end
-log.puts Time.now.to_s + "\t" + "TCS pipeline successfuly exercuted."
+log.puts Time.now.to_s + "\t" + "TCS pipeline successfuly executed."
 log.close
 puts "DONE!"

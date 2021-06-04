@@ -175,6 +175,11 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
+### Version 1.2.3-06042021
+
+  1. Add error rescue and report in the `tcs` pipeline.
+  error messages are stored in the .tcs_error file. `tcs` pipeline updated to v2.3.3.
+
 ### Version 1.2.2-05272021
 
   1. Fixed a bug in the `tcs` pipeline that sometimes causes `SystemStackError`.

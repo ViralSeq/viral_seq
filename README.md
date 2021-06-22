@@ -10,6 +10,8 @@ A Ruby Gem containing bioinformatics tools for processing viral NGS data.
 
 Specifically for Primer ID sequencing and HIV drug resistance analysis.
 
+#### tcs web app - https://primer-id.org/
+
 ## Illustration for the Primer ID Sequencing
 
 
@@ -31,7 +33,9 @@ Specifically for Primer ID sequencing and HIV drug resistance analysis.
 ### Excutables
 
 ### `tcs`  
-Use executable `tcs` pipeline (v2.3.2) to process **Primer ID MiSeq sequencing** data.
+Use executable `tcs` pipeline to process **Primer ID MiSeq sequencing** data.
+
+Web-based `tcs` analysis can be accessed at https://primer-id.org/
 
 Example commands:
 ```bash

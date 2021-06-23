@@ -179,6 +179,10 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
+### Version 1.2.4-06232021
+
+  1. Fixed a bug in the `tcs` pipeline related to the error message file.
+
 ### Version 1.2.3-06042021
 
   1. Add error rescue and report in the `tcs` pipeline.

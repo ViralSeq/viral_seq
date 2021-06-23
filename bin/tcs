@@ -101,7 +101,7 @@ log = File.open(runtime_log_file, "w")
 log.puts "TSC pipeline Version " + ViralSeq::TCS_VERSION.to_s
 log.puts "viral_seq Version " + ViralSeq::VERSION.to_s
 log.puts Time.now.to_s + "\t" + "Start TCS pipeline..."
-File.unlink(File.join(indir, ".tcs_error"))
+File.unlink(File.join(indir, ".tcs_error")) if File.exist?(File.join(indir, ".tcs_error"))
 
 begin
   libname = File.basename indir

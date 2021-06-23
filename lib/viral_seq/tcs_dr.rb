@@ -8,7 +8,7 @@ module ViralSeq
                    "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCTNNNNNNNNNNNCAGTCACTATAGGCTGTACTGTCCATTTATC",
                   :forward=>
                    "GCCTCCCTCGCGCCATCAGAGATGTGTATAAGAGACAGNNNNGGCCATTGACAGAAGAAAAAATAAAAGC",
-                  :majority=>0.5,
+                  :majority=>0,
                   :end_join=>true,
                   :end_join_option=>1,
                   :overlap=>0,
@@ -23,7 +23,7 @@ module ViralSeq
                    "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCTNNNNNNNNNCAGTTTAACTTTTGGGCCATCCATTCC",
                   :forward=>
                    "GCCTCCCTCGCGCCATCAGAGATGTGTATAAGAGACAGNNNNTCAGAGCAGACCAGAGCCAACAGCCCCA",
-                  :majority=>0.5,
+                  :majority=>0,
                   :end_join=>true,
                   :end_join_option=>3,
                   :TCS_QC=>true,
@@ -39,7 +39,7 @@ module ViralSeq
                   :cdna=>
                    "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCTNNNNNNNNNNNATCGAATACTGCCATTTGTACTGC",
                   :forward=>"GCCTCCCTCGCGCCATCAGAGATGTGTATAAGAGACAGNNNNAAAAGGAGAAGCCATGCATG",
-                  :majority=>0.5,
+                  :majority=>0,
                   :end_join=>true,
                   :end_join_option=>3,
                   :overlap=>171,
@@ -54,7 +54,7 @@ module ViralSeq
                    "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCTNNNNNNNNNNNCAGTCCATTTTGCTYTAYTRABVTTACAATRTGC",
                   :forward=>
                    "GCCTCCCTCGCGCCATCAGAGATGTGTATAAGAGACAGNNNNTTATGGGATCAAAGCCTAAAGCCATGTGTA",
-                  :majority=>0.5,
+                  :majority=>0,
                   :end_join=>true,
                   :end_join_option=>1,
                   :overlap=>0,

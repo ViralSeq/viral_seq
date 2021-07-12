@@ -179,11 +179,17 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
+### Version 1.2.6-07122021
+
+  1. Optimized the workflow of the `tcs` pipeline in the "end-join/QC/Trimming" section.
+  `tcs` version to v2.3.5.
+
+
 ### Version 1.2.5-06232021
 
   1. Add error rescue and report in the `tcs` pipeline.
     error messages are stored in the .tcs_error file. `tcs` pipeline updated to v2.3.4.
-  2. Use simple majority for the consensus cut-off in the default setting of the `tcs -dr` pipeline. 
+  2. Use simple majority for the consensus cut-off in the default setting of the `tcs -dr` pipeline.
 
 ### Version 1.2.2-05272021
 

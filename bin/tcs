@@ -137,7 +137,7 @@ begin
   end
 
   primers = params[:primer_pairs]
-  if primers.empty?
+  if primers.empty? or primers.nil?
     ViralSeq::TcsCore.log_and_abort log, "No primer information. Script terminated."
   end
 
@@ -415,71 +415,65 @@ begin
         joined_sh_raw = end_join(out_dir_raw, primer[:end_join_option], primer[:overlap])
       end
 
-    else
-      File.open(outfile_log, "w") do |f|
-        f.puts JSON.pretty_generate(summary_json)
-      end
-      next
-    end
-
-    if primer[:TCS_QC]
-      ref_start = primer[:ref_start]
-      ref_end = primer[:ref_end]
-      ref_genome = primer[:ref_genome].to_sym
-      indel = primer[:indel]
-      if ref_start == 0
-        ref_start = 0..(ViralSeq::RefSeq.get(ref_genome).size - 1)
-      end
-      if ref_end == 0
-        ref_end = 0..(ViralSeq::RefSeq.get(ref_genome).size - 1)
-      end
-      if primer[:end_join_option] == 1 and primer[:overlap] == 0
-        r1_sh = ViralSeq::SeqHash.fa(outfile_r1)
-        r2_sh = ViralSeq::SeqHash.fa(outfile_r2)
-        r1_sh = r1_sh.hiv_seq_qc(ref_start, (0..(ViralSeq::RefSeq.get(ref_genome).size - 1)), indel, ref_genome)
-        r2_sh = r2_sh.hiv_seq_qc((0..(ViralSeq::RefSeq.get(ref_genome).size - 1)), ref_end, indel, ref_genome)
-        new_r1_seq = r1_sh.dna_hash.each_with_object({}) {|(k, v), h| h[k[0..-4]] = v}
-        new_r2_seq = r2_sh.dna_hash.each_with_object({}) {|(k, v), h| h[k[0..-4]] = v}
-        joined_seq = {}
-        new_r1_seq.each do |seq_name, seq|
-          next unless seq
-          next unless new_r2_seq[seq_name]
-          joined_seq[seq_name] = seq + new_r2_seq[seq_name]
+      if primer[:TCS_QC]
+        ref_start = primer[:ref_start]
+        ref_end = primer[:ref_end]
+        ref_genome = primer[:ref_genome].to_sym
+        indel = primer[:indel]
+        if ref_start == 0
+          ref_start = 0..(ViralSeq::RefSeq.get(ref_genome).size - 1)
         end
-        joined_sh = ViralSeq::SeqHash.new(joined_seq)
-
-        if export_raw
-          r1_sh_raw = ViralSeq::SeqHash.fa(outfile_raw_r1)
-          r2_sh_raw = ViralSeq::SeqHash.fa(outfile_raw_r2)
-          r1_sh_raw = r1_sh_raw.hiv_seq_qc(ref_start, (0..(ViralSeq::RefSeq.get(ref_genome).size - 1)), indel, ref_genome)
-          r2_sh_raw = r2_sh_raw.hiv_seq_qc((0..(ViralSeq::RefSeq.get(ref_genome).size - 1)), ref_end, indel, ref_genome)
-          new_r1_seq_raw = r1_sh_raw.dna_hash.each_with_object({}) {|(k, v), h| h[k[0..-4]] = v}
-          new_r2_seq_raw = r2_sh_raw.dna_hash.each_with_object({}) {|(k, v), h| h[k[0..-4]] = v}
-          joined_seq_raw = {}
-          new_r1_seq_raw.each do |seq_name, seq|
+        if ref_end == 0
+          ref_end = 0..(ViralSeq::RefSeq.get(ref_genome).size - 1)
+        end
+        if primer[:end_join_option] == 1 and primer[:overlap] == 0
+          r1_sh = ViralSeq::SeqHash.fa(outfile_r1)
+          r2_sh = ViralSeq::SeqHash.fa(outfile_r2)
+          r1_sh = r1_sh.hiv_seq_qc(ref_start, (0..(ViralSeq::RefSeq.get(ref_genome).size - 1)), indel, ref_genome)
+          r2_sh = r2_sh.hiv_seq_qc((0..(ViralSeq::RefSeq.get(ref_genome).size - 1)), ref_end, indel, ref_genome)
+          new_r1_seq = r1_sh.dna_hash.each_with_object({}) {|(k, v), h| h[k[0..-4]] = v}
+          new_r2_seq = r2_sh.dna_hash.each_with_object({}) {|(k, v), h| h[k[0..-4]] = v}
+          joined_seq = {}
+          new_r1_seq.each do |seq_name, seq|
             next unless seq
-            next unless new_r2_seq_raw[seq_name]
-            joined_seq_raw[seq_name] = seq + new_r2_seq_raw[seq_name]
+            next unless new_r2_seq[seq_name]
+            joined_seq[seq_name] = seq + new_r2_seq[seq_name]
           end
-          joined_sh_raw = ViralSeq::SeqHash.new(joined_seq_raw)
-        end
-      else
-        joined_sh = joined_sh.hiv_seq_qc(ref_start, ref_end, indel, ref_genome)
+          joined_sh = ViralSeq::SeqHash.new(joined_seq)
 
-        if export_raw
-          joined_sh_raw = joined_sh_raw.hiv_seq_qc(ref_start, ref_end, indel, ref_genome)
-        end
-      end
+          if export_raw
+            r1_sh_raw = ViralSeq::SeqHash.fa(outfile_raw_r1)
+            r2_sh_raw = ViralSeq::SeqHash.fa(outfile_raw_r2)
+            r1_sh_raw = r1_sh_raw.hiv_seq_qc(ref_start, (0..(ViralSeq::RefSeq.get(ref_genome).size - 1)), indel, ref_genome)
+            r2_sh_raw = r2_sh_raw.hiv_seq_qc((0..(ViralSeq::RefSeq.get(ref_genome).size - 1)), ref_end, indel, ref_genome)
+            new_r1_seq_raw = r1_sh_raw.dna_hash.each_with_object({}) {|(k, v), h| h[k[0..-4]] = v}
+            new_r2_seq_raw = r2_sh_raw.dna_hash.each_with_object({}) {|(k, v), h| h[k[0..-4]] = v}
+            joined_seq_raw = {}
+            new_r1_seq_raw.each do |seq_name, seq|
+              next unless seq
+              next unless new_r2_seq_raw[seq_name]
+              joined_seq_raw[seq_name] = seq + new_r2_seq_raw[seq_name]
+            end
+            joined_sh_raw = ViralSeq::SeqHash.new(joined_seq_raw)
+          end
+        else
+          joined_sh = joined_sh.hiv_seq_qc(ref_start, ref_end, indel, ref_genome)
 
-      log.puts Time.now.to_s + "\t" + "Paired TCS number after QC based on reference genome: " + joined_sh.size.to_s
-      summary_json[:combined_tcs_after_qc] = joined_sh.size
-      if primer[:trim]
-        trim_start = primer[:trim_ref_start]
-        trim_end = primer[:trim_ref_end]
-        trim_ref = primer[:trim_ref].to_sym
-        joined_sh = joined_sh.trim(trim_start, trim_end, trim_ref)
-        if export_raw
-          joined_sh_raw = joined_sh_raw.trim(trim_start, trim_end, trim_ref)
+          if export_raw
+            joined_sh_raw = joined_sh_raw.hiv_seq_qc(ref_start, ref_end, indel, ref_genome)
+          end
+        end
+
+        log.puts Time.now.to_s + "\t" + "Paired TCS number after QC based on reference genome: " + joined_sh.size.to_s
+        summary_json[:combined_tcs_after_qc] = joined_sh.size
+        if primer[:trim]
+          trim_start = primer[:trim_ref_start]
+          trim_end = primer[:trim_ref_end]
+          trim_ref = primer[:trim_ref].to_sym
+          joined_sh = joined_sh.trim(trim_start, trim_end, trim_ref)
+          if export_raw
+            joined_sh_raw = joined_sh_raw.trim(trim_start, trim_end, trim_ref)
+          end
         end
       end
 
@@ -487,11 +481,13 @@ begin
       if export_raw
         joined_sh_raw.write_nt_fa(File.join(out_dir_raw, "combined.raw.fasta"))
       end
+
     end
 
     File.open(outfile_log, "w") do |f|
       f.puts JSON.pretty_generate(summary_json)
     end
+
   end
 
   unless options[:keep]

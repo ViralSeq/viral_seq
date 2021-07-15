@@ -179,6 +179,12 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
+### Version 1.2.7-07152021
+
+  1. Optimzed the workflow of the `tcs` pipeline on raw data with uneven lengths. 
+  `tcs` version to v2.3.5.
+
+
 ### Version 1.2.6-07122021
 
   1. Optimized the workflow of the `tcs` pipeline in the "end-join/QC/Trimming" section.

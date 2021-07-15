@@ -353,7 +353,8 @@ begin
       r1_seq_length = consensus_filtered.values[0][0].size
       r2_seq_length = consensus_filtered.values[0][1].size
     else
-      next
+      r1_seq_length = "n/a"
+      r2_seq_length = "n/a"
     end
     log.puts Time.now.to_s + "\t" + "R1 sequence #{r1_seq_length} bp"
     log.puts Time.now.to_s + "\t" + "R1 sequence #{r2_seq_length} bp"
@@ -426,7 +427,7 @@ begin
         if ref_end == 0
           ref_end = 0..(ViralSeq::RefSeq.get(ref_genome).size - 1)
         end
-        if primer[:end_join_option] == 1 and primer[:overlap] == 0
+        if primer[:end_join_option] == 1
           r1_sh = ViralSeq::SeqHash.fa(outfile_r1)
           r2_sh = ViralSeq::SeqHash.fa(outfile_r2)
           r1_sh = r1_sh.hiv_seq_qc(ref_start, (0..(ViralSeq::RefSeq.get(ref_genome).size - 1)), indel, ref_genome)

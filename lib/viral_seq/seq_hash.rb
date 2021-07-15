@@ -397,7 +397,9 @@ module ViralSeq
       (0..(seq_length - 1)).each do |position|
         all_base = []
         seq_array.each do |seq|
-          all_base << seq[position]
+          if seq[position]
+            all_base << seq[position]
+          end
         end
         base_count = all_base.count_freq
         max_base_list = []

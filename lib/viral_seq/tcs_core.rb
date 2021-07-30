@@ -305,7 +305,8 @@ module ViralSeq
       end
 
       def general_filter(seq)
-        if seq.size < ($platform_sequencing_length - 1)
+        return false unless seq
+        if seq.size < ($platform_sequencing_length - 10)
           return false
         elsif seq[1..-2] =~ /N/ # sequences with ambiguities except the 1st and last position removed
           return false

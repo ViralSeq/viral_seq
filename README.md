@@ -179,6 +179,10 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
+### Version 1.2.8-07292021
+
+  1. Fixed an issue when reading .fastq files containing blank_lines.
+
 ### Version 1.2.7-07152021
 
   1. Optimzed the workflow of the `tcs` pipeline on raw data with uneven lengths.

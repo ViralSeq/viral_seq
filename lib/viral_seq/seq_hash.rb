@@ -116,6 +116,8 @@ module ViralSeq
 
       File.open(fastq_file,'r') do |file|
         file.readlines.collect do |line|
+          line.tr!("\u0000","")
+          next if line == "\n"
           count +=1
           count_m = count % 4
           if count_m == 1

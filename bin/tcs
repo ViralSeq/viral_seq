@@ -152,8 +152,8 @@ begin
     primer[:region] ? region = primer[:region] : region = "region"
     summary_json[:primer_set_name] = region
 
-    cdna_primer = primer[:cdna]
-    forward_primer = primer[:forward]
+    cdna_primer = primer[:cdna].upcase
+    forward_primer = primer[:forward].upcase
 
     export_raw = primer[:export_raw]
     limit_raw = primer[:limit_raw]

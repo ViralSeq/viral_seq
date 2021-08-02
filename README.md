@@ -179,6 +179,11 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
+### Version 1.2.9-08022021
+
+  1. Fixed a bug when reading the input primer sequences in lowercases.
+  2. Fix a bug in the method ViralSeq::Math::RandomGaussian
+
 ### Version 1.2.8-07292021
 
   1. Fixed an issue when reading .fastq files containing blank_lines.

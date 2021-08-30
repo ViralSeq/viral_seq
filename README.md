@@ -179,6 +179,10 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
+### Version 1.3.0-08302021
+
+  1. Fixed a bug in the `tcs` pipeline. 
+
 ### Version 1.2.9-08022021
 
   1. Fixed a bug when reading the input primer sequences in lowercases.

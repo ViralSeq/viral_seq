@@ -401,7 +401,11 @@ begin
       when 4
         joined_sh = shp.join2(model: :indiv)
       end
-      return joined_sh
+      if joined_sh
+        return joined_sh
+      else
+        joined_sh = ViralSeq::SeqHash.new
+      end
     end
 
     if primer[:end_join]

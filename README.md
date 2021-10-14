@@ -179,14 +179,19 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
+### Version 1.4.0-10132021
+
+  1. Added a function to calculate false detectionr rate (FDR, aka, Benjamini-Hochberg correction) for minority mutations detected in the sequences. `ViralSeq::SeqHash#fdr`
+  2. Updated `bin\tcs_sdrm` script to add FDR value to each DRMs detected.
+
 ### Version 1.3.0-08302021
 
-  1. Fixed a bug in the `tcs` pipeline. 
+  1. Fixed a bug in the `tcs` pipeline.
 
 ### Version 1.2.9-08022021
 
   1. Fixed a bug when reading the input primer sequences in lowercases.
-  2. Fix a bug in the method ViralSeq::Math::RandomGaussian
+  2. Fixed a bug in the method ViralSeq::Math::RandomGaussian
 
 ### Version 1.2.8-07292021
 

@@ -9,10 +9,13 @@ module ViralSeq
     #   IN codon 53-174 (HXB2 4384-4751)
     # @param cutoff [Integer] cut-off for minimal abundance of a mutation to be called as valid mutation,
     #   can be obtained using ViralSeq::SeqHash#poisson_minority_cutoff function
+    # @param fdr [Hash] hash of events => (false detecton rate)
+    #   can be obtained using ViralSeq::SeqHash#fdr
+    #
     # @return [Array] three elements `[point_mutation_list, linkage_list, report_list]`
     #
     #   # point_mutation_list: two demensional array for the following information,
-    #     # [region,tcs_number,position,wildtype,mutation,count,%,CI_low,CI_high,label]
+    #     # [region,tcs_number,position,wildtype,mutation,count,%,CI_low,CI_high,fdr,label]
     #   # linkage_list: two demensional array for the following information,
     #     # [region,tcs_number,linkage,count,%,CI_low,CI_high,label]
     #   # report_list: two demensional array for the following information,
@@ -20,12 +23,13 @@ module ViralSeq
     # @example identify SDRMs from a FASTA sequence file of HIV PR sequences obtained after MPID-DR sequencing
     #   my_seqhash = ViralSeq::SeqHash.fa('spec/sample_files/sample_dr_sequences/pr.fasta')
     #   p_cut_off = my_seqhash.pm
-    #   pr_sdrm = my_seqhash.sdrm_hiv_pr(p_cut_off)
-    #   puts "region,tcs_number,position,wildtype,mutation,count,%,CI_low,CI_high,label"; pr_sdrm[0].each {|n| puts n.join(',')}
-    #   => region,tcs_number,position,wildtype,mutation,count,%,CI_low,CI_high,label
-    #   => PR,396,30,D,N,247,0.62374,0.57398,0.67163,
-    #   => PR,396,50,I,V,1,0.00253,6.0e-05,0.01399,*
-    #   => PR,396,88,N,D,246,0.62121,0.57141,0.66919,
+    #   fdr_hash = my_seqhash.fdr
+    #   pr_sdrm = my_seqhash.sdrm_hiv_pr(p_cut_off, fdr_hash)
+    #   puts "region,tcs_number,position,wildtype,mutation,count,%,CI_low,CI_high,fdr,label"; pr_sdrm[0].each {|n| puts n.join(',')}
+    #   => region,tcs_number,position,wildtype,mutation,count,%,CI_low,CI_high,fdr,label
+    #   => PR,396,30,D,N,247,0.62374,0.57398,0.67163,0,
+    #   => PR,396,50,I,V,1,0.00253,6.0e-05,0.01399,0.18905,*
+    #   => PR,396,88,N,D,246,0.62121,0.57141,0.66919,0,
     #
     #   puts "region,tcs_number,linkage,count,%,CI_low,CI_high,label"; pr_sdrm[1].each {|n| puts n.join(',')}
     #   => region,tcs_number,linkage,count,%,CI_low,CI_high,label
@@ -136,7 +140,7 @@ module ViralSeq
     #   => PR,98,396,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,99.7475,0.0,0.0,0.0,0.2525,0.0,0.0,0.0,0.0,0.0
     #   => PR,99,396,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
 
-    def sdrm_hiv_pr(cutoff = 0)
+    def sdrm_hiv_pr(cutoff = 0, fdr_hash = Hash.new(0))
       sequences = self.dna_hash
       region = "PR"
       rf_label = 0
@@ -167,8 +171,9 @@ module ViralSeq
         count_mut_list = mut_list.count_freq
         count_mut_list.each do |m,number|
           ci = ViralSeq::Math::BinomCI.new(number, n_seq)
+          fdr = fdr_hash[number].round(5)
           label = number < cutoff ? "*" : ""
-          point_mutation_list << [region, n_seq, position, wt, m, number, ci.mean.round(5), ci.lower.round(5), ci.upper.round(5), label]
+          point_mutation_list << [region, n_seq, position, wt, m, number, ci.mean.round(5), ci.lower.round(5), ci.upper.round(5), fdr, label]
         end
       end
       point_mutation_list.sort_by! {|record| record[2]}
@@ -229,7 +234,7 @@ module ViralSeq
     # @param (see #sdrm_hiv_pr)
     # @return (see #sdrm_hiv_pr)
 
-    def sdrm_hiv_rt(cutoff = 0)
+    def sdrm_hiv_rt(cutoff = 0, fdr_hash = Hash.new(0))
       sequences = self.dna_hash
       region = "RT"
       rf_label = 1
@@ -280,8 +285,9 @@ module ViralSeq
         count_mut_list = mut_list.count_freq
         count_mut_list.each do |m,number|
           ci = ViralSeq::Math::BinomCI.new(number, n_seq)
+          fdr = fdr_hash[number].round(5)
           label = number < cutoff ? "*" : ""
-          point_mutation_list << ["NRTI", n_seq, position, wt, m, number, ci.mean.round(5), ci.lower.round(5), ci.upper.round(5), label]
+          point_mutation_list << ["NRTI", n_seq, position, wt, m, number, ci.mean.round(5), ci.lower.round(5), ci.upper.round(5), fdr, label]
         end
       end
 
@@ -291,8 +297,9 @@ module ViralSeq
         count_mut_list = mut_list.count_freq
         count_mut_list.each do |m,number|
           ci = ViralSeq::Math::BinomCI.new(number, n_seq)
+          fdr = fdr_hash[number].round(5)
           label = number < cutoff ? "*" : ""
-          point_mutation_list << ["NNRTI", n_seq, position, wt, m, number, ci.mean.round(5), ci.lower.round(5), ci.upper.round(5), label]
+          point_mutation_list << ["NNRTI", n_seq, position, wt, m, number, ci.mean.round(5), ci.lower.round(5), ci.upper.round(5), fdr, label]
         end
       end
 
@@ -365,7 +372,7 @@ module ViralSeq
     # @param (see #sdrm_hiv_pr)
     # @return (see #sdrm_hiv_pr)
 
-    def sdrm_hiv_in(cutoff = 0)
+    def sdrm_hiv_in(cutoff = 0, fdr_hash = Hash.new(0))
       sequences = self.dna_hash
       region = "IN"
       rf_label = 2
@@ -397,8 +404,9 @@ module ViralSeq
         count_mut_list = mut_list.count_freq
         count_mut_list.each do |m,number|
           ci = ViralSeq::Math::BinomCI.new(number, n_seq)
+          fdr = fdr_hash[number].round(5)
           label = number < cutoff ? "*" : ""
-          point_mutation_list << [region, n_seq, position, wt, m, number, ci.mean.round(5), ci.lower.round(5), ci.upper.round(5), label]
+          point_mutation_list << [region, n_seq, position, wt, m, number, ci.mean.round(5), ci.lower.round(5), ci.upper.round(5), fdr, label]
         end
       end
       point_mutation_list.sort_by! {|record| record[2]}

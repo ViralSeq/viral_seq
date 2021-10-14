@@ -196,6 +196,12 @@ RSpec.describe ViralSeq do
     expect(sequences.pm).to be 2
   end
 
+  it "has a function for calculate false detection rate for minority mutations" do
+    sequence_file = 'spec/sample_files/sample_sequence_for_poisson.fasta'
+    sequences = ViralSeq::SeqHash.fa(sequence_file)
+    expect(sequences.fdr[2].round(5)).to be 0.00726
+  end
+
   it "has a function to make unique sequence Hash from a sequence Hash" do
     sequences = {'>seq1' => 'AAAA','>seq2' => 'AAAA', '>seq3' => 'AAAA',
                  '>seq4' => 'CCCC', '>seq5' => 'CCCC',

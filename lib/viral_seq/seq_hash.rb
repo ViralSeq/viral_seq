@@ -592,6 +592,37 @@ module ViralSeq
 
     alias_method :pm, :poisson_minority_cutoff
 
+    # calculate false detection rate for minority mutations
+    # Credit: Prof. Michael G. Hudgens from UNC-CH for providing the method for fdr calculation
+    # @param error_rate [Float] estimated sequencing error rate
+    # @return [Hash] pair of mutation frequency to false detection rate. (freq => fdr)
+    # @example calculate FDR for mutations that appeared twice in the sample dataset
+    #   my_seqhash = ViralSeq::SeqHash.fa('spec/sample_files/sample_sequence_for_poisson.fasta')
+    #   fdr_hash = my_seqhash.fdr
+    #   fdr_hash[2].round(5)
+    #   => 0.00726 # means that mutations appear twice have 0.007261748 chance to be caused by residual errors.
+
+    def fdr(error_rate = 0.0001)
+      sequences = self.dna_hash.values
+      if sequences.size == 0
+        return {}
+      else
+        seq_count = self.size
+        observed_hash = variant_for_poisson(sequences)
+        p_unadjusted = []
+        observed_hash.each do |k, v|
+          p_value = 1 - `Rscript -e "cat(pbinom(#{k}-1, #{seq_count}, #{error_rate}))"`.to_f # compute unadjusted exact p-value, ie under null, probability of observing observed_hash[k] or more extreme
+          p_unadjusted += Array.new(v, p_value)
+        end
+        p_fdr = `Rscript -e "cat(p.adjust(c(#{p_unadjusted.join(',')}), 'fdr'))"`.split("\s").count_freq.to_a # controls fdr. aka Benjamini-Hochberg correction
+        vars_pair = observed_hash.to_a
+        fdr_hash = Hash.new(0)
+        (0..(p_fdr.size - 1)).each do |i|
+          fdr_hash[vars_pair[i][0]] = p_fdr[i][0].to_f
+        end
+        return fdr_hash
+      end
+    end #end of #fdr
 
     # align the @dna_hash sequences, return a new ViralSeq::SeqHash object with aligned @dna_hash using MUSCLE
     # @param path_to_muscle [String], path to MUSCLE excutable. if not provided (as default), it will use RubyGem::MuscleBio

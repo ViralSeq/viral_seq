@@ -91,12 +91,12 @@ libs.each do |lib|
   point_mutation_file = File.join(out_lib_dir, (lib_name + "_substitution.csv"))
   point_mutation_out = File.open(point_mutation_file, "w")
   point_mutation_out.puts "region,TCS,AA position,wild type,mutation," +
-                          "number,percentage,95% CI low, 95% CI high, notes"
+                          "number,frequency,95% CI low,95% CI high,fdr,notes"
 
   linkage_file = File.join(out_lib_dir, (lib_name + "_linkage.csv"))
   linkage_out = File.open(linkage_file, "w")
   linkage_out.puts "region,TCS,mutation linkage,number," +
-                   "percentage,95% CI low, 95% CI high, notes"
+                   "frequency,95% CI low, 95% CI high, notes"
 
   aa_report_file = File.join(out_lib_dir, (lib_name + "_aa.csv"))
   aa_report_out = File.open(aa_report_file, "w")
@@ -132,6 +132,7 @@ libs.each do |lib|
       stop_codon_seqs = stop_codon_check[:with_stop_codon]
       filtered_seqs = stop_codon_check[:without_stop_codon]
       poisson_minority_cutoff = filtered_seqs.pm
+      fdr_hash = filtered_seqs.fdr
       summary_hash[:PR] = [
                             seqs.size.to_s,
                             a3g_seqs.size.to_s,
@@ -142,7 +143,7 @@ libs.each do |lib|
       next if filtered_seqs.size < 3
       filtered_seqs.write_nt_fa(File.join(filtered_seq_dir,seq_basename))
 
-      sdrm = filtered_seqs.sdrm_hiv_pr(poisson_minority_cutoff)
+      sdrm = filtered_seqs.sdrm_hiv_pr(poisson_minority_cutoff, fdr_hash)
       point_mutation_list += sdrm[0]
       linkage_list += sdrm[1]
       aa_report_list += sdrm[2]
@@ -155,6 +156,7 @@ libs.each do |lib|
       stop_codon_seqs = stop_codon_check[:with_stop_codon]
       filtered_seqs = stop_codon_check[:without_stop_codon]
       poisson_minority_cutoff = filtered_seqs.pm
+      fdr_hash = filtered_seqs.fdr
       summary_hash[:IN] = [
                             seqs.size.to_s,
                             a3g_seqs.size.to_s,
@@ -165,7 +167,7 @@ libs.each do |lib|
       next if filtered_seqs.size < 3
       filtered_seqs.write_nt_fa(File.join(filtered_seq_dir,seq_basename))
 
-      sdrm = filtered_seqs.sdrm_hiv_in(poisson_minority_cutoff)
+      sdrm = filtered_seqs.sdrm_hiv_in(poisson_minority_cutoff, fdr_hash)
       point_mutation_list += sdrm[0]
       linkage_list += sdrm[1]
       aa_report_list += sdrm[2]
@@ -190,6 +192,7 @@ libs.each do |lib|
       reject_keys = (hypermut_seq_keys | stop_codon_seq_keys)
       filtered_seqs = ViralSeq::SeqHash.new(seqs.dna_hash.reject {|k,v| reject_keys.include?(k) })
       poisson_minority_cutoff = filtered_seqs.pm
+      fdr_hash = filtered_seqs.fdr
       summary_hash[:RT] = [
                             seqs.size.to_s,
                             hypermut_seq_keys.size.to_s,
@@ -200,7 +203,7 @@ libs.each do |lib|
       next if filtered_seqs.size < 3
       filtered_seqs.write_nt_fa(File.join(filtered_seq_dir,seq_basename))
 
-      sdrm = filtered_seqs.sdrm_hiv_rt(poisson_minority_cutoff)
+      sdrm = filtered_seqs.sdrm_hiv_rt(poisson_minority_cutoff, fdr_hash)
       point_mutation_list += sdrm[0]
       linkage_list += sdrm[1]
       aa_report_list += sdrm[2]
@@ -346,7 +349,7 @@ libs.each do |lib|
       title: "Surveillance Drug Resistance Mutations",
       file: point_mutation_file,
       newPDF: "",
-      table_width: [65,55,85,80,60,65,85,85,85,45],
+      table_width: [60,50,70,65,65,60,75,70,70,70,45],
       extra_text: "* Mutation below Poisson cut-off for minority mutations"
     },
     {

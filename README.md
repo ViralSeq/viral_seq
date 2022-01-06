@@ -179,6 +179,14 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
+### Version 1.5.0-01042022
+
+  1. Added a function to calcute detection limit/sensitivity for minority variants (R required). `ViralSeq::TcsCore::detection_limit`
+  2. Added a function to get a sub SeqHash object given a range of nt positions. `ViralSeq::SeqHash#nt_range`
+  3. Added a function to quality check dna sequences comparing with sample consensus for indels. `ViralSeq::SeqHash#qc_indel`
+  4. Added a function for DNA variant analysis. Return a Hash object that can output as a JSON file. `ViralSeq::SeqHash#nt_variants`
+  5. Added a function to check the size of sequences of a SeqHash object. `ViralSeq::SeqHash#check_nt_size`
+
 ### Version 1.4.0-10132021
 
   1. Added a function to calculate false detectionr rate (FDR, aka, Benjamini-Hochberg correction) for minority mutations detected in the sequences. `ViralSeq::SeqHash#fdr`

@@ -244,4 +244,8 @@ RSpec.describe ViralSeq do
       my_seqhash = ViralSeq::SeqHash.array(array)
       expect(my_seqhash.error_table[2][5]).to eq 0.2
   end
+
+  it "can calculate minority mutation detection sensitivity given TCS number" do
+    expect(ViralSeq::TcsCore.detection_limit(100)).to eq 0.0362
+  end
 end

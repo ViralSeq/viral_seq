@@ -280,6 +280,19 @@ module ViralSeq
         abort infor.red.bold
       end
 
+      # lower detection sensitivity for minority mutations given the number of TCS, calculated based on binomial distribution.
+      # R required.
+      # @param tcs_number [Integer] number of TCS
+      # @return [Float] lower detection limit
+      # @example calculate lower detection limit
+      #   ViralSeq::TcsCore.detection_limit(100)
+      #   => 0.0362
+
+      def detection_limit(tcs_number)
+        dl =  `Rscript -e "library(dplyr); ifelse(#{tcs_number} > 2, (binom.test(0,#{tcs_number})['conf.int'] %>% unlist %>% unname)[2] %>% round(4) %>% cat, 0)" 2>/dev/null`
+        dl.to_f
+      end
+
       private
 
       def unzip_r(indir, f)

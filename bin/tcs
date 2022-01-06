@@ -200,7 +200,7 @@ begin
     summary_json[:paired_raw_sequence] = paired_seq_number
     if paired_seq_number < raw_sequence_number * 0.001
       summary_json[:warnings] <<
-        "WARNING: Filtered raw sequneces less than 0.1% of the total raw sequences. Possible contamination."
+        "WARNING: Filtered raw sequences less than 0.1% of the total raw sequences. Possible contamination."
     end
 
     common_keys.each do |seqtag|

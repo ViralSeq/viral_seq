@@ -208,6 +208,31 @@ module ViralSeq
       return ViralSeq::SeqHash.new(sampled_nt, sampled_aa, sampled_qc, sampled_title, self.file)
     end
 
+    # return a new SeqHash object with given a range on the nt sequence position
+    # @param range [Range] range of positions on the nt sequence
+    # @return [ViralSeq::SeqHash] a sub SeqHash object
+
+    def nt_range(range)
+      dna_hash = self.dna_hash
+      new_hash = {}
+      dna_hash.each do |k,v|
+        new_hash[k] = v[range]
+      end
+      ViralSeq::SeqHash.new(new_hash)
+    end # end of #nt_range
+
+    # check the size range of the DNA sequences of the SeqHash object
+    # @return [Hash] Hash of {max: MAX_SIZE, min: MIN_SIZE}
+    
+    def check_nt_size
+      dna_hash = self.dna_hash
+      size_array = []
+      dna_hash.values.each do |v|
+        size_array << v.size
+      end
+      return { max: size_array.max, min: size_array.min }
+    end
+
     # write the nt sequences to a FASTA format file
     # @param file [String] path to the FASTA output file
     # @return [NilClass]
@@ -623,6 +648,67 @@ module ViralSeq
         return fdr_hash
       end
     end #end of #fdr
+
+    # analysis for the nt sequence variants.
+    # @return [Hash] An Hash with information of variant analysis. Key/values of the return object see /docs/variants_structure.pdf
+
+    def nt_variants
+      return_obj = {}
+      nt_hash = self.dna_hash
+      tcs_number = self.size
+      dl = ViralSeq::TcsCore.detection_limit(tcs_number)
+      fdr_hash = self.fdr
+      pm_cut_off = self.pm
+      con = self.consensus
+      return_obj[:tcs_number] = tcs_number
+      return_obj[:lower_detection_limit] = dl
+      return_obj[:pm_cut_off] = pm_cut_off
+      return_obj[:positions] = []
+      cis = {}
+
+      (0..(con.size - 1)).each do |p|
+        position_obj = {}
+        position_obj[:position] = p + 1
+        position_obj[:tcs_number] = tcs_number
+        position_obj[:lower_detection_limit] = dl
+        position_obj[:pm_cut_off] = (pm_cut_off == Float::INFINITY ? pm_cut_off.to_s : pm_cut_off)
+
+        nts = []
+        dna_hash.each do |n,s|
+          nts << s[p]
+        end
+        freq_hash = nts.count_freq
+        [:A, :C, :G, :T, :-].each do |k|
+          v = freq_hash[k.to_s]
+          position_obj[k] = {}
+          position_obj[k][:count] = v
+          if v > 0
+            if cis[[v, tcs_number]]
+              ci = cis[[v, tcs_number]]
+            else
+              ci = ViralSeq::Math::BinomCI.new(v, tcs_number)
+              cis[[v, tcs_number]] = ci
+            end
+            position_obj[k][:freq] = ci.mean.round(4)
+            position_obj[k][:freq_ci_low] = ci.lower.round(4)
+            position_obj[k][:freq_ci_high] = ci.upper.round(4)
+            position_obj[k][:greater_than_pm] = (v >= pm_cut_off ? true : false)
+            position_obj[k][:fdr] = fdr_hash[v]
+          else
+            position_obj[k][:freq] = 0
+            position_obj[k][:freq_ci_low] = 0
+            position_obj[k][:freq_ci_high] = 0
+            position_obj[k][:greater_than_pm] = false
+            position_obj[k][:fdr] = nil
+          end
+        end
+
+        return_obj[:positions] << position_obj
+      end
+
+      return_obj
+    end # end of nt_variants
+
 
     # align the @dna_hash sequences, return a new ViralSeq::SeqHash object with aligned @dna_hash using MUSCLE
     # @param path_to_muscle [String], path to MUSCLE excutable. if not provided (as default), it will use RubyGem::MuscleBio
@@ -1213,6 +1299,28 @@ module ViralSeq
       new_sh.title = self.title + "_" + n.to_s
       return new_sh
     end
+
+    # QC for each nucleotide sequence comparing with sample consensus for indels
+    # @return [Hash] object containing two SeqHash {no_indel: seq_hash, has_indel: seq_hash}
+
+    def qc_indel
+      con = self.consensus
+      dna_hash = self.dna_hash
+      names_passed = []
+      names_indel = []
+      dna_hash.uniq_hash.each do |seq, names|
+        if seq.compare_with(con) < 4
+          names_passed += names
+        elsif ViralSeq::Muscle.align(con, seq)[0]["-"]
+          names_indel += names
+        else
+          names_passed += names
+        end
+      end
+      return {no_indel: self.sub(names_passed),
+        has_indel: self.sub(names_indel)}
+    end # end of qc_indel
+
 
     # trim dna sequences based on the provided reference coordinates.
     # @param start_nt [Integer,Range,Array] start nt position(s) on the refernce genome, can be single number (Integer) or a range of Integers (Range), or an Array

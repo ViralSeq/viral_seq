@@ -6,6 +6,10 @@ module ViralSeq
     class << self
 
       # methods to calculate TCS consensus cut-off based on the maximum numbers of PIDs and platform error rate.
+      # @see https://www.ncbi.nlm.nih.gov/pubmed/26041299 reference at Zhou et al. JVI 2016.
+      # @param m [Integer] PID abundance
+      # @param error_rate [Float] estimated platform error rate.
+      # @return [Integer] an abundance cut-off (Integer) for offspring Primer IDs.
 
       def calculate_cut_off(m, error_rate = 0.02)
         n = 0

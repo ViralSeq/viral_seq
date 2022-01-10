@@ -16,6 +16,7 @@ require 'viral_seq'
 require 'pathname'
 require 'json'
 require 'fileutils'
+require 'csv'
 
 indir = ARGV[0].chomp
 indir_basename = File.basename(indir)
@@ -100,3 +101,435 @@ libs.each do |lib|
   end
 end
 log.close
+
+# Create HTML page with charts from log.csv above
+
+class String
+    def var_safe
+        gsub '-',''
+    end
+    def shorten_html
+        gsub /\n/, ''
+        gsub /\t/, ''
+    end
+end
+
+#hold vars for csv input
+raw_sequence_data = ["['Library Name', 'Raw Sequences', { role: 'annotation' }]"]
+lib_names = []
+total_reads = 0
+lib_data = {}
+batch_name = ""
+
+CSV.foreach(log_file).with_index do |row, i|
+    next if i == 0
+
+    lib_name = row[0]
+    region = row[1]
+    raw_sequences_per_barcode = row[2].to_i
+
+    if batch_name == ""
+        batch_name = lib_name.split('-')[0]
+    end
+
+    if not lib_names.include? lib_name
+        lib_names.push(lib_name)
+        total_reads += raw_sequences_per_barcode
+        raw_sequence_data.push("['#{lib_name}', #{raw_sequences_per_barcode}, '#{raw_sequences_per_barcode}']")
+        lib_data[lib_name] = {}
+    end
+
+    lib_data[lib_name][region] = {
+        'lib_name' => lib_name,
+        'region' => region,
+        'raw_sequences_per_barcode' => raw_sequences_per_barcode,
+        'r1_raw' => row[3].to_i,
+        'r2_raw' => row[4].to_i,
+        'paired_raw' => row[5].to_i,
+        'consensus2' => row[9].to_i,
+        'distinct_to_raw' => row[10].to_f,
+        'resampling_index' => row[11].to_f,
+        'combined_TCS' => row[12].to_i,
+        'combined_TCS_after_QC' => row[13].to_i,
+        'warnings' => row[14].to_s || ""
+    }
+end
+
+#format output
+total_reads = total_reads.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse
+raw_sequence_data = "[" + raw_sequence_data.join(',') + "]"
+
+#calculate 'other'
+lib_data.each do |lib, data|
+    sum = data['IN']['paired_raw'] + data['V1V3']['paired_raw'] + data['PR']['paired_raw'] + data['RT']['paired_raw']
+    other = data['IN']['raw_sequences_per_barcode'] - sum
+    data['other'] = other
+end
+
+#process each library's html
+library_links = lib_names.map { |lib_name| "<li id='link_#{lib_name}' class='pointer' onclick='showPage(\""+lib_name+"\")'>"+lib_name+"</li>" }
+library_links = "
+    <ul>
+        <li id='link_basic-statistics' class='pointer current_page' onclick='showPage(\"basic-statistics\")'>Basic Statistics</li>
+        <li>Libraries
+            <ul>"+library_links.join+"</ul>
+        </li>
+    </ul>
+"
+library_pages = lib_names.each_with_index.map { |lib_name, i|
+    "<div id='"+lib_name+"' class='page hidden'>
+        <div style='display: flex; flex-direction: column; gap: 16px;'>
+            <div style='display: flex;'>
+                <div class='pie_chart' style='align-self: center; flex: 1;'>Pie Chart</div>
+                <div style='display: flex; align-items: center; flex-direction: column; flex: 1;'>
+                    <div class='IN' style='display: flex; flex-direction: row; align-items: center;'>
+                        <div style='width: 5ch;'>IN</div>
+                        <div class='treemap' style='flex: 1'></div>
+                    </div>
+                    <div class='V1V3' style='display: flex; flex-direction: row; align-items: center;'>
+                        <div style='width: 5ch;'>V1V3</div>
+                        <div class='treemap'></div>
+                    </div>
+                    <div class='PR' style='display: flex; flex-direction: row; align-items: center;'>
+                        <div style='width: 5ch;'>PR</div>
+                        <div class='treemap'></div>
+                    </div>
+                    <div class='RT' style='display: flex; flex-direction: row; align-items: center;'>
+                        <div style='width: 5ch;'>RT</div>
+                        <div class='treemap'></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style='display: flex; flex-direction: column; gap: 16px;'>
+            <div class='tcs_bar_chart' style='flex: 1;'></div>
+            <div class='tcs_warnings' style='flex: 1; margin-left: 24px;'></div>
+            <div class='raw_bar_chart' style='flex: 1;'></div>
+            <div style='flex: 1; margin-left: 24px;'>Distinct to Raw greater than 0.1 suggests more raw sequences are required to fully recover TCS</div>
+            <div class='resampling_bar_chart' style='flex: 1;'></div>
+            <div style='flex: 1; margin-left: 24px;'>Resampling index less than 0.9 suggests Primer ID resampling.</div>
+        </div>
+    </div>"
+}
+
+#format lib_data into charts
+paired_raw = {}
+tree_charts = {}
+tcs_bar_chart = {}
+distinct_bar_chart = {}
+resampling_bar_chart = {}
+
+lib_data.each do |lib, data|
+    paired_raw[lib] = "
+        [
+            ['Region', 'Paired Raw'],
+            ['IN,#{data['IN']['paired_raw']}', #{data['IN']['paired_raw']}],
+            ['V1V3,#{data['V1V3']['paired_raw']}', #{data['V1V3']['paired_raw']}],
+            ['PR,#{data['PR']['paired_raw']}', #{data['PR']['paired_raw']}],
+            ['RT,#{data['RT']['paired_raw']}', #{data['RT']['paired_raw']}],
+            ['Other,#{data['other']}', #{data['other']}]
+        ]
+    "
+
+    tree_charts[lib] = {}
+    data.each do |region, d|
+        if region != "other"
+            tree_charts[lib][region] = "
+                [
+                    ['Location', 'Parent', 'r'],
+                    ['Global', null,0],
+                    ['R1_Raw', 'Global', #{d['r1_raw'].to_s}],
+                    ['R2_Raw', 'Global', #{d['r2_raw'].to_s}],
+                    ['Paired_RAW', 'Global', #{d['paired_raw'].to_s}],
+                ]
+            "
+        end
+    end
+
+    has_c = data['IN']['combined_TCS'] > 0
+    has_qc = data['IN']['combined_TCS_after_QC'] > 0
+
+    tcs_bar_chart[lib] = {
+        'data' => "
+            [
+                [
+                    'Region',
+                    'Conensus2',
+                    #{has_c ? "'Combined TCS'," : ''}
+                    #{has_qc ? "'After QC'," : ''}
+                ],
+                [
+                    'IN#{data['IN']['warnings'].length > 0 ? '*' : ''}',
+                    #{data['IN']['consensus2']},
+                    #{has_c ? "#{data['IN']['combined_TCS']}," : ''}
+                    #{has_qc ? "#{data['IN']['combined_TCS_after_QC']}," : ''}
+                ],
+                [
+                    'V1V3#{data['V1V3']['warnings'].length > 0 ? '*' : ''}',
+                    #{data['V1V3']['consensus2']},
+                    #{has_c ? "#{data['V1V3']['combined_TCS']}," : ''}
+                    #{has_qc ? "#{data['V1V3']['combined_TCS_after_QC']}" : ''}
+                ],
+                [
+                    'PR#{data['PR']['warnings'].length > 0 ? '*' : ''}',
+                    #{data['PR']['consensus2']},
+                    #{has_c ? "#{data['PR']['combined_TCS']}," : ''}
+                    #{has_qc ? "#{data['PR']['combined_TCS_after_QC']}" : ''}
+                ],
+                [
+                    'RT#{data['RT']['warnings'].length > 0 ? '*' : ''}',
+                    #{data['RT']['consensus2']},
+                    #{has_c ? "#{data['RT']['combined_TCS']}," : ''}
+                    #{has_qc ? "#{data['RT']['combined_TCS_after_QC']}" : ''}
+                ]
+            ]
+        ",
+        'warnings' => data.map{ |region, d|
+            region != "other" && d['warnings'].length > 0 ? "#{region} - #{d["warnings"]}<br/>" : ''
+        }.join
+    }
+
+    distinct_bar_chart[lib] = "
+        [
+            ['Region','Distinct to Raw'],
+            ['IN', #{data['IN']['distinct_to_raw']}],
+            ['V1V3', #{data['V1V3']['distinct_to_raw']}],
+            ['PR', #{data['PR']['distinct_to_raw']}],
+            ['RT', #{data['RT']['distinct_to_raw']}]
+        ]
+    "
+
+    resampling_bar_chart[lib] = "
+        [
+            ['Region','Resampling Index'],
+            ['IN', #{data['IN']['resampling_index']}],
+            ['V1V3', #{data['V1V3']['resampling_index']}],
+            ['PR', #{data['PR']['resampling_index']}],
+            ['RT', #{data['RT']['resampling_index']}],
+        ]
+    "
+end
+
+#create JS that initializes charts
+paired_raw_js = paired_raw.map { |lib, data| '
+    var chart_pie_'+lib.var_safe+' = new google.visualization.PieChart(document.querySelector("#'+lib+' .pie_chart"));
+    chart_pie_'+lib.var_safe+'.draw(
+        google.visualization.arrayToDataTable('+data+'),
+        {
+            title: "Paired Raw",
+            titleTextStyle: {
+                fontSize: 18
+            },
+            height,
+            width: Math.round(width * .5),
+            pieSliceText: "label",
+            legend: {
+                position: "left",
+                alignment: "center"
+            },
+            chartArea: {
+                width: "100%",
+                height: "100%"
+            }
+        }
+    );
+' }.join
+
+tree_charts_js = tree_charts.map { |lib, d|
+    d.map { |region, data| '
+        var chart_tree_'+lib.var_safe+'_'+region.var_safe+' = new google.visualization.TreeMap(document.querySelector("#'+lib+' .'+region+' .treemap"));
+        chart_tree_'+lib.var_safe+'_'+region.var_safe+'.draw(
+            google.visualization.arrayToDataTable('+data+'),
+            {
+                headerHeight: 0,
+                minColor: "grey",
+                midColor: "green",
+                maxColor: "blue"
+            }
+        );
+    '}
+}.join
+
+tcs_bar_chart_js = tcs_bar_chart.map { |lib, data|
+    '
+        var tcs_bar_chart_'+lib.var_safe+' = new google.charts.Bar(document.querySelector("#'+lib+' .tcs_bar_chart"));
+        tcs_bar_chart_'+lib.var_safe+'.draw(
+            google.visualization.arrayToDataTable('+data["data"]+'),
+            google.charts.Bar.convertOptions({
+                chart: {
+                    title: "TCS",
+                },
+                colors: ["#1b9e77", "#d95f02", "#7570b3"],
+                legend: { position: "bottom" },
+                width,
+                height,
+                chartArea: {
+                    width: "100%",
+                    height: "100%"
+                }
+            })
+        );
+
+        document.querySelector("#'+lib+' .tcs_warnings").innerHTML = "'+data['warnings']+'";
+    '
+}.join
+
+distinct_bar_chart_js = distinct_bar_chart.map { |lib, data| '
+    var distinct_'+lib.var_safe+' = new google.visualization.ColumnChart(document.querySelector("#'+lib+' .raw_bar_chart"));
+    distinct_'+lib.var_safe+'.draw(
+        google.visualization.arrayToDataTable('+data+'),
+        {
+            legend: {
+                position: "none"
+            },
+            width,
+            height
+        }
+    );
+' }.join
+
+resampling_bar_chart_js = resampling_bar_chart.map { |lib, data| '
+    var resampling_'+lib.var_safe+' = new google.visualization.ColumnChart(document.querySelector("#'+lib+' .resampling_bar_chart"));
+    resampling_'+lib.var_safe+'.draw(
+        google.visualization.arrayToDataTable('+data+'),
+        {
+            legend: {
+                position: "none"
+            },
+            width,
+            height
+        }
+    );
+' }.join
+
+html = '
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>TCS Log</title>
+        <script src="https://www.gstatic.com/charts/loader.js"></script>
+        <script>
+            google.charts.load("current", {packages: ["corechart", "treemap", "bar"]});
+            google.charts.setOnLoadCallback(drawChart);
+
+            var isInit = false
+
+            function drawChart() {
+
+                if(! isInit){
+                    isInit = true;
+                    window.onresize = drawChart;
+                }
+
+                var width = Math.round(window.innerWidth * .8)
+                var height = Math.round(window.innerHeight * .6)
+
+                var home_chart = new google.visualization.ColumnChart(document.getElementById("raw-sequence-chart"));
+                home_chart.draw(
+                    google.visualization.arrayToDataTable('+raw_sequence_data+'),
+                    {
+                        width,
+                        height,
+                        annotations: {alwaysOutside: true}
+                    }
+                );'+ paired_raw_js + tree_charts_js + tcs_bar_chart_js + distinct_bar_chart_js + resampling_bar_chart_js + '
+            }
+
+            function showPage(pageID){
+                document.querySelectorAll(".page").forEach(element => element.classList.add("hidden"))
+                document.getElementById(pageID).classList.remove("hidden")
+
+                document.querySelectorAll(".current_page").forEach(element => element.classList.remove("current_page"));
+                document.getElementById("link_"+pageID).classList.add("current_page");
+
+                drawChart();
+            }
+        </script>
+    </head>
+    <body>
+        <div style="display: flex; flex-direction: column; height: 100vh; width: 100vw; position: fixed; overflow: hidden;">
+            <div style="height: 10vh; border-bottom: 2px solid blue;">
+                <p style="font-size: 2rem; margin: 16px 24px;">TCS Log</p>
+            </div>
+            <div style="display: flex; flex: 1;">
+                <div id="nav" style="overflow: auto; height: 90vh; text-align: left; border-right: 2px solid blue; padding: 10px; padding-right: 20px;">
+                    '+library_links+'
+                </div>
+                <div id="pages" style="flex: 1; overflow: auto; height: 90vh;">
+                    <div style="display: flex; flex-direction: column; align-items: center;" id="basic-statistics" class="page">
+                        <table id="home-table">
+                            <tr>
+                                <td>Batch Name</td>
+                                <td>'+batch_name+'</td>
+                            </tr>
+                            <tr>
+                                <td>Processed Time</td>
+                                <td>'+Time.now.strftime("%m/%d/%Y")+'</td>
+                            </tr>
+                            <tr>
+                                <td>TCS Version</td>
+                                <td>'+ViralSeq::TCS_VERSION+'</td>
+                            </tr>
+                            <tr>
+                                <td>viral_seq Version</td>
+                                <td>'+ViralSeq::VERSION+'</td>
+                            </tr>
+                            <tr>
+                                <td>Number of Libraries</td>
+                                <td>'+lib_names.length.to_s+'</td>
+                            </tr>
+                            <tr>
+                                <td>Total Reads</td>
+                                <td>'+total_reads+'</td>
+                            </tr>
+                        </table>
+                        <div>
+                            <p style="font-size: 1.8rem;">Raw Sequences Distribution</p>
+                        </div>
+                        <div id="raw-sequence-chart"></div>
+                    </div>
+                    '+library_pages.join+'
+                </div>
+            </div>
+        </div>
+    </body>
+    <style>
+        body {
+            font-size: 1.2rem;
+            color: #333;
+        }
+        #nav ul {
+            list-style-type: none;
+        }
+        .page {
+            margin: 32px;
+        }
+        .hidden {
+            display: none !important;
+            visibility: hidden !important;
+        }
+        .pointer {
+            cursor: pointer;
+        }
+        #home-table {
+            margin: 0 auto;
+            width: 80%;
+            border-collapse: collapse;
+        }
+        #home-table, #home-table th, #home-table td {
+            border: 1px solid black;
+        }
+        #home-table td {
+            padding: 8px;
+        }
+        .current_page {
+            border-bottom: 1px solid blue;
+        }
+    </style>
+</html>
+'.shorten_html
+
+File.open(File.join(tcs_dir,"log.html"), 'w') { |file| file.write(html) }

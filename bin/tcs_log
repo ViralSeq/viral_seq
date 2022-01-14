@@ -114,19 +114,31 @@ class String
     end
 end
 
+colors = ["#d11141", "#00b159", "#00aedb", "#f37735", "#ffc425", "#1b85b8", "#5a5255", "#559e83", "#ae5a41", "#c3cb71"]
+
 #hold vars for csv input
 raw_sequence_data = ["['Library Name', 'Raw Sequences', { role: 'annotation' }]"]
 lib_names = []
 total_reads = 0
+max_region_char_length = 5
 lib_data = {}
 batch_name = ""
+region_colors = {}
 
-CSV.foreach(log_file).with_index do |row, i|
-    next if i == 0
+CSV.foreach(log_file).each_with_index do |row, i|
+    next if i == 0 || row[0] == nil
 
     lib_name = row[0]
     region = row[1]
     raw_sequences_per_barcode = row[2].to_i
+
+    if not region_colors.key?(region)
+        region_colors[region] = colors[region_colors.length % 9]
+    end
+
+    if region.length > max_region_char_length + 2
+        max_region_char_length = region.length + 2
+    end
 
     if batch_name == ""
         batch_name = lib_name.split('-')[0]
@@ -158,46 +170,44 @@ end
 #format output
 total_reads = total_reads.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse
 raw_sequence_data = "[" + raw_sequence_data.join(',') + "]"
+lib_names = lib_names.sort_by { |s| [s.split("-")[0], s.split("-")[1].to_i] }
 
 #calculate 'other'
 lib_data.each do |lib, data|
-    sum = data['IN']['paired_raw'] + data['V1V3']['paired_raw'] + data['PR']['paired_raw'] + data['RT']['paired_raw']
-    other = data['IN']['raw_sequences_per_barcode'] - sum
-    data['other'] = other
+    sum = data.values.reduce(0) { |sum, obj| sum + obj['paired_raw'] }
+    other = data[data.keys.first]['raw_sequences_per_barcode'] - sum
+    data['other'] = {
+        "region" => "Other",
+        "paired_raw" => other
+    }
 end
 
 #process each library's html
-library_links = lib_names.map { |lib_name| "<li id='link_#{lib_name}' class='pointer' onclick='showPage(\""+lib_name+"\")'>"+lib_name+"</li>" }
 library_links = "
     <ul>
         <li id='link_basic-statistics' class='pointer current_page' onclick='showPage(\"basic-statistics\")'>Basic Statistics</li>
         <li>Libraries
-            <ul>"+library_links.join+"</ul>
+            <ul>" + lib_names.map { |lib_name| "
+                <li id='link_#{lib_name}' class='pointer' onclick='showPage(\""+lib_name+"\")'>"+lib_name+"</li>"
+                }.join + "
+            </ul>
         </li>
     </ul>
 "
-library_pages = lib_names.each_with_index.map { |lib_name, i|
+
+library_pages = lib_names.map { |lib_name|
     "<div id='"+lib_name+"' class='page hidden'>
         <div style='display: flex; flex-direction: column; gap: 16px;'>
+            <div class='error-message'></div>
             <div style='display: flex;'>
                 <div class='pie_chart' style='align-self: center; flex: 1;'>Pie Chart</div>
                 <div style='display: flex; align-items: center; flex-direction: column; flex: 1;'>
-                    <div class='IN' style='display: flex; flex-direction: row; align-items: center;'>
-                        <div style='width: 5ch;'>IN</div>
-                        <div class='treemap' style='flex: 1'></div>
-                    </div>
-                    <div class='V1V3' style='display: flex; flex-direction: row; align-items: center;'>
-                        <div style='width: 5ch;'>V1V3</div>
-                        <div class='treemap'></div>
-                    </div>
-                    <div class='PR' style='display: flex; flex-direction: row; align-items: center;'>
-                        <div style='width: 5ch;'>PR</div>
-                        <div class='treemap'></div>
-                    </div>
-                    <div class='RT' style='display: flex; flex-direction: row; align-items: center;'>
-                        <div style='width: 5ch;'>RT</div>
-                        <div class='treemap'></div>
-                    </div>
+                    " + lib_data[lib_name].map{ |lib, data| data['region'] == "Other" ? "" : "
+                        <div class='#{data['region']}' style='display: flex; flex-direction: row; align-items: center;'>
+                            <div style='width: #{max_region_char_length.to_s}ch;'>#{data['region']}</div>
+                            <div class='treemap' style='flex: 1'></div>
+                        </div>
+                    " }.join + "
                 </div>
             </div>
         </div>
@@ -218,18 +228,22 @@ tree_charts = {}
 tcs_bar_chart = {}
 distinct_bar_chart = {}
 resampling_bar_chart = {}
+paired_raw_slices_colors={}
 
 lib_data.each do |lib, data|
     paired_raw[lib] = "
         [
-            ['Region', 'Paired Raw'],
-            ['IN,#{data['IN']['paired_raw']}', #{data['IN']['paired_raw']}],
-            ['V1V3,#{data['V1V3']['paired_raw']}', #{data['V1V3']['paired_raw']}],
-            ['PR,#{data['PR']['paired_raw']}', #{data['PR']['paired_raw']}],
-            ['RT,#{data['RT']['paired_raw']}', #{data['RT']['paired_raw']}],
-            ['Other,#{data['other']}', #{data['other']}]
+            ['Region', 'Paired Raw'], " +
+            data.map { |lib, d| d['region'] == 'Other' ? "" : "
+                ['#{d['region']},#{d['paired_raw']}', #{d['paired_raw']}],
+            " }.join + "
         ]
     "
+
+    c = data.map{ |lib, d|
+        d['region'] == 'Other' ? "" : "{color: '#{region_colors[d['region']]}'}"
+    }.join(',')
+    paired_raw_slices_colors[lib] = "[#{c}]"
 
     tree_charts[lib] = {}
     data.each do |region, d|
@@ -240,14 +254,14 @@ lib_data.each do |lib, data|
                     ['Global', null,0],
                     ['R1_Raw', 'Global', #{d['r1_raw'].to_s}],
                     ['R2_Raw', 'Global', #{d['r2_raw'].to_s}],
-                    ['Paired_RAW', 'Global', #{d['paired_raw'].to_s}],
+                    ['Paired_Raw', 'Global', #{d['paired_raw'].to_s}],
                 ]
             "
         end
     end
 
-    has_c = data['IN']['combined_TCS'] > 0
-    has_qc = data['IN']['combined_TCS_after_QC'] > 0
+    has_c = data.values.inject(0) {|sum, h| sum + (h['combined_TCS'] == nil ? 0 : h['combined_TCS']) } > 0
+    has_qc = data.values.inject(0) {|sum, h| sum + (h['combined_TCS_after_QC'] == nil ? 0 : h['combined_TCS_after_QC']) } > 0
 
     tcs_bar_chart[lib] = {
         'data' => "
@@ -258,101 +272,94 @@ lib_data.each do |lib, data|
                     #{has_c ? "'Combined TCS'," : ''}
                     #{has_qc ? "'After QC'," : ''}
                 ],
+                " + data.map{ |region, d| d['region'] === "Other" ? "" : "
                 [
-                    'IN#{data['IN']['warnings'].length > 0 ? '*' : ''}',
-                    #{data['IN']['consensus2']},
-                    #{has_c ? "#{data['IN']['combined_TCS']}," : ''}
-                    #{has_qc ? "#{data['IN']['combined_TCS_after_QC']}," : ''}
+                    '#{d['region']}#{d['warnings'].length > 0 ? '*' : ''}',
+                    #{d['consensus2']}  ,
+                    #{has_c ? "#{d['combined_TCS']}," : ''}
+                    #{has_qc ? "#{d['combined_TCS_after_QC']}," : ''}
                 ],
-                [
-                    'V1V3#{data['V1V3']['warnings'].length > 0 ? '*' : ''}',
-                    #{data['V1V3']['consensus2']},
-                    #{has_c ? "#{data['V1V3']['combined_TCS']}," : ''}
-                    #{has_qc ? "#{data['V1V3']['combined_TCS_after_QC']}" : ''}
-                ],
-                [
-                    'PR#{data['PR']['warnings'].length > 0 ? '*' : ''}',
-                    #{data['PR']['consensus2']},
-                    #{has_c ? "#{data['PR']['combined_TCS']}," : ''}
-                    #{has_qc ? "#{data['PR']['combined_TCS_after_QC']}" : ''}
-                ],
-                [
-                    'RT#{data['RT']['warnings'].length > 0 ? '*' : ''}',
-                    #{data['RT']['consensus2']},
-                    #{has_c ? "#{data['RT']['combined_TCS']}," : ''}
-                    #{has_qc ? "#{data['RT']['combined_TCS_after_QC']}" : ''}
-                ]
+                " }.join + "
             ]
         ",
         'warnings' => data.map{ |region, d|
-            region != "other" && d['warnings'].length > 0 ? "#{region} - #{d["warnings"]}<br/>" : ''
+            d['region'] != "Other" && d['warnings'].length > 0 ? "#{region} - #{d["warnings"]}<br/>" : ''
         }.join
     }
 
     distinct_bar_chart[lib] = "
         [
             ['Region','Distinct to Raw'],
-            ['IN', #{data['IN']['distinct_to_raw']}],
-            ['V1V3', #{data['V1V3']['distinct_to_raw']}],
-            ['PR', #{data['PR']['distinct_to_raw']}],
-            ['RT', #{data['RT']['distinct_to_raw']}]
+            "+ data.map{ |region, d| d['region'] == 'Other' ? "" : "
+            [
+                '#{d['region']}', #{d['distinct_to_raw']}
+            ],"}.join + "
         ]
     "
 
     resampling_bar_chart[lib] = "
         [
             ['Region','Resampling Index'],
-            ['IN', #{data['IN']['resampling_index']}],
-            ['V1V3', #{data['V1V3']['resampling_index']}],
-            ['PR', #{data['PR']['resampling_index']}],
-            ['RT', #{data['RT']['resampling_index']}],
+            "+ data.map{ |region, d| d['region'] == 'Other' ? "" : "
+            [
+                '#{d['region']}', #{d['resampling_index']}
+            ]," }.join + "
         ]
     "
 end
 
 #create JS that initializes charts
 paired_raw_js = paired_raw.map { |lib, data| '
-    var chart_pie_'+lib.var_safe+' = new google.visualization.PieChart(document.querySelector("#'+lib+' .pie_chart"));
-    chart_pie_'+lib.var_safe+'.draw(
-        google.visualization.arrayToDataTable('+data+'),
-        {
-            title: "Paired Raw",
-            titleTextStyle: {
-                fontSize: 18
-            },
-            height,
-            width: Math.round(width * .5),
-            pieSliceText: "label",
-            legend: {
-                position: "left",
-                alignment: "center"
-            },
-            chartArea: {
-                width: "100%",
-                height: "100%"
+    var element_pie_'+lib.var_safe+' = document.querySelector("#'+lib+' .pie_chart")
+    if(isVisible(element_pie_'+lib.var_safe+')){
+        var chart_pie_'+lib.var_safe+' = new google.visualization.PieChart(element_pie_'+lib.var_safe+');
+        chart_pie_'+lib.var_safe+'.draw(
+            google.visualization.arrayToDataTable('+data+'),
+            {
+                title: "Paired Raw",
+                titleTextStyle: {
+                    fontSize: 18
+                },
+                height,
+                width: Math.round(width * .5),
+                pieSliceText: "label",
+                slices: ' + paired_raw_slices_colors[lib] + ',
+                legend: {
+                    position: "left",
+                    alignment: "center"
+                },
+                chartArea: {
+                    width: "100%",
+                    height: "100%"
+                }
             }
-        }
-    );
+        );
+    }
 ' }.join
 
 tree_charts_js = tree_charts.map { |lib, d|
     d.map { |region, data| '
-        var chart_tree_'+lib.var_safe+'_'+region.var_safe+' = new google.visualization.TreeMap(document.querySelector("#'+lib+' .'+region+' .treemap"));
-        chart_tree_'+lib.var_safe+'_'+region.var_safe+'.draw(
-            google.visualization.arrayToDataTable('+data+'),
-            {
-                headerHeight: 0,
-                minColor: "grey",
-                midColor: "green",
-                maxColor: "blue"
-            }
-        );
+        var element_chart_tree_'+lib.var_safe+'_'+region.var_safe+' = document.querySelector("#'+lib+' .'+region+' .treemap")
+        if(isVisible(element_chart_tree_'+lib.var_safe+'_'+region.var_safe+')){
+            var chart_tree_'+lib.var_safe+'_'+region.var_safe+' = new google.visualization.TreeMap(element_chart_tree_'+lib.var_safe+'_'+region.var_safe+');
+            chart_tree_'+lib.var_safe+'_'+region.var_safe+'.draw(
+                google.visualization.arrayToDataTable('+data+'),
+                {
+                    headerHeight: 0,
+                    minColor: "grey",
+                    midColor: "green",
+                    maxColor: "blue",
+                    fontColor: "#fff"
+                }
+            );
+        }
     '}
 }.join
 
-tcs_bar_chart_js = tcs_bar_chart.map { |lib, data|
-    '
-        var tcs_bar_chart_'+lib.var_safe+' = new google.charts.Bar(document.querySelector("#'+lib+' .tcs_bar_chart"));
+tcs_bar_chart_js = tcs_bar_chart.map { |lib, data| '
+    var element_tcs_bar_chart_'+lib.var_safe+' = document.querySelector("#'+lib+' .tcs_bar_chart")
+    if(isVisible(element_tcs_bar_chart_'+lib.var_safe+')){
+        var tcs_bar_chart_'+lib.var_safe+' = new google.charts.Bar(element_tcs_bar_chart_'+lib.var_safe+');
         tcs_bar_chart_'+lib.var_safe+'.draw(
             google.visualization.arrayToDataTable('+data["data"]+'),
             google.charts.Bar.convertOptions({
@@ -369,37 +376,42 @@ tcs_bar_chart_js = tcs_bar_chart.map { |lib, data|
                 }
             })
         );
-
         document.querySelector("#'+lib+' .tcs_warnings").innerHTML = "'+data['warnings']+'";
-    '
-}.join
+    }
+' }.join
 
 distinct_bar_chart_js = distinct_bar_chart.map { |lib, data| '
-    var distinct_'+lib.var_safe+' = new google.visualization.ColumnChart(document.querySelector("#'+lib+' .raw_bar_chart"));
-    distinct_'+lib.var_safe+'.draw(
-        google.visualization.arrayToDataTable('+data+'),
-        {
-            legend: {
-                position: "none"
-            },
-            width,
-            height
-        }
-    );
+    var element_distinct_'+lib.var_safe+' = document.querySelector("#'+lib+' .raw_bar_chart")
+    if(isVisible(element_distinct_'+lib.var_safe+')){
+        var distinct_'+lib.var_safe+' = new google.visualization.ColumnChart(element_distinct_'+lib.var_safe+');
+        distinct_'+lib.var_safe+'.draw(
+            google.visualization.arrayToDataTable('+data+'),
+            {
+                legend: {
+                    position: "none"
+                },
+                width,
+                height
+            }
+        );
+    }
 ' }.join
 
 resampling_bar_chart_js = resampling_bar_chart.map { |lib, data| '
-    var resampling_'+lib.var_safe+' = new google.visualization.ColumnChart(document.querySelector("#'+lib+' .resampling_bar_chart"));
-    resampling_'+lib.var_safe+'.draw(
-        google.visualization.arrayToDataTable('+data+'),
-        {
-            legend: {
-                position: "none"
-            },
-            width,
-            height
-        }
-    );
+    var element_resampling_'+lib.var_safe+' = document.querySelector("#'+lib+' .resampling_bar_chart")
+    if(isVisible(element_resampling_'+lib.var_safe+')){
+        var resampling_'+lib.var_safe+' = new google.visualization.ColumnChart(element_resampling_'+lib.var_safe+');
+        resampling_'+lib.var_safe+'.draw(
+            google.visualization.arrayToDataTable('+data+'),
+            {
+                legend: {
+                    position: "none"
+                },
+                width,
+                height
+            }
+        );
+    }
 ' }.join
 
 html = '
@@ -417,25 +429,40 @@ html = '
 
             var isInit = false
 
+            function isVisible(el) {
+                return (el.offsetParent !== null)
+            }
+
             function drawChart() {
+
+                document.querySelectorAll(".error-message").forEach(element => element.innerHTML = "")
 
                 if(! isInit){
                     isInit = true;
                     window.onresize = drawChart;
                 }
 
-                var width = Math.round(window.innerWidth * .8)
-                var height = Math.round(window.innerHeight * .6)
+                try{
+                    var width = Math.round(window.innerWidth * .8)
+                    var height = Math.round(window.innerHeight * .6)
 
-                var home_chart = new google.visualization.ColumnChart(document.getElementById("raw-sequence-chart"));
-                home_chart.draw(
-                    google.visualization.arrayToDataTable('+raw_sequence_data+'),
-                    {
-                        width,
-                        height,
-                        annotations: {alwaysOutside: true}
-                    }
-                );'+ paired_raw_js + tree_charts_js + tcs_bar_chart_js + distinct_bar_chart_js + resampling_bar_chart_js + '
+                    var element_home_chart = document.getElementById("raw-sequence-chart")
+                    if(isVisible(element_home_chart)){
+                        var home_chart = new google.visualization.ColumnChart(element_home_chart);
+                        home_chart.draw(
+                            google.visualization.arrayToDataTable('+raw_sequence_data+'),
+                            {
+                                width,
+                                height,
+                                annotations: {alwaysOutside: true}
+                            }
+                        );
+                    }'+ paired_raw_js + tree_charts_js + tcs_bar_chart_js + distinct_bar_chart_js + resampling_bar_chart_js + '
+                }catch(e){
+                    document.querySelectorAll(".error-message").forEach(element =>
+                        element.innerHTML = "There was an error with your data.<br>To help us improve, please forward this html file to shuntaiz@email.unc.edu"
+                    )
+                }
             }
 
             function showPage(pageID){
@@ -460,6 +487,7 @@ html = '
                 </div>
                 <div id="pages" style="flex: 1; overflow: auto; height: 90vh;">
                     <div style="display: flex; flex-direction: column; align-items: center;" id="basic-statistics" class="page">
+                        <div class="error-message"></div>
                         <table id="home-table">
                             <tr>
                                 <td>Batch Name</td>
@@ -527,6 +555,18 @@ html = '
         }
         .current_page {
             border-bottom: 1px solid blue;
+        }
+        .error-message {
+            background: red !important;
+            color: white;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 1.8rem;
+            text-align: center;
+            padding: 1%;
+        }
+        .error-message:empty {
+            display: none;
         }
     </style>
 </html>

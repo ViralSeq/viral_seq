@@ -55,6 +55,7 @@ header = %w{
   Resampling_index
   Combined_TCS
   Combined_TCS_after_QC
+  Detection_Sensitivity
   WARNINGS
 }
 
@@ -83,6 +84,14 @@ libs.each do |lib|
 
   json_files.each do |f|
     json_log = JSON.parse(File.read(File.join(indir, lib, f)), symbolize_names: true)
+    tcs_number = json_log[:total_tcs]
+    if json_log[:combined_tcs]
+      tcs_number = json_log[:combined_tcs]
+      if json_log[:combined_tcs_after_qc]
+        tcs_number = json_log[:combined_tcs_after_qc]
+      end
+    end
+
     log.print [lib,
                json_log[:primer_set_name],
                json_log[:total_raw_sequence],
@@ -97,6 +106,7 @@ libs.each do |lib|
                json_log[:resampling_param],
                json_log[:combined_tcs],
                json_log[:combined_tcs_after_qc],
+               ViralSeq::TcsCore::detection_limit(tcs_number.to_i),
                json_log[:warnings],
              ].join(',') + "\n"
   end
@@ -165,7 +175,7 @@ CSV.foreach(log_file).each_with_index do |row, i|
         'resampling_index' => row[11].to_f,
         'combined_TCS' => row[12].to_i,
         'combined_TCS_after_QC' => row[13].to_i,
-        'warnings' => row[14].to_s || ""
+        'warnings' => row[15].to_s || ""
     }
 end
 

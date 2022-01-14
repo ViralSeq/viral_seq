@@ -293,6 +293,9 @@ module ViralSeq
       #   => 0.0362
 
       def detection_limit(tcs_number)
+        if tcs_number.zero?
+          return 1
+        end
         dl =  `Rscript -e "library(dplyr); ifelse(#{tcs_number} > 2, (binom.test(0,#{tcs_number})['conf.int'] %>% unlist %>% unname)[2] %>% round(4) %>% cat, 0)" 2>/dev/null`
         dl.to_f
       end

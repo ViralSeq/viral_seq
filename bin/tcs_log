@@ -374,8 +374,7 @@ tree_charts_js = tree_charts.map { |lib, d|
                 {
                     headerHeight: 0,
                     minColor: "' + colors[1] + '",
-                    midColor: "' + colors[5] + '",
-                    maxColor: "' + colors[7] + '",
+                    maxColor: "' + colors[5] + '",
                     fontColor: "#fff",
                 }
             );

@@ -114,7 +114,8 @@ class String
     end
 end
 
-colors = ["#d11141", "#00b159", "#00aedb", "#f37735", "#ffc425", "#1b85b8", "#5a5255", "#559e83", "#ae5a41", "#c3cb71"]
+colors = ["#332288", "#117733", "#44AA99", "#88CCEE", "#DDCC77", "#CC6677", "#AA4499", "#882255"]
+bool_colors = { true => colors[3], false => colors[5] }
 
 #hold vars for csv input
 raw_sequence_data = ["['Library Name', 'Raw Sequences', { role: 'annotation' }]"]
@@ -123,7 +124,7 @@ total_reads = 0
 max_region_char_length = 5
 lib_data = {}
 batch_name = ""
-region_colors = {}
+region_colors = {"Other" => "#808080"}
 
 CSV.foreach(log_file).each_with_index do |row, i|
     next if i == 0 || row[0] == nil
@@ -133,7 +134,7 @@ CSV.foreach(log_file).each_with_index do |row, i|
     raw_sequences_per_barcode = row[2].to_i
 
     if not region_colors.key?(region)
-        region_colors[region] = colors[region_colors.length % 9]
+        region_colors[region] = colors[region_colors.length % (colors.length - 1)]
     end
 
     if region.length > max_region_char_length + 2
@@ -175,10 +176,14 @@ lib_names = lib_names.sort_by { |s| [s.split("-")[0], s.split("-")[1].to_i] }
 #calculate 'other'
 lib_data.each do |lib, data|
     sum = data.values.reduce(0) { |sum, obj| sum + obj['paired_raw'] }
-    other = data[data.keys.first]['raw_sequences_per_barcode'] - sum
+    raw_sequences_per_barcode = data[data.keys.first]['raw_sequences_per_barcode']
+
+
+    other = raw_sequences_per_barcode - sum
     data['other'] = {
         "region" => "Other",
-        "paired_raw" => other
+        "paired_raw" => other,
+        "raw_sequences_per_barcode" => raw_sequences_per_barcode
     }
 end
 
@@ -196,26 +201,40 @@ library_links = "
 "
 
 library_pages = lib_names.map { |lib_name|
-    "<div id='"+lib_name+"' class='page hidden'>
-        <div style='display: flex; flex-direction: column; gap: 16px;'>
+    "<div id='"+lib_name+"' class='page hidden' style='display: flex; gap: 24px; flex-direction: column;'>
+        <div style='flex: 1; display: flex; flex-direction: column; gap: 16px;'>
             <div class='error-message'></div>
             <div style='display: flex;'>
-                <div class='pie_chart' style='align-self: center; flex: 1;'>Pie Chart</div>
+                <div style='align-self: center; flex: 1; display: flex; flex-direction: column; gap: 16px;'>
+                    <div style='align-self: center;'>
+                        <h2>Pie Chart Title</h2>
+                    </div>
+                    <div class='pie_chart'></div>
+                </div>
                 <div style='display: flex; align-items: center; flex-direction: column; flex: 1;'>
                     " + lib_data[lib_name].map{ |lib, data| data['region'] == "Other" ? "" : "
                         <div class='#{data['region']}' style='display: flex; flex-direction: row; align-items: center;'>
                             <div style='width: #{max_region_char_length.to_s}ch;'>#{data['region']}</div>
-                            <div class='treemap' style='flex: 1'></div>
+                            <div class='treemap' style='flex: 1; height: #{80 / (lib_data[lib_name].length - 1)}vh;'></div>
                         </div>
                     " }.join + "
                 </div>
             </div>
         </div>
-        <div style='display: flex; flex-direction: column; gap: 16px;'>
+        <div style='flex: 1; display: flex; flex-direction: column; gap: 24px;'>
+            <div style='align-self: center;'>
+                <h2>TCS Chart Title</h2>
+            </div>
             <div class='tcs_bar_chart' style='flex: 1;'></div>
             <div class='tcs_warnings' style='flex: 1; margin-left: 24px;'></div>
+            <div style='align-self: center;'>
+                <h2>Raw Bar Chart Title</h2>
+            </div>
             <div class='raw_bar_chart' style='flex: 1;'></div>
             <div style='flex: 1; margin-left: 24px;'>Distinct to Raw greater than 0.1 suggests more raw sequences are required to fully recover TCS</div>
+            <div style='align-self: center;'>
+                <h2>Resampling Bar Chart Title</h2>
+            </div>
             <div class='resampling_bar_chart' style='flex: 1;'></div>
             <div style='flex: 1; margin-left: 24px;'>Resampling index less than 0.9 suggests Primer ID resampling.</div>
         </div>
@@ -228,22 +247,28 @@ tree_charts = {}
 tcs_bar_chart = {}
 distinct_bar_chart = {}
 resampling_bar_chart = {}
-paired_raw_slices_colors={}
 
 lib_data.each do |lib, data|
-    paired_raw[lib] = "
+    paired_raw[lib] = {}
+
+    paired_raw[lib]['data'] = "
         [
             ['Region', 'Paired Raw'], " +
-            data.map { |lib, d| d['region'] == 'Other' ? "" : "
+            data.map { |lib, d| "
                 ['#{d['region']},#{d['paired_raw']}', #{d['paired_raw']}],
             " }.join + "
         ]
     "
 
-    c = data.map{ |lib, d|
-        d['region'] == 'Other' ? "" : "{color: '#{region_colors[d['region']]}'}"
-    }.join(',')
-    paired_raw_slices_colors[lib] = "[#{c}]"
+    paired_raw[lib]['slices'] = "[#{
+        data.map{ |lib, d| "{color: '#{region_colors[d['region']]}'}" }.join(',')
+    }]"
+
+    paired_raw[lib]['residuel_text'] = data.map { |lib, d|
+        (d['paired_raw'].to_f / d['raw_sequences_per_barcode'].to_f) < (0.5/360) ?
+            "#{d['region']},#{d['paired_raw']}" :
+            nil
+    }.compact.join(" - ")
 
     tree_charts[lib] = {}
     data.each do |region, d|
@@ -289,20 +314,20 @@ lib_data.each do |lib, data|
 
     distinct_bar_chart[lib] = "
         [
-            ['Region','Distinct to Raw'],
+            ['Region','Distinct to Raw', {role: 'style'}],
             "+ data.map{ |region, d| d['region'] == 'Other' ? "" : "
             [
-                '#{d['region']}', #{d['distinct_to_raw']}
+                '#{d['region']}', #{d['distinct_to_raw']}, '#{bool_colors[d['distinct_to_raw'].to_f < 0.1]}'
             ],"}.join + "
         ]
     "
 
     resampling_bar_chart[lib] = "
         [
-            ['Region','Resampling Index'],
+            ['Region','Resampling Index', {role: 'style'}],
             "+ data.map{ |region, d| d['region'] == 'Other' ? "" : "
             [
-                '#{d['region']}', #{d['resampling_index']}
+                '#{d['region']}', #{d['resampling_index']}, '#{bool_colors[d['resampling_index'].to_f > 0.9]}'
             ]," }.join + "
         ]
     "
@@ -314,7 +339,7 @@ paired_raw_js = paired_raw.map { |lib, data| '
     if(isVisible(element_pie_'+lib.var_safe+')){
         var chart_pie_'+lib.var_safe+' = new google.visualization.PieChart(element_pie_'+lib.var_safe+');
         chart_pie_'+lib.var_safe+'.draw(
-            google.visualization.arrayToDataTable('+data+'),
+            google.visualization.arrayToDataTable('+data['data']+'),
             {
                 title: "Paired Raw",
                 titleTextStyle: {
@@ -323,7 +348,7 @@ paired_raw_js = paired_raw.map { |lib, data| '
                 height,
                 width: Math.round(width * .5),
                 pieSliceText: "label",
-                slices: ' + paired_raw_slices_colors[lib] + ',
+                slices: ' + data['slices'] + ',
                 legend: {
                     position: "left",
                     alignment: "center"
@@ -331,7 +356,8 @@ paired_raw_js = paired_raw.map { |lib, data| '
                 chartArea: {
                     width: "100%",
                     height: "100%"
-                }
+                },
+                ' + (data['residuel_text'].length > 0 ? "pieResidueSliceLabel: '#{data['residuel_text']}'" : "") + '
             }
         );
     }
@@ -346,12 +372,15 @@ tree_charts_js = tree_charts.map { |lib, d|
                 google.visualization.arrayToDataTable('+data+'),
                 {
                     headerHeight: 0,
-                    minColor: "grey",
-                    midColor: "green",
-                    maxColor: "blue",
-                    fontColor: "#fff"
+                    minColor: "' + colors[1] + '",
+                    midColor: "' + colors[5] + '",
+                    maxColor: "' + colors[7] + '",
+                    fontColor: "#fff",
                 }
             );
+            google.visualization.events.addListener(chart_tree_'+lib.var_safe+'_'+region.var_safe+', "select", function () {
+                chart_tree_'+lib.var_safe+'_'+region.var_safe+'.setSelection([]);
+            });
         }
     '}
 }.join
@@ -366,7 +395,7 @@ tcs_bar_chart_js = tcs_bar_chart.map { |lib, data| '
                 chart: {
                     title: "TCS",
                 },
-                colors: ["#1b9e77", "#d95f02", "#7570b3"],
+                colors: ["' + colors[0] + '", "' + colors[1] + '", "' + colors[2] + '"],
                 legend: { position: "bottom" },
                 width,
                 height,

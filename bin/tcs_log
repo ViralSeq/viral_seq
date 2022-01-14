@@ -27,6 +27,7 @@ Dir.mkdir(tcs_dir) unless File.directory?(tcs_dir)
 
 libs = []
 Dir.chdir(indir) {libs = Dir.glob("*")}
+libs.sort_by! {|lib| lib.split("-")[1].to_i}
 
 outdir2 = File.join(tcs_dir, "combined_TCS_per_lib")
 outdir3 = File.join(tcs_dir, "TCS_per_region")
@@ -207,7 +208,7 @@ library_pages = lib_names.map { |lib_name|
             <div style='display: flex;'>
                 <div style='align-self: center; flex: 1; display: flex; flex-direction: column; gap: 16px;'>
                     <div style='align-self: center;'>
-                        <h2>Pie Chart Title</h2>
+                        <h2>Distribution of Raw Sequencing Reads</h2>
                     </div>
                     <div class='pie_chart'></div>
                 </div>
@@ -223,20 +224,20 @@ library_pages = lib_names.map { |lib_name|
         </div>
         <div style='flex: 1; display: flex; flex-direction: column; gap: 24px;'>
             <div style='align-self: center;'>
-                <h2>TCS Chart Title</h2>
+                <h2>Number of TCS at Regions</h2>
             </div>
             <div class='tcs_bar_chart' style='flex: 1;'></div>
             <div class='tcs_warnings' style='flex: 1; margin-left: 24px;'></div>
             <div style='align-self: center;'>
-                <h2>Raw Bar Chart Title</h2>
+                <h2 style='text-align: center;'>Distinct to Raw</h2>
+                <p><i>Distinct to Raw greater than 0.1 suggests more raw sequences are required to fully recover TCS</i></p>
             </div>
             <div class='raw_bar_chart' style='flex: 1;'></div>
-            <div style='flex: 1; margin-left: 24px;'>Distinct to Raw greater than 0.1 suggests more raw sequences are required to fully recover TCS</div>
             <div style='align-self: center;'>
-                <h2>Resampling Bar Chart Title</h2>
+                <h2 style='text-align: center;'>Resampling Index</h2>
+                <p><i>Resampling index less than 0.9 suggests Primer ID resampling</i></p>
             </div>
             <div class='resampling_bar_chart' style='flex: 1;'></div>
-            <div style='flex: 1; margin-left: 24px;'>Resampling index less than 0.9 suggests Primer ID resampling.</div>
         </div>
     </div>"
 }
@@ -293,9 +294,9 @@ lib_data.each do |lib, data|
             [
                 [
                     'Region',
-                    'Conensus2',
+                    'TCS',
                     #{has_c ? "'Combined TCS'," : ''}
-                    #{has_qc ? "'After QC'," : ''}
+                    #{has_qc ? "'TCS After QC'," : ''}
                 ],
                 " + data.map{ |region, d| d['region'] === "Other" ? "" : "
                 [

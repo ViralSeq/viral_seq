@@ -260,7 +260,8 @@ library_pages = lib_names.map { |lib_name|
             <div class='tcs_bar_chart' style='flex: 1;'></div>
             <div class='tcs_warnings' style='flex: 1; margin-left: 24px;'></div>
             <div style='align-self: center;'>
-                <h2>Detection Sensitivity Title</h2>
+                <h2 style='text-align: center;'>Detection Sensitivity</h2>
+                <p><i>The lowest abundance of minority mutations that can be detected with 95% confidence</i></p>
             </div>
             <div class='detection_sensitivity_chart' style='flex: 1;'></div>
             <div style='align-self: center;'>
@@ -435,9 +436,6 @@ tcs_bar_chart_js = tcs_bar_chart.map { |lib, data| '
         tcs_bar_chart_'+lib.var_safe+'.draw(
             google.visualization.arrayToDataTable('+data["data"]+'),
             google.charts.Bar.convertOptions({
-                chart: {
-                    title: "TCS",
-                },
                 colors: ["' + colors[0] + '", "' + colors[1] + '", "' + colors[2] + '"],
                 legend: { position: "bottom" },
                 width,
@@ -461,6 +459,14 @@ detection_sensitivity_js = detection_sensitivity_chart.map { |lib, data| '
             {
                 legend: {
                     position: "none"
+                },
+                colors: ["' + colors[3] + '"],
+                vAxis: {
+                      scaleType: "log",
+                      viewWindow: {
+                        min: 0.00001
+                      },
+                      ticks: [0.00001, 0.0001, 0.001, 0.01, 0.1, 1]
                 },
                 width,
                 height
@@ -511,6 +517,7 @@ html = '
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>TCS Log</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
         <script src="https://www.gstatic.com/charts/loader.js"></script>
         <script>
             google.charts.load("current", {packages: ["corechart", "treemap", "bar"]});

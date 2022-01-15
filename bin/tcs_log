@@ -205,8 +205,6 @@ lib_names = lib_names.sort_by { |s| [s.split("-")[0], s.split("-")[1].to_i] }
 lib_data.each do |lib, data|
     sum = data.values.reduce(0) { |sum, obj| sum + obj['paired_raw'] }
     raw_sequences_per_barcode = data[data.keys.first]['raw_sequences_per_barcode']
-
-
     other = raw_sequences_per_barcode - sum
     data['other'] = {
         "region" => "Other",
@@ -240,7 +238,7 @@ library_pages = lib_names.map { |lib_name|
                 " + lib_data[lib_name].map{ |lib, data| data['region'] == "Other" ? "" : "
                     <div class='#{data['region']}' style='display: flex; flex-direction: row; align-items: center;'>
                         <div style='width: #{max_region_char_length.to_s}ch;'>#{data['region']}</div>
-                        <div class='treemap' style='flex: 1; height: #{80 / (lib_data[lib_name].length < 6 ? lib_data[lib_name].length : 5)}vh;'></div>
+                        <div class='treemap' style='flex: 1; height: #{80 / lib_data[lib_name].length}vh;'></div>
                     </div>
                 " }.join + "
             </div>
@@ -269,7 +267,7 @@ library_pages = lib_names.map { |lib_name|
             <h2>Scatter Charts</h2>
             <p><i>Resampling index less than 0.9 suggests Primer ID resampling</i></p>
             " + lib_data[lib_name].map{ |lib, data| data['region'] == "Other" ? "" : "
-                <div class='#{data['region']} scatter' style='height: #{80 / (lib_data[lib_name].length < 6 ? lib_data[lib_name].length : 5)}vh;'></div>
+                <div class='#{data['region']} scatter' style='height: #{80 / 3}vh;'></div>
             " }.join + "
         </div>
     </div>"
@@ -380,13 +378,14 @@ scatter_charts = {}
 pid_dist_data.each do |lib, data|
     scatter_charts[lib] = {}
     data.each do |region, d|
-        scatter_charts[lib][region] = {
-            "data" => "[
-                ['Index', 'Distribution'],
-                #{d.map{ |index, distribution| "[#{index}, #{distribution}]" }.join(',') }
-            ]",
-            "cutoff" => lib_data[lib][region]['cutoff']
-        }
+        max_x = d.max_by{|index, distribution| distribution }[1]
+        max_x = "1#{ max_x.to_s.chars.map{ |c| "0"}.join }"
+        scatter_charts[lib][region] = "[
+            ['Index', 'Distribution', 'Cutoff'],
+            [#{lib_data[lib][region]['cutoff'].to_s}, null, 0],
+            [#{lib_data[lib][region]['cutoff'].to_s}, null, #{max_x}],
+            #{d.map{ |index, distribution| "[#{index}, #{distribution}, null]" }.join(',') },
+        ]"
     end
 end
 
@@ -526,16 +525,11 @@ scatter_charts_js = scatter_charts.map { |lib, d|
         var element_chart_scatter_'+lib.var_safe+'_'+region.var_safe+' = document.querySelector("#'+lib+' .'+region+'.scatter")
         if(isVisible(element_chart_scatter_'+lib.var_safe+'_'+region.var_safe+')){
             var chart_scatter_'+lib.var_safe+'_'+region.var_safe+' = new google.visualization.ComboChart(element_chart_scatter_'+lib.var_safe+'_'+region.var_safe+');
+
             var view_'+lib.var_safe+'_'+region.var_safe+' = new google.visualization.DataView(
-                google.visualization.arrayToDataTable(' + data['data'] + ')
+                google.visualization.arrayToDataTable(' + data + ')
             );
-            view_'+lib.var_safe+'_'+region.var_safe+'.setColumns([0, 1, {
-                label: "Cutoff",
-                type: "number",
-                calc: function (dt, row) {
-                    return ' + data["cutoff"].to_s + '
-                }
-            }]);
+
             chart_scatter_'+lib.var_safe+'_'+region.var_safe+'.draw(
                 view_'+lib.var_safe+'_'+region.var_safe+',
                 {

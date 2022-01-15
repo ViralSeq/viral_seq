@@ -220,7 +220,7 @@ library_links = "
     <ul>
         <li id='link_basic-statistics' class='pointer current_page' onclick='showPage(\"basic-statistics\")'>Basic Statistics</li>
         <li>Libraries
-            <ul>" + lib_names.map { |lib_name| "
+            <ul style='margin-left: 16px;'>" + lib_names.map { |lib_name| "
                 <li id='link_#{lib_name}' class='pointer' onclick='showPage(\""+lib_name+"\")'>"+lib_name+"</li>"
                 }.join + "
             </ul>
@@ -246,7 +246,7 @@ library_pages = lib_names.map { |lib_name|
             </div>
         </div>
         <div class='card'>
-            <h2>Number of TCS at Regions</h2>
+            <h2 style='margin: 32px;'>Number of TCS at Regions</h2>
             <div class='tcs_bar_chart'></div>
             <div class='tcs_warnings' style='text-align: left; margin-left: 24px;'></div>
         </div>
@@ -603,7 +603,8 @@ html = '
                             {
                                 width,
                                 height,
-                                annotations: {alwaysOutside: true}
+                                annotations: {alwaysOutside: true},
+                                colors: ["' + bool_colors[true] + '"]
                             }
                         );
                     }'+ paired_raw_js + tree_charts_js + tcs_bar_chart_js + distinct_bar_chart_js + resampling_bar_chart_js + detection_sensitivity_js + scatter_charts_js + '

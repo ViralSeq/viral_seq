@@ -59,10 +59,6 @@ header = %w{
   WARNINGS
 }
 
-### this will be the data for the scatter plot. format as pid_dist_data[lib][region]
-### example
-### {"RMB10-1"=>{"IN"=>{1=>58, 2=>4, 3=>2, 4=>2, 5=>1, 6=>1, 7=>1, 17=>1}, "RT"=>{1=>2123, 2=>91, 3=>56, 4=>38, 5=>42, 6=>42, 7=>56, 8=>86, 9=>79, 10=>84, 11=>124, 12=>102, 13=>129, 14=>134, 15=>162, 16=>165, 17=>189, 18=>215, 19=>224, 20=>185, 21=>217, 22=>184, 23=>234, 24=>185, 25=>194, 26=>136, 27=>122, 28=>115, 29=>92, 30=>82, 31=>63, 32=>48, 33=>27, 34=>28, 35=>17, 36=>12, 37=>10, 38=>9, 39=>8, 40=>5, 42=>3, 43=>3, 44=>4, 45=>3, 46=>3, 47=>1, 48=>2, 51=>1, 53=>1, 54=>2, 55=>1, 60=>1, 61=>1, 66=>1, 89=>1, 99=>1, 174=>1}, "PR"=>{1=>6053, 2=>386, 3=>112, 4=>69, 5=>47, 6=>41, 7=>51, 8=>50, 9=>40, 10=>45, 11=>48, 12=>69, 13=>82, 14=>71, 15=>89, 16=>103, 17=>123, 18=>116, 19=>104, 20=>146, 21=>152, 22=>146, 23=>161, 24=>205, 25=>216, 26=>252, 27=>295, 28=>292, 29=>356, 30=>331, 31=>381, 32=>371, 33=>392, 34=>417, 35=>314, 36=>364, 37=>378, 38=>311, 39=>263, 40=>249, 41=>248, 42=>210, 43=>177, 44=>151, 45=>132, 46=>101, 47=>82, 48=>63, 49=>49, 50=>29, 51=>28, 52=>22, 53=>16, 54=>11, 55=>15, 56=>11, 57=>6, 58=>7, 59=>8, 60=>4, 61=>6, 62=>3, 63=>5, 64=>1, 65=>4, 66=>2, 67=>9, 68=>6, 69=>3, 70=>2, 71=>11, 72=>7, 73=>7, 74=>10, 75=>4, 76=>11, 77=>2, 78=>5, 79=>3, 80=>1, 81=>3, 83=>1, 84=>1, 86=>1, 87=>2, 89=>1, 92=>2, 93=>1, 95=>2, 96=>1, 101=>2, 106=>1, 108=>2, 110=>1}, "V1V3"=>{1=>56, 2=>21, 3=>10, 4=>6, 5=>6, 6=>4, 7=>3, 8=>2, 9=>3, 11=>2, 13=>2, 15=>2, 17=>1, 19=>1, 20=>1, 25=>1, 28=>1}}, "RMB10-2"=>{"IN"=>{1=>42, 2=>7, 3=>4, 4=>1, 5=>1, 8=>1}, "RT"=>{1=>2608, 2=>1227, 3=>707, 4=>413, 5=>274, 6=>198, 7=>114, 8=>89, 9=>50, 10=>43, 11=>17, 12=>12, 13=>4, 14=>2, 15=>2, 17=>1}, "PR"=>{1=>8829, 2=>762, 3=>217, 4=>107, 5=>115, 6=>65, 7=>81, 8=>74, 9=>64, 10=>90, 11=>95, 12=>114, 13=>135, 14=>149, 15=>155, 16=>185, 17=>217, 18=>255, 19=>277, 20=>332, 21=>398, 22=>437, 23=>533, 24=>569, 25=>585, 26=>656, 27=>733, 28=>738, 29=>710, 30=>703, 31=>718, 32=>628, 33=>610, 34=>581, 35=>508, 36=>475, 37=>414, 38=>344, 39=>248, 40=>224, 41=>171, 42=>133, 43=>110, 44=>85, 45=>74, 46=>62, 47=>46, 48=>42, 49=>23, 50=>23, 51=>21, 52=>24, 53=>25, 54=>32, 55=>23, 56=>20, 57=>24, 58=>15, 59=>29, 60=>27, 61=>21, 62=>17, 63=>14, 64=>20, 65=>18, 66=>16, 67=>21, 68=>10, 69=>10, 70=>7, 71=>8, 72=>8, 73=>7, 74=>7, 75=>4, 76=>11, 77=>2, 78=>5, 79=>3, 80=>2, 81=>1, 82=>2, 83=>2, 84=>3, 86=>1, 89=>1, 90=>1, 91=>1, 93=>1, 95=>1, 96=>1, 97=>1, 98=>1, 99=>1, 105=>1, 106=>1, 108=>1, 109=>1, 110=>1, 114=>1, 123=>2, 131=>1}, "V1V3"=>{1=>840, 2=>156, 3=>190, 4=>273, 5=>294, 6=>336, 7=>385, 8=>387, 9=>329, 10=>255, 11=>188, 12=>161, 13=>95, 14=>59, 15=>33, 16=>29, 17=>8, 18=>6, 19=>4, 21=>1, 22=>2, 24=>1, 32=>1}}, "RMB10-3"=>{"IN"=>{1=>52, 2=>7, 3=>1, 5=>1, 9=>1, 11=>1, 30=>1, 31=>1, 45=>1, 51=>1, 135=>1, 159=>1}, "RT"=>{1=>232, 2=>84, 3=>34, 4=>10, 5=>6, 6=>1, 7=>2, 8=>3, 9=>1, 10=>1, 11=>1, 13=>1, 16=>1, 24=>1, 28=>1, 30=>1, 32=>1, 490=>1, 662=>1, 874=>1, 884=>1, 909=>1, 921=>1, 1013=>1, 1048=>1, 1063=>1, 1158=>1, 1172=>1, 1173=>1, 1205=>1, 1225=>1, 1228=>1, 1305=>1, 1329=>1, 1336=>1, 1497=>1, 2227=>1}, "PR"=>{1=>910, 2=>180, 3=>104, 4=>53, 5=>36, 6=>19, 7=>11, 8=>10, 9=>6, 10=>2, 11=>8, 12=>1, 13=>4, 14=>2, 15=>3, 16=>1, 17=>1, 18=>1, 19=>2, 20=>1, 21=>1, 22=>2, 23=>1, 24=>1, 29=>2, 33=>1, 45=>1, 46=>1, 48=>1, 64=>1, 68=>1, 80=>1, 162=>1, 232=>1, 843=>1, 1027=>1, 1076=>1, 1079=>1, 1142=>1, 1251=>1, 1313=>1, 1456=>1, 1671=>1, 1801=>1, 1805=>1, 1831=>1, 1840=>1, 1924=>1, 1973=>1, 1996=>1, 2177=>1, 2192=>1, 2218=>1, 2241=>1, 2257=>1, 2299=>1, 2322=>1, 2329=>1, 2380=>1, 2427=>1, 2529=>1, 2549=>1, 2558=>1, 2562=>1, 2563=>1, 2578=>1, 2618=>1, 2630=>1, 2666=>1}, "V1V3"=>{1=>27, 2=>4, 3=>3, 4=>1, 6=>3, 44=>1, 69=>1, 119=>1, 621=>1, 841=>1}}, "RMB10-4"=>{"IN"=>{1=>671, 2=>174, 3=>84, 4=>47, 5=>39, 6=>38, 7=>33, 8=>31, 9=>29, 10=>23, 11=>22, 12=>19, 13=>19, 14=>13, 15=>21, 16=>18, 17=>5, 18=>13, 19=>7, 20=>6, 21=>5, 22=>6, 23=>4, 24=>2, 25=>3, 26=>2, 28=>2, 29=>1, 31=>1, 35=>1, 52=>1}, "RT"=>{1=>665, 2=>67, 3=>52, 4=>50, 5=>53, 6=>65, 7=>97, 8=>97, 9=>114, 10=>109, 11=>140, 12=>107, 13=>109, 14=>88, 15=>100, 16=>75, 17=>64, 18=>44, 19=>56, 20=>47, 21=>36, 22=>29, 23=>26, 24=>13, 25=>17, 26=>4, 27=>5, 28=>7, 29=>4, 30=>5, 31=>2, 32=>2, 33=>2, 35=>1, 37=>1, 38=>1, 49=>1}, "PR"=>{1=>5242, 2=>385, 3=>67, 4=>45, 5=>34, 6=>21, 7=>25, 8=>16, 9=>17, 10=>11, 11=>9, 12=>14, 13=>14, 14=>16, 15=>11, 16=>24, 17=>21, 18=>17, 19=>18, 20=>16, 21=>28, 22=>38, 23=>34, 24=>36, 25=>45, 26=>47, 27=>50, 28=>45, 29=>47, 30=>44, 31=>50, 32=>44, 33=>43, 34=>58, 35=>61, 36=>54, 37=>58, 38=>66, 39=>62, 40=>63, 41=>83, 42=>73, 43=>109, 44=>95, 45=>124, 46=>115, 47=>128, 48=>144, 49=>139, 50=>140, 51=>141, 52=>159, 53=>141, 54=>180, 55=>158, 56=>142, 57=>157, 58=>166, 59=>136, 60=>131, 61=>117, 62=>103, 63=>81, 64=>96, 65=>76, 66=>65, 67=>71, 68=>47, 69=>43, 70=>44, 71=>39, 72=>26, 73=>29, 74=>21, 75=>18, 76=>11, 77=>9, 78=>10, 79=>6, 80=>3, 81=>3, 82=>4, 83=>3, 84=>3, 85=>2, 86=>3, 87=>3, 88=>1, 90=>2, 91=>1, 92=>1, 93=>3, 94=>1, 95=>2, 96=>3, 98=>3, 99=>1, 102=>2, 104=>1, 105=>2, 106=>1, 107=>2, 108=>4, 109=>3, 110=>1, 112=>2, 113=>2, 114=>2, 115=>3, 116=>1, 117=>2, 118=>1, 119=>1, 121=>1, 123=>1, 124=>2, 126=>1, 127=>1, 128=>1, 132=>1, 134=>2, 138=>1, 144=>2}, "V1V3"=>{1=>2292, 2=>95, 3=>45, 4=>52, 5=>56, 6=>59, 7=>82, 8=>91, 9=>122, 10=>147, 11=>171, 12=>203, 13=>222, 14=>268, 15=>255, 16=>264, 17=>291, 18=>274, 19=>264, 20=>231, 21=>223, 22=>186, 23=>172, 24=>162, 25=>120, 26=>96, 27=>85, 28=>65, 29=>48, 30=>28, 31=>31, 32=>23, 33=>8, 34=>12, 35=>9, 36=>7, 37=>3, 38=>1}}}
-
 pid_dist_data = {}
 
 log.puts header.join(',')
@@ -189,7 +185,7 @@ CSV.foreach(log_file).each_with_index do |row, i|
         'r1_raw' => row[3].to_i,
         'r2_raw' => row[4].to_i,
         'paired_raw' => row[5].to_i,
-        'cut-off' => row[6].to_i, # need to plot the cut-off value as an absolute vertical line on the scatter plot.
+        'cutoff' => row[6].to_i,
         'consensus2' => row[9].to_i,
         'distinct_to_raw' => row[10].to_f,
         'resampling_index' => row[11].to_f,
@@ -233,47 +229,48 @@ library_links = "
 "
 
 library_pages = lib_names.map { |lib_name|
-    "<div id='"+lib_name+"' class='page hidden' style='display: flex; gap: 16px; flex-direction: column;'>
-        <div style='flex: 1; display: flex; flex-direction: column; gap: 16px;'>
-            <div class='error-message'></div>
-            <div style='display: flex;'>
-                <div style='align-self: center; flex: 1; display: flex; flex-direction: column; gap: 16px;'>
-                    <div style='align-self: center;'>
-                        <h2>Distribution of Raw Sequencing Reads</h2>
+    "<div id='"+lib_name+"' class='page hidden'>
+        <div class='error-message'></div>
+        <div style='display: flex; gap: 16px;'>
+            <div class='card' style='flex: 1;'>
+                <h2>Distribution of Raw Sequencing Reads</h2>
+                <div class='pie_chart'></div>
+            </div>
+            <div class='card' style='display: flex; align-items: center; flex-direction: column; flex: 1;'>
+                " + lib_data[lib_name].map{ |lib, data| data['region'] == "Other" ? "" : "
+                    <div class='#{data['region']}' style='display: flex; flex-direction: row; align-items: center;'>
+                        <div style='width: #{max_region_char_length.to_s}ch;'>#{data['region']}</div>
+                        <div class='treemap' style='flex: 1; height: #{80 / (lib_data[lib_name].length - 1)}vh;'></div>
                     </div>
-                    <div class='pie_chart'></div>
-                </div>
-                <div style='display: flex; align-items: center; flex-direction: column; flex: 1;'>
-                    " + lib_data[lib_name].map{ |lib, data| data['region'] == "Other" ? "" : "
-                        <div class='#{data['region']}' style='display: flex; flex-direction: row; align-items: center;'>
-                            <div style='width: #{max_region_char_length.to_s}ch;'>#{data['region']}</div>
-                            <div class='treemap' style='flex: 1; height: #{80 / (lib_data[lib_name].length - 1)}vh;'></div>
-                        </div>
-                    " }.join + "
-                </div>
+                " }.join + "
             </div>
         </div>
-        <div style='flex: 1; display: flex; flex-direction: column; gap: 16px;'>
-            <div style='align-self: center;'>
-                <h2>Number of TCS at Regions</h2>
-            </div>
-            <div class='tcs_bar_chart' style='flex: 1;'></div>
-            <div class='tcs_warnings' style='flex: 1; margin-left: 24px;'></div>
-            <div style='align-self: center;'>
-                <h2 style='text-align: center;'>Detection Sensitivity</h2>
-                <p><i>The lowest abundance of minority mutations that can be detected with 95% confidence</i></p>
-            </div>
-            <div class='detection_sensitivity_chart' style='flex: 1;'></div>
-            <div style='align-self: center;'>
-                <h2 style='text-align: center;'>Distinct to Raw</h2>
-                <p><i>Distinct to Raw greater than 0.1 suggests more raw sequences are required to fully recover TCS</i></p>
-            </div>
-            <div class='raw_bar_chart' style='flex: 1;'></div>
-            <div style='align-self: center;'>
-                <h2 style='text-align: center;'>Resampling Index</h2>
-                <p><i>Resampling index less than 0.9 suggests Primer ID resampling</i></p>
-            </div>
-            <div class='resampling_bar_chart' style='flex: 1;'></div>
+        <div class='card'>
+            <h2>Number of TCS at Regions</h2>
+            <div class='tcs_bar_chart'></div>
+            <div class='tcs_warnings' style='text-align: left; margin-left: 24px;'></div>
+        </div>
+        <div class='card'>
+            <h2>Detection Sensitivity</h2>
+            <p><i>The lowest abundance of minority mutations that can be detected with 95% confidence</i></p>
+            <div class='detection_sensitivity_chart'></div>
+        </div>
+        <div class='card'>
+            <h2 style='text-align: center;'>Distinct to Raw</h2>
+            <p><i>Distinct to Raw greater than 0.1 suggests more raw sequences are required to fully recover TCS</i></p>
+            <div class='raw_bar_chart'></div>
+        </div>
+        <div class='card'>
+            <h2>Resampling Index</h2>
+            <p><i>Resampling index less than 0.9 suggests Primer ID resampling</i></p>
+            <div class='resampling_bar_chart'></div>
+        </div>
+        <div class='card'>
+            <h2>Scatter Charts</h2>
+            <p><i>Resampling index less than 0.9 suggests Primer ID resampling</i></p>
+            " + lib_data[lib_name].map{ |lib, data| data['region'] == "Other" ? "" : "
+                <div class='#{data['region']} scatter' style='height: #{80 / (lib_data[lib_name].length - 1)}vh;'></div>
+            " }.join + "
         </div>
     </div>"
 }
@@ -376,6 +373,21 @@ lib_data.each do |lib, data|
             ]," }.join + "
         ]
     "
+end
+
+scatter_charts = {}
+
+pid_dist_data.each do |lib, data|
+    scatter_charts[lib] = {}
+    data.each do |region, d|
+        scatter_charts[lib][region] = {
+            "data" => "[
+                ['Index', 'Distribution'],
+                #{d.map{ |index, distribution| "[#{index}, #{distribution}]" }.join(',') }
+            ]",
+            "cutoff" => lib_data[lib][region]['cutoff']
+        }
+    end
 end
 
 #create JS that initializes charts
@@ -509,6 +521,47 @@ resampling_bar_chart_js = resampling_bar_chart.map { |lib, data| '
     }
 ' }.join
 
+scatter_charts_js = scatter_charts.map { |lib, d|
+    d.map { |region, data| '
+        var element_chart_scatter_'+lib.var_safe+'_'+region.var_safe+' = document.querySelector("#'+lib+' .'+region+'.scatter")
+        if(isVisible(element_chart_scatter_'+lib.var_safe+'_'+region.var_safe+')){
+            var chart_scatter_'+lib.var_safe+'_'+region.var_safe+' = new google.visualization.ComboChart(element_chart_scatter_'+lib.var_safe+'_'+region.var_safe+');
+            var view_'+lib.var_safe+'_'+region.var_safe+' = new google.visualization.DataView(
+                google.visualization.arrayToDataTable(' + data['data'] + ')
+            );
+            view_'+lib.var_safe+'_'+region.var_safe+'.setColumns([0, 1, {
+                label: "Cutoff",
+                type: "number",
+                calc: function (dt, row) {
+                    return ' + data["cutoff"].to_s + '
+                }
+            }]);
+            chart_scatter_'+lib.var_safe+'_'+region.var_safe+'.draw(
+                view_'+lib.var_safe+'_'+region.var_safe+',
+                {
+                    pointSize: 5,
+                    title: "' + region + '",
+                    hAxis: {title: "Index"},
+                    vAxis: {
+                        title: "Distribution",
+                        logScale: true
+                    },
+                    colors: ["' + bool_colors[true] + '"],
+                    legend: "none",
+                    seriesType: "scatter",
+                    series: {
+                        1: {
+                            type: "line",
+                            color: "' + bool_colors[false] + '",
+                            pointsVisible: false,
+                        }
+                    }
+                }
+            );
+        }
+    '}
+}.join
+
 html = '
 <!DOCTYPE html>
 <html lang="en">
@@ -553,10 +606,11 @@ html = '
                                 annotations: {alwaysOutside: true}
                             }
                         );
-                    }'+ paired_raw_js + tree_charts_js + tcs_bar_chart_js + distinct_bar_chart_js + resampling_bar_chart_js + detection_sensitivity_js + '
+                    }'+ paired_raw_js + tree_charts_js + tcs_bar_chart_js + distinct_bar_chart_js + resampling_bar_chart_js + detection_sensitivity_js + scatter_charts_js + '
                 }catch(e){
+                    console.log(e);
                     document.querySelectorAll(".error-message").forEach(element =>
-                        element.innerHTML = "There was an error with your data.<br>To help us improve, please forward this html file to shuntaiz@email.unc.edu"
+                        element.innerHTML = "There was an error displaying your data.<br>To help us improve, please forward this html file to<br>shuntaiz@email.unc.edu"
                     )
                 }
             }
@@ -610,10 +664,10 @@ html = '
                                 <td>'+total_reads+'</td>
                             </tr>
                         </table>
-                        <div>
-                            <p style="font-size: 1.8rem;">Raw Sequences Distribution</p>
+                        <div class="card" style="margin-top: 16px;">
+                            <h2>Raw Sequences Distribution</h2>
+                            <div id="raw-sequence-chart"></div>
                         </div>
-                        <div id="raw-sequence-chart"></div>
                     </div>
                     '+library_pages.join+'
                 </div>
@@ -630,6 +684,10 @@ html = '
         }
         .page {
             margin: 32px;
+        }
+        .card {
+            padding: 16px;
+            text-align: center;
         }
         .hidden {
             display: none !important;
@@ -660,6 +718,7 @@ html = '
             font-size: 1.8rem;
             text-align: center;
             padding: 1%;
+            margin: 16px auto;
         }
         .error-message:empty {
             display: none;

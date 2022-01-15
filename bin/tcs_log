@@ -240,7 +240,7 @@ library_pages = lib_names.map { |lib_name|
                 " + lib_data[lib_name].map{ |lib, data| data['region'] == "Other" ? "" : "
                     <div class='#{data['region']}' style='display: flex; flex-direction: row; align-items: center;'>
                         <div style='width: #{max_region_char_length.to_s}ch;'>#{data['region']}</div>
-                        <div class='treemap' style='flex: 1; height: #{80 / (lib_data[lib_name].length - 1)}vh;'></div>
+                        <div class='treemap' style='flex: 1; height: #{80 / (lib_data[lib_name].length < 6 ? lib_data[lib_name].length : 5)}vh;'></div>
                     </div>
                 " }.join + "
             </div>
@@ -269,7 +269,7 @@ library_pages = lib_names.map { |lib_name|
             <h2>Scatter Charts</h2>
             <p><i>Resampling index less than 0.9 suggests Primer ID resampling</i></p>
             " + lib_data[lib_name].map{ |lib, data| data['region'] == "Other" ? "" : "
-                <div class='#{data['region']} scatter' style='height: #{80 / (lib_data[lib_name].length - 1)}vh;'></div>
+                <div class='#{data['region']} scatter' style='height: #{80 / (lib_data[lib_name].length < 6 ? lib_data[lib_name].length : 5)}vh;'></div>
             " }.join + "
         </div>
     </div>"

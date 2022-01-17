@@ -32,9 +32,18 @@ require 'optparse'
 
 options = {}
 
-banner = '-'*50 + "\n" +
-        '| The TCS Pipeline ' + "Version #{ViralSeq::TCS_VERSION}".red.bold + " by " + "Shuntai Zhou".blue.bold + ' |' + "\n" +
-        '-'*50 + "\n"
+# banner = '-'*50 + "\n" +
+#         '| The TCS Pipeline ' + "Version #{ViralSeq::TCS_VERSION}".red.bold + " by " + "Shuntai Zhou".blue.bold + ' |' + "\n" +
+#         '-'*50 + "\n"
+
+banner = "\n" +
+"████████  ██████ ███████     ██████  ██ ██████  ███████ ██      ██ ███    ██ ███████\n".light_red +
+"   ██    ██      ██          ██   ██ ██ ██   ██ ██      ██      ██ ████   ██ ██\n".light_yellow +
+"   ██    ██      ███████     ██████  ██ ██████  █████   ██      ██ ██ ██  ██ █████\n".light_green +
+"   ██    ██           ██     ██      ██ ██      ██      ██      ██ ██  ██ ██ ██\n".light_cyan +
+"   ██     ██████ ███████     ██      ██ ██      ███████ ███████ ██ ██   ████ ███████\n".light_magenta
+
+banner += "\nVersion #{ViralSeq::TCS_VERSION}".red.bold + " by " + "Shuntai Zhou".blue.bold + "\n\n"
 
 OptionParser.new do |opts|
   opts.banner = banner + "Usage: tcs -j"

@@ -234,11 +234,11 @@ library_pages = lib_names.map { |lib_name|
                 <h2>Distribution of Raw Sequencing Reads</h2>
                 <div class='pie_chart'></div>
             </div>
-            <div class='card' style='display: flex; align-items: center; flex-direction: column; flex: 1;'>
+            <div class='card' style='display: flex; align-items: center; justify-content: center; flex-direction: column; flex: 1;'>
                 " + lib_data[lib_name].map{ |lib, data| data['region'] == "Other" ? "" : "
                     <div class='#{data['region']}' style='display: flex; flex-direction: row; align-items: center;'>
                         <div style='width: #{max_region_char_length.to_s}ch;'>#{data['region']}</div>
-                        <div class='treemap' style='flex: 1; height: #{80 / lib_data[lib_name].length}vh;'></div>
+                        <div class='treemap' style='flex: 1; height: #{90 / lib_data[lib_name].length}vh;'></div>
                     </div>
                 " }.join + "
             </div>
@@ -271,7 +271,7 @@ library_pages = lib_names.map { |lib_name|
             " }.join + "
         </div>
     </div>"
-}
+            }.join
 
 #format lib_data into charts
 paired_raw = {}
@@ -623,10 +623,12 @@ html = '
     </head>
     <body>
         <div style="display: flex; flex-direction: column; height: 100vh; width: 100vw; position: fixed; overflow: hidden;">
-            <div style="height: 10vh; border-bottom: 2px solid blue;">
-                <p style="font-size: 2rem; margin: 16px 24px;">TCS Log</p>
+            <div style="border-bottom: 2px solid blue;">
+                <a href="https://primer-id.org" target="_BLANK">
+                    <h3 class="fabulous-text" style="margin: 24px; font-weight: 600;">TCS Log</h3>
+                </a>
             </div>
-            <div style="display: flex; flex: 1;">
+            <div style="display: flex;">
                 <div id="nav" style="overflow: auto; height: 90vh; text-align: left; border-right: 2px solid blue; padding: 10px; padding-right: 20px;">
                     '+library_links+'
                 </div>
@@ -664,7 +666,7 @@ html = '
                             <div id="raw-sequence-chart"></div>
                         </div>
                     </div>
-                    '+library_pages.join+'
+                    '+library_pages+'
                 </div>
             </div>
         </div>
@@ -717,6 +719,12 @@ html = '
         }
         .error-message:empty {
             display: none;
+        }
+        .fabulous-text {
+            background-image: linear-gradient(lightcoral, lightgoldenrodyellow, lightgreen, lightcyan, magenta);
+            color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
         }
     </style>
 </html>

@@ -55,7 +55,7 @@ Example commands:
 ---
 ### `tcs_log`
 
-Use `tcs_log` script to pool run logs and TCS fasta files after one batch of `tcs` jobs.
+Use `tcs_log` script to pool run logs and TCS fasta files after one batch of `tcs` jobs. This command generates log.html to visualize the sequencing runs.
 
 
 Example file structure:  

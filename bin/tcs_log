@@ -613,7 +613,7 @@ html = '
     <body>
         <div style="display: flex; flex-direction: column; height: 100vh; width: 100vw; position: fixed; overflow: hidden;">
             <div style="display: flex; gap: 4px;">
-                <div id="nav" class="card" style="overflow: auto; min-height: 100vh; text-align: left; margin-top: 0;">
+                <div id="nav" class="card" style="overflow: auto; height: 100vh; text-align: left; margin-top: 0;">
                     <a href="https://primer-id.org" target="_BLANK">
                         <h3 style="margin: 24px; font-weight: 600; color: #333 !important">TCS Log</h3>
                     </a>

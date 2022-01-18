@@ -229,14 +229,14 @@ library_links = "
 library_pages = lib_names.map { |lib_name|
     "<div id='"+lib_name+"' class='page hidden'>
         <div class='error-message'></div>
-        <div style='display: flex; gap: 16px;'>
-            <div class='card' style='flex: 1;'>
+        <div style='display: flex; gap: 16px; min-height: 45vh;'>
+            <div class='card' style='flex: 1; display: flex; flex-direction: column;'>
                 <h2>Distribution of Raw Sequencing Reads</h2>
-                <div class='pie_chart'></div>
+                <div class='pie_chart' style='flex: 1;'></div>
             </div>
             <div class='card' style='display: flex; align-items: center; justify-content: center; flex-direction: column; flex: 1;'>
                 " + lib_data[lib_name].map{ |lib, data| data['region'] == "Other" ? "" : "
-                    <div class='#{data['region']}' style='display: flex; flex-direction: row; align-items: center;'>
+                    <div class='#{data['region']}' style='display: flex; align-items: center;'>
                         <div style='width: #{max_region_char_length.to_s}ch;'>#{data['region']}</div>
                         <div class='treemap' style='flex: 1; height: #{90 / lib_data[lib_name].length}vh;'></div>
                     </div>
@@ -267,11 +267,11 @@ library_pages = lib_names.map { |lib_name|
             <h2>Primer ID bin size distribution</h2>
             <p><i>Red vertical line shows the consensus cut-off value</i></p>
             " + lib_data[lib_name].map{ |lib, data| data['region'] == "Other" ? "" : "
-                <div class='#{data['region']} scatter' style='height: #{80 / 3}vh;'></div>
+                <div class='#{data['region']} scatter' style='height: #{90 / 3}vh;'></div>
             " }.join + "
         </div>
     </div>"
-            }.join
+}.join
 
 #format lib_data into charts
 paired_raw = {}
@@ -401,8 +401,6 @@ paired_raw_js = paired_raw.map { |lib, data| '
                 titleTextStyle: {
                     fontSize: 18
                 },
-                height,
-                width: Math.round(width * .5),
                 pieSliceText: "label",
                 slices: ' + data['slices'] + ',
                 legend: {
@@ -449,8 +447,7 @@ tcs_bar_chart_js = tcs_bar_chart.map { |lib, data| '
             google.charts.Bar.convertOptions({
                 colors: ["' + colors[0] + '", "' + colors[1] + '", "' + colors[2] + '"],
                 legend: { position: "bottom" },
-                width,
-                height,
+                height: Math.round(window.innerHeight * .5),
                 chartArea: {
                     width: "100%",
                     height: "100%"
@@ -471,6 +468,7 @@ detection_sensitivity_js = detection_sensitivity_chart.map { |lib, data| '
                 legend: {
                     position: "none"
                 },
+                height: Math.round(window.innerHeight * .5),
                 colors: ["' + colors[3] + '"],
                 vAxis: {
                       scaleType: "log",
@@ -478,9 +476,7 @@ detection_sensitivity_js = detection_sensitivity_chart.map { |lib, data| '
                         min: 0.00001
                       },
                       ticks: [0.00001, 0.0001, 0.001, 0.01, 0.1, 1]
-                },
-                width,
-                height
+                }
             }
         );
     }
@@ -496,8 +492,7 @@ distinct_bar_chart_js = distinct_bar_chart.map { |lib, data| '
                 legend: {
                     position: "none"
                 },
-                width,
-                height
+                height: Math.round(window.innerHeight * .5),
             }
         );
     }
@@ -513,8 +508,7 @@ resampling_bar_chart_js = resampling_bar_chart.map { |lib, data| '
                 legend: {
                     position: "none"
                 },
-                width,
-                height
+                height: Math.round(window.innerHeight * .5),
             }
         );
     }
@@ -586,17 +580,12 @@ html = '
                 }
 
                 try{
-                    var width = Math.round(window.innerWidth * .8)
-                    var height = Math.round(window.innerHeight * .6)
-
                     var element_home_chart = document.getElementById("raw-sequence-chart")
                     if(isVisible(element_home_chart)){
                         var home_chart = new google.visualization.ColumnChart(element_home_chart);
                         home_chart.draw(
                             google.visualization.arrayToDataTable('+raw_sequence_data+'),
                             {
-                                width,
-                                height,
                                 annotations: {alwaysOutside: true},
                                 colors: ["' + bool_colors[true] + '"]
                             }
@@ -623,45 +612,45 @@ html = '
     </head>
     <body>
         <div style="display: flex; flex-direction: column; height: 100vh; width: 100vw; position: fixed; overflow: hidden;">
-            <div style="border-bottom: 2px solid blue;">
-                <a href="https://primer-id.org" target="_BLANK">
-                    <h3 class="fabulous-text" style="margin: 24px; font-weight: 600;">TCS Log</h3>
-                </a>
-            </div>
-            <div style="display: flex;">
-                <div id="nav" style="overflow: auto; height: 90vh; text-align: left; border-right: 2px solid blue; padding: 10px; padding-right: 20px;">
+            <div style="display: flex; gap: 4px;">
+                <div id="nav" class="card" style="overflow: auto; min-height: 100vh; text-align: left; margin-top: 0;">
+                    <a href="https://primer-id.org" target="_BLANK">
+                        <h3 style="margin: 24px; font-weight: 600; color: #333 !important">TCS Log</h3>
+                    </a>
                     '+library_links+'
                 </div>
-                <div id="pages" style="flex: 1; overflow: auto; height: 90vh;">
-                    <div style="display: flex; flex-direction: column; align-items: center;" id="basic-statistics" class="page">
+                <div id="pages" style="flex: 1; overflow: auto; height: 100vh;">
+                    <div style="display: flex; flex-direction: column; align-items: center; height: 100vh;" id="basic-statistics" class="page">
                         <div class="error-message"></div>
-                        <table id="home-table">
-                            <tr>
-                                <td>Batch Name</td>
-                                <td>'+batch_name+'</td>
-                            </tr>
-                            <tr>
-                                <td>Processed Time</td>
-                                <td>'+Time.now.strftime("%m/%d/%Y")+'</td>
-                            </tr>
-                            <tr>
-                                <td>TCS Version</td>
-                                <td>'+ViralSeq::TCS_VERSION+'</td>
-                            </tr>
-                            <tr>
-                                <td>viral_seq Version</td>
-                                <td>'+ViralSeq::VERSION+'</td>
-                            </tr>
-                            <tr>
-                                <td>Number of Libraries</td>
-                                <td>'+lib_names.length.to_s+'</td>
-                            </tr>
-                            <tr>
-                                <td>Total Reads</td>
-                                <td>'+total_reads+'</td>
-                            </tr>
-                        </table>
-                        <div class="card" style="margin-top: 16px;">
+                        <div class="card" style="margin-top: 16px; width: 100%;">
+                            <table id="home-table">
+                                <tr>
+                                    <td>Batch Name</td>
+                                    <td>'+batch_name+'</td>
+                                </tr>
+                                <tr>
+                                    <td>Processed Time</td>
+                                    <td>'+Time.now.strftime("%m/%d/%Y")+'</td>
+                                </tr>
+                                <tr>
+                                    <td>TCS Version</td>
+                                    <td>'+ViralSeq::TCS_VERSION+'</td>
+                                </tr>
+                                <tr>
+                                    <td>viral_seq Version</td>
+                                    <td>'+ViralSeq::VERSION+'</td>
+                                </tr>
+                                <tr>
+                                    <td>Number of Libraries</td>
+                                    <td>'+lib_names.length.to_s+'</td>
+                                </tr>
+                                <tr>
+                                    <td>Total Reads</td>
+                                    <td>'+total_reads+'</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="card" style="margin-top: 16px; width: 100%;">
                             <h2>Raw Sequences Distribution</h2>
                             <div id="raw-sequence-chart"></div>
                         </div>
@@ -680,7 +669,7 @@ html = '
             list-style-type: none;
         }
         .page {
-            margin: 32px;
+            margin: 16px;
         }
         .card {
             padding: 16px;
@@ -719,12 +708,6 @@ html = '
         }
         .error-message:empty {
             display: none;
-        }
-        .fabulous-text {
-            background-image: linear-gradient(lightcoral, lightgoldenrodyellow, lightgreen, lightcyan, magenta);
-            color: transparent;
-            -webkit-background-clip: text;
-            background-clip: text;
         }
     </style>
 </html>

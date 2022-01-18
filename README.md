@@ -179,6 +179,11 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
+### Version 1.6.0-01042022
+
+  1. Update the `ViralSeq::TcsCore::detection_limit` with pre-calculated values to save processing time.
+  2. Update `tcs` pipeline to v2.5.0. HTML report will generated after running `tcs_log` script after `tcs` pipeline.
+
 ### Version 1.5.0-01042022
 
   1. Added a function to calcute detection limit/sensitivity for minority variants (R required). `ViralSeq::TcsCore::detection_limit`

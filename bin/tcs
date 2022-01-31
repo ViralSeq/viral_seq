@@ -173,7 +173,7 @@ begin
     unless forward_primer
       log.puts Time.now.to_s + "\t" +  region + " does not have forward primer sequence. #{region} skipped."
     end
-    summary_json[:cdan_primer] = cdna_primer
+    summary_json[:cdna_primer] = cdna_primer
     summary_json[:forward_primer] = forward_primer
 
     primer[:majority] ? majority_cut_off = primer[:majority] : majority_cut_off = 0

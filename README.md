@@ -179,6 +179,11 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
+### Version-1.6.1-02022022
+
+  1. Fixed the `nav bar` in tcs_log html file.
+  2. Fixed a typo in `tcs`. 
+
 ### Version 1.6.0-01042022
 
   1. Update the `ViralSeq::TcsCore::detection_limit` with pre-calculated values to save processing time.

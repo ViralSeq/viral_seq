@@ -21,7 +21,6 @@ RSpec.describe ViralSeq do
     loc = s.locator
     expect(loc[1]).to eq 7208
     expect(loc[0]).to eq 6585
-    expect(loc[2]).to eq 58.8
   end
 
   it "has sequence_clip function" do
@@ -97,9 +96,7 @@ RSpec.describe ViralSeq do
   it "can compare two sequences as String object and return number of differences" do
     seq1 = 'AAGGCGTAGGAC'
     seq2 = 'AAGCTTAGGACG'
-    aligned_seqs = ViralSeq::Muscle.align(seq1,seq2)
     expect(seq1.compare_with(seq2)).to eq 8
-    expect(aligned_seqs[0].compare_with(aligned_seqs[1])).to eq 4
   end
 
   it "has a gap strip function for a sequence alignment" do

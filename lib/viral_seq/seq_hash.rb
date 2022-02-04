@@ -223,7 +223,7 @@ module ViralSeq
 
     # check the size range of the DNA sequences of the SeqHash object
     # @return [Hash] Hash of {max: MAX_SIZE, min: MIN_SIZE}
-    
+
     def check_nt_size
       dna_hash = self.dna_hash
       size_array = []
@@ -714,7 +714,7 @@ module ViralSeq
     # @param path_to_muscle [String], path to MUSCLE excutable. if not provided (as default), it will use RubyGem::MuscleBio
     # @return [SeqHash] new SeqHash object of the aligned @dna_hash, the title has "_aligned"
 
-    def align(path_to_muscle = false)
+    def align(algorithm = :PPP, path_to_muscle = false)
       seq_hash = self.dna_hash
       if self.file.size > 0
         temp_dir = File.dirname(self.file)
@@ -732,7 +732,11 @@ module ViralSeq
         end
         print `#{path_to_muscle} -in #{temp_file} -out #{temp_aln} -quiet`
       else
-        MuscleBio.run("muscle -in #{temp_file} -out #{temp_aln} -quiet")
+        if MuscleBio::VERSION.to_f < 0.5
+          MuscleBio.run("muscle -in #{temp_file} -out #{temp_aln} -quiet")
+        else
+          MuscleBio.exec(temp_file, temp_aln, algorithm)
+        end
       end
       out_seq_hash = ViralSeq::SeqHash.fa(temp_aln)
       out_seq_hash.title = self.title + "_aligned"

@@ -37,7 +37,7 @@ module ViralSeq
     #   aligned_seqs = ViralSeq::Muscle.align(seq1,seq2)
     #   => ["AAGGCGTAGGAC-", "-AAGCTTAGGACG"]
 
-    def self.align(ref_seq = "", test_seq = "", path_to_muscle = false)
+    def self.align(ref_seq = "", test_seq = "", algorithm = :PPP, path_to_muscle = false)
       temp_dir = Dir.home
       temp_name = "_"  + SecureRandom.alphanumeric
       temp_file = File.join(temp_dir, temp_name)
@@ -56,7 +56,11 @@ module ViralSeq
         end
         print `#{path_to_muscle} -in #{temp_file} -out #{temp_aln} -quiet`
       else
-        MuscleBio.run("muscle -in #{temp_file} -out #{temp_aln} -quiet")
+        if MuscleBio::VERSION.to_f < 0.5
+          MuscleBio.run("muscle -in #{temp_file} -out #{temp_aln} -quiet")
+        else
+          MuscleBio.exec(temp_file, temp_aln, algorithm)
+        end
       end
       aln_seq_hash = ViralSeq::SeqHash.fa(temp_aln).dna_hash
       File.unlink(temp_file)

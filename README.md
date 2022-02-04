@@ -179,10 +179,15 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
+### Version-1.6.2-02042022
+
+  1. Updated on `ViralSeq::Muscle` module along with the update of `muscle` from version 3.8.1 to 5.1.
+  2. Optimized the `locator` algorithm based on `muscle` v5.1.
+
 ### Version-1.6.1-02022022
 
   1. Fixed the `nav bar` in tcs_log html file.
-  2. Fixed a typo in `tcs`. 
+  2. Fixed a typo in `tcs`.
 
 ### Version 1.6.0-01042022
 

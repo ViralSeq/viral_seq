@@ -35,7 +35,7 @@ Gem::Specification.new do |spec|
   spec.required_rubygems_version = '>= 1.3.6'
 
   # muscle_bio gem required
-  spec.add_runtime_dependency "muscle_bio", "~> 0.4"
+  spec.add_runtime_dependency "muscle_bio", "~> 0.5"
 
   # colorize gem required
   spec.add_runtime_dependency "colorize", "~> 0.1"

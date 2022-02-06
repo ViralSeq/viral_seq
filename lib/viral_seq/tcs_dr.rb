@@ -16,7 +16,7 @@ module ViralSeq
                   :ref_genome=>"HXB2",
                   :ref_start=>2648,
                   :ref_end=>3257,
-                  :indel=>false,
+                  :indel=>true,
                   :trim=>false},
                  {:region=>"PR",
                   :cdna=>
@@ -41,7 +41,7 @@ module ViralSeq
                   :forward=>"GCCTCCCTCGCGCCATCAGAGATGTGTATAAGAGACAGNNNNAAAAGGAGAAGCCATGCATG",
                   :majority=>0,
                   :end_join=>true,
-                  :end_join_option=>3,
+                  :end_join_option=>2,
                   :overlap=>171,
                   :TCS_QC=>true,
                   :ref_genome=>"HXB2",

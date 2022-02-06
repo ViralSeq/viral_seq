@@ -28,6 +28,8 @@ module ViralSeq
     # align a sequence with reference sequence Strings
     # @param ref_seq [String] reference sequence
     # @param test_seq [String] test sequence
+    # @param algorithm [Symbol], algorithm for MUSCLE5 only. Choose from :PPP or :Super5. 
+    # @param path_to_muscle [String], path to MUSCLE excutable. if not provided (as default), it will use RubyGem::MuscleBio
     # @param path_to_muscle [String], path to MUSCLE excutable. if not provided (as default), it will use RubyGem::MuscleBio
     # @return [Array] a pair of [:ref_seq_aligned, :test_seq_aligned] or nil
     #   if the cannot find MUSCLE excutable

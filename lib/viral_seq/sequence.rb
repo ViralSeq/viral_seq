@@ -240,22 +240,22 @@ module ViralSeq
         repeat = 0
 
         if g1 == g2 and (s1 + g1 + s2) == ref.size
-          if s1 > s2 and g2 >= 2*s2
+          if s1 > s2 and g2 >= s2
             ref = ref[0..(-g2-1)]
             repeat = 1
             l2 = l2 + g2
-          elsif s1 < s2 and g1 >= 2*s1
+          elsif s1 < s2 and g1 >= s1
             ref = ref[g1..-1]
             repeat = 1
             l1 = l1 + g1
           end
         else
-          if g1 >= 2*s1
+          if g1 >= s1
             ref = ref[g1..-1]
             repeat = 1
             l1 = l1 + g1
           end
-          if g2 >= 2*s2
+          if g2 >= s2
             ref = ref[0..(-g2 - 1)]
             repeat = 1
             l2 = l2 + g2
@@ -280,12 +280,12 @@ module ViralSeq
           l1 = l1 + gap_begin
           l2 = l2 + gap_end
           repeat = 0
-          if g1 >= 2*s1
+          if g1 >= s1
             ref = ref[g1..-1]
             repeat = 1
             l1 = l1 + g1
           end
-          if g2 >= 2*s2
+          if g2 >= s2
             ref = ref[0..(-g2 - 1)]
             repeat = 1
             l2 = l2 + g2

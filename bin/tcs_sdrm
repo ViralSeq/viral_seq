@@ -229,7 +229,7 @@ libs.each do |lib|
     filtered_seq_files.each do |seq_file|
       filtered_sh = ViralSeq::SeqHash.fa(seq_file)
       next if filtered_sh.size < 3
-      aligned_sh = filtered_sh.random_select(1000).align
+      aligned_sh = filtered_sh.random_select(1000).align(:Super5)
       aligned_sh.write_nt_fa(File.join(aln_seq_dir, File.basename(seq_file)))
     end
 

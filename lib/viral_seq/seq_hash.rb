@@ -711,6 +711,7 @@ module ViralSeq
 
 
     # align the @dna_hash sequences, return a new ViralSeq::SeqHash object with aligned @dna_hash using MUSCLE
+    # @param algorithm [Symbol], algorithm for MUSCLE5 only. Choose from :PPP or :Super5. 
     # @param path_to_muscle [String], path to MUSCLE excutable. if not provided (as default), it will use RubyGem::MuscleBio
     # @return [SeqHash] new SeqHash object of the aligned @dna_hash, the title has "_aligned"
 

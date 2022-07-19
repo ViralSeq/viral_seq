@@ -61,11 +61,26 @@ module ViralSeq
                   :TCS_QC=>true,
                   :ref_genome=>"HXB2",
                   :ref_start=>6585,
-                  :ref_end=>7208,
+                  :ref_end=>7205..7210,
                   :indel=>true,
-                  :trim=>false}
+                  :trim=>false},
+                  {:region=>"P17",
+                   :cdna=>
+                    "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCTNNNNNNNNNNNCAGTCAACAAGGTTTCTGTCATCCAATTTTTTAC",
+                   :forward=>
+                    "GCCTCCCTCGCGCCATCAGAGATGTGTATAAGAGACAGNNNNGTCAGCCAAAATTACCCTATAGTGC",
+                   :majority=>0,
+                   :end_join=>true,
+                   :end_join_option=>1,
+                   :overlap=>0,
+                   :TCS_QC=>true,
+                   :ref_genome=>"HXB2",
+                   :ref_start=>1196,
+                   :ref_end=>1725,
+                   :indel=>true,
+                   :trim=>false}
                   ]
-                }
+              }
   end
 
 end

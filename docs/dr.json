@@ -62,6 +62,21 @@
       "ref_end": 7208,
       "indel": true,
       "trim": false
+    },
+    {
+      "region": "P17",
+      "cdna": "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCTNNNNNNNNNNNCAGTCAACAAGGTTTCTGTCATCCAATTTTTTAC",
+      "forward": "GCCTCCCTCGCGCCATCAGAGATGTGTATAAGAGACAGNNNNGTCAGCCAAAATTACCCTATAGTGC",
+      "majority": 0.5,
+      "end_join": true,
+      "end_join_option": 1,
+      "overlap": 0,
+      "TCS_QC": true,
+      "ref_genome": "HXB2",
+      "ref_start": 1196,
+      "ref_end": 1725,
+      "indel": true,
+      "trim": false
     }
   ]
 }

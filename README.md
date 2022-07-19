@@ -179,6 +179,12 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
+### Version-1.6.4-07182022
+
+  1. Included region "P17" in the default `tcs -d` pipeline setting. `tcs` pipeline updated to version 2.5.1. 
+  2. Loosen the locator params for the "V1V3" end region for rare alignment issues. Now the default "V1V3" region end with position 7205 to 7210 instead of 7208.
+  3. `tcs_sdrm` now analyse "P17" region for pairwise diversity.
+
 ### Version-1.6.3-02052022
 
   1. Updated on `ViralSeq::Muscle` module along with the update of `muscle` from version 3.8.1 to 5.1.

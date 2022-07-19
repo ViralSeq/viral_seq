@@ -172,6 +172,25 @@ libs.each do |lib|
       linkage_list += sdrm[1]
       aa_report_list += sdrm[2]
 
+    elsif seq_basename =~/P17/i
+      a3g_check = seqs.a3g
+      a3g_seqs = a3g_check[:a3g_seq]
+      a3g_filtered_seqs = a3g_check[:filtered_seq]
+      stop_codon_check = a3g_filtered_seqs.stop_codon(2)
+      stop_codon_seqs = stop_codon_check[:with_stop_codon]
+      filtered_seqs = stop_codon_check[:without_stop_codon]
+      poisson_minority_cutoff = filtered_seqs.pm
+      fdr_hash = filtered_seqs.fdr
+      summary_hash[:P17] = [
+                            seqs.size.to_s,
+                            a3g_seqs.size.to_s,
+                            stop_codon_seqs.size.to_s,
+                            filtered_seqs.size.to_s,
+                            poisson_minority_cutoff.to_s
+                          ].join(',')
+      next if filtered_seqs.size < 3
+      filtered_seqs.write_nt_fa(File.join(filtered_seq_dir,seq_basename))
+
     elsif seq_basename =~/RT/i
       rt_seq1 = {}
       rt_seq2 = {}
@@ -249,7 +268,7 @@ libs.each do |lib|
         tag = data[0].split("_")[-1].gsub(/\W/,"").to_sym
         summary_hash[tag] += "," + data[1].to_f.round(4).to_s + "," + data[2].to_f.round(4).to_s
       end
-      [:PR, :RT, :IN, :V1V3].each do |regions|
+      [:PR, :RT, :IN, :V1V3, :P17].each do |regions|
         next unless summary_hash[regions]
         seq_summary_out.puts regions.to_s + "," + summary_hash[regions]
       end
@@ -270,10 +289,13 @@ libs.each do |lib|
   tcs_RT = 0
   tcs_IN = 0
   tcs_V1V3 = 0
+  tcs_P17 = 0
   pi_RT = 0.0
   pi_V1V3 = 0.0
+  pi_P17 = 0.0
   dist20_RT = 0.0
   dist20_V1V3 = 0.0
+  dist20_P17 = 0.0
   summary_lines.each do |line|
       data = line.chomp.split(",")
       if data[0] == "PR"
@@ -288,6 +310,10 @@ libs.each do |lib|
           tcs_V1V3 = data[1].to_i
           pi_V1V3 = data[6].to_f
           dist20_V1V3 = data[7].to_f
+      elsif data[0] == "P17"
+          tcs_P17 = data[4].to_i
+          pi_P17 = data[6].to_f
+          dist20_P17 = data[7].to_f
       end
   end
 
@@ -323,9 +349,13 @@ libs.each do |lib|
     tcs_RT: tcs_RT,
     tcs_IN: tcs_IN,
     tcs_V1V3: tcs_V1V3,
+    tcs_P17: tcs_P17,
     pi_RT: pi_RT,
+    pi_V1V3: pi_V1V3,
+    pi_P17: pi_P17,
     dist20_RT: dist20_RT,
     dist20_V1V3: dist20_V1V3,
+    dist20_P17: dist20_P17,
     recency: recency,
     sdrm_PR: sdrm_PR,
     sdrm_RT: sdrm_RT,

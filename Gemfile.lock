@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    viral_seq (1.6.2)
+    viral_seq (1.6.5)
       colorize (~> 0.1)
       combine_pdf (~> 1.0, >= 1.0.0)
       muscle_bio (~> 0.5)

@@ -10,6 +10,8 @@ A Ruby Gem containing bioinformatics tools for processing viral NGS data.
 
 Specifically for Primer ID sequencing and HIV drug resistance analysis.
 
+CLI tools `tcs`, `tcs_sdrm`, `tcs_log` and `locator` included in the gem. 
+
 #### tcs web app - https://primer-id.org/
 
 ## Illustration for the Primer ID Sequencing
@@ -21,6 +23,12 @@ Specifically for Primer ID sequencing and HIV drug resistance analysis.
 [Explantion of Primer ID sequencing](https://doi.org/10.21769/BioProtoc.3938)  
 [Primer ID MiSeq protocol](https://doi.org/10.1128/JVI.00522-15)  
 [Application of Primer ID sequencing in COVID-19 research](https://doi.org/10.1126/scitranslmed.abb5883)
+
+## Requirements
+
+Required Ruby Version: >= 2.5
+
+Required RubyGems version: >= 1.3.6
 
 ## Install
 
@@ -178,6 +186,11 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
   3. The conflict seems to be resovled. It was from a combination of using `!` as a function for factorial and the gem name `viral_seq`. @_@
 
 ## Updates
+
+### Version-1.6.5-08242022
+
+  1. Add warnings if `tcs` pipeline is excecuting through source instead of installing from `gem`. 
+  2. Optimized `ViralSeq:SeqHash#a3g` hypermut algorithm. Allowing a external reference other than the sample reference. 
 
 ### Version-1.6.4-07182022
 

@@ -22,19 +22,37 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+# Install using `gem install viral_seq`
 # Use JSON file as the run param
 # run `tcs -j` to generate param json file.
 
-require 'viral_seq'
+def gem_installed?(gem_name)
+  found_gem = false
+  begin
+    found_gem = Gem::Specification.find_by_name(gem_name)
+  rescue Gem::LoadError
+    return false   
+  else
+    return true 
+  end
+end
+
+if gem_installed?('viral_seq')
+  require 'viral_seq'
+else 
+  printf "\n****************************************************\n"
+  printf "**** THIS PACKAGE CANNOT BE RAN FROM SOURCE ********\n"
+  printf "**** PLEASE INSTALL USING `gem install viral_seq` **\n"
+  printf "****************************************************\n\n"
+  exit 1
+end
+
+
 require 'json'
 require 'colorize'
 require 'optparse'
 
 options = {}
-
-# banner = '-'*50 + "\n" +
-#         '| The TCS Pipeline ' + "Version #{ViralSeq::TCS_VERSION}".red.bold + " by " + "Shuntai Zhou".blue.bold + ' |' + "\n" +
-#         '-'*50 + "\n"
 
 banner = "\n" +
 "████████  ██████ ███████     ██████  ██ ██████  ███████ ██      ██ ███    ██ ███████\n".light_red +

@@ -450,7 +450,7 @@ module ViralSeq
     # function to determine if the sequences have APOBEC3g/f hypermutation.
     #   # APOBEC3G/F pattern: GRD -> ARD
     #   # control pattern: G[YN|RC] -> A[YN|RC]
-    #   # use the sample consensus to determine potential a3g sites
+    #   # use the sample consensus to determine potential a3g sites (default) or provide external reference sequences as a `String`
     #   # Two criteria to identify hypermutation
     #   # 1. Fisher's exact test on the frequencies of G to A mutation at A3G positions vs. non-A3G positions
     #   # 2. Poisson distribution of G to A mutations at A3G positions, outliers sequences
@@ -486,7 +486,7 @@ module ViralSeq
     #   # but it is still called as hypermutation sequence b/c it's Poisson outlier sequence.
     # @see https://www.hiv.lanl.gov/content/sequence/HYPERMUT/hypermut.html LANL Hypermut
 
-    def a3g_hypermut
+    def a3g_hypermut(ref = nil)
       # mut_hash number of apobec3g/f mutations per sequence
       mut_hash = {}
       hm_hash = {}
@@ -495,8 +495,10 @@ module ViralSeq
       # total G->A mutations at apobec3g/f positions.
       total = 0
 
-      # make consensus sequence for the input sequence hash
-      ref = self.consensus
+      unless ref 
+        # make consensus sequence for the input sequence hash
+        ref = self.consensus
+      end
 
       # obtain apobec3g positions and control positions
       apobec = apobec3gf(ref)
@@ -1356,7 +1358,7 @@ module ViralSeq
     # APOBEC3G/F pattern: GRD -> ARD,
     # control pattern: G[YN|RC] -> A[YN|RC],
     def apobec3gf(seq = '')
-      seq.tr!("-", "")
+      #seq.tr!("-", "")
       seq_length = seq.size
       apobec_position = []
       control_position = []
@@ -1368,6 +1370,7 @@ module ViralSeq
           control_position << n
         end
       end
+
       return [apobec_position,control_position]
     end # end of #apobec3gf
 

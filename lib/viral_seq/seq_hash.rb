@@ -511,7 +511,6 @@ module ViralSeq
         c = 0 # control muts
         d = 0 # potenrial controls
         mut.each do |n|
-          next if v[n] == "-"
           if v[n] == "A"
             a += 1
             b += 1
@@ -523,7 +522,6 @@ module ViralSeq
         total += a
 
         control.each do |n|
-          next if v[n] == "-"
           if v[n] == "A"
             c += 1
             d += 1
@@ -546,7 +544,7 @@ module ViralSeq
         end
       end
 
-      if self.dna_hash.size > 20
+      if self.dna_hash.size > 200
         rate = total.to_f/(self.dna_hash.size)
         count_mut = mut_hash.values.count_freq
         maxi_count = count_mut.values.max
@@ -568,10 +566,12 @@ module ViralSeq
           end
         end
       end
+
       hm_seq_hash = ViralSeq::SeqHash.new
       hm_hash.each do |k,_v|
         hm_seq_hash.dna_hash[k] = self.dna_hash[k]
       end
+    
       hm_seq_hash.title = self.title + "_hypermut"
       hm_seq_hash.file = self.file
       filtered_seq_hash = self.sub(self.dna_hash.keys - hm_hash.keys)

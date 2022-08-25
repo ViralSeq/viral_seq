@@ -187,7 +187,7 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
-### Version-1.6.5-08242022
+### Version-1.7.0-08242022
 
   1. Add warnings if `tcs` pipeline is excecuting through source instead of installing from `gem`. 
   2. Optimized `ViralSeq:SeqHash#a3g` hypermut algorithm. Allowing a external reference other than the sample reference. 

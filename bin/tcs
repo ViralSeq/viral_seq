@@ -41,7 +41,7 @@ if gem_installed?('viral_seq')
   require 'viral_seq'
 else 
   printf "\n****************************************************\n"
-  printf "**** THIS PACKAGE CANNOT BE RAN FROM SOURCE ********\n"
+  printf "**** THIS PACKAGE CANNOT BE RUN FROM SOURCE ********\n"
   printf "**** PLEASE INSTALL USING `gem install viral_seq` **\n"
   printf "****************************************************\n\n"
   exit 1
@@ -104,7 +104,7 @@ end.parse!
 if options[:json_generator]
   params = ViralSeq::TcsJson.generate
 elsif options[:dr]
-  params = ViralSeq::TcsDr::PARAMS
+  params = ViralSeq::TcsDr::PARAMS  
 elsif (options[:params_json] && File.exist?(options[:params_json]))
   params = JSON.parse(File.read(options[:params_json]), symbolize_names: true)
 else
@@ -162,6 +162,24 @@ begin
   else
     $platform_sequencing_length = 300
   end
+
+  r1_raw_size = r1_fastq_sh.dna_hash.values[0].size
+  r2_raw_size = r2_fastq_sh.dna_hash.values[0].size
+ 
+  if r1_raw_size >= $platform_sequencing_length
+    r1_size_diff = r1_raw_size - $platform_sequencing_length
+  else
+    raise StandardError.new "R1 size smaller than the input platform format #{$platform_sequencing_length} bp."
+  end
+
+  if r2_raw_size >= $platform_sequencing_length
+    r2_size_diff = r2_raw_size - $platform_sequencing_length
+  else
+    raise StandardError.new "R2 size smaller than the input platform format #{$platform_sequencing_length} bp."
+  end
+
+  r1_truncate_base_number = 2 + r1_size_diff
+  r2_truncate_base_number = 2 + r2_size_diff
 
   primers = params[:primer_pairs]
   if primers.empty? or primers.nil?
@@ -235,8 +253,8 @@ begin
       r2_seq = r2_passed_seq[seqtag]
       pid = r2_seq[0, pid_length]
       id[seqtag] = pid
-      bio_r2[seqtag] = r2_seq[filter_r2[:reverse_starting_number]..-2]
-      bio_r1[seqtag] = r1_seq[filter_r1[:forward_starting_number]..-2]
+      bio_r2[seqtag] = r2_seq[filter_r2[:reverse_starting_number]..-r2_truncate_base_number]
+      bio_r1[seqtag] = r1_seq[filter_r1[:forward_starting_number]..-r1_truncate_base_number]
     end
 
     # TCS cut-off

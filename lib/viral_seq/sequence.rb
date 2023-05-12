@@ -180,7 +180,7 @@ module ViralSeq
         l1 = 0
         l2 = 0
 
-        aln_seq = ViralSeq::Muscle.align(ori_ref, seq, :PPP, path_to_muscle)
+        aln_seq = ViralSeq::Muscle.align(ori_ref, seq, :Super5, path_to_muscle)
         aln_test = aln_seq[1]
         aln_test =~ /^(\-*)(\w.*\w)(\-*)$/
         gap_begin = $1.size
@@ -214,7 +214,7 @@ module ViralSeq
             l2 = l2 + (post_aln - b2)
           end
 
-          aln_seq = ViralSeq::Muscle.align(ref, seq, :PPP, path_to_muscle)
+          aln_seq = ViralSeq::Muscle.align(ref, seq, :Super5, path_to_muscle)
           aln_test = aln_seq[1]
           aln_test =~ /^(\-*)(\w.*\w)(\-*)$/
           gap_begin = $1.size
@@ -263,7 +263,7 @@ module ViralSeq
         end
 
         while repeat == 1
-          aln_seq = ViralSeq::Muscle.align(ref, seq, :PPP, path_to_muscle)
+          aln_seq = ViralSeq::Muscle.align(ref, seq, :Super5, path_to_muscle)
           aln_test = aln_seq[1]
           aln_test =~ /^(\-*)(\w.*\w)(\-*)$/
           gap_begin = $1.size
@@ -293,7 +293,7 @@ module ViralSeq
         end
         ref = ori_ref[l1..(ori_ref_l - l2 - 1)]
 
-        aln_seq = ViralSeq::Muscle.align(ref, seq, :PPP, path_to_muscle)
+        aln_seq = ViralSeq::Muscle.align(ref, seq, :Super5, path_to_muscle)
         aln_test = aln_seq[1]
         ref = aln_seq[0]
 
@@ -307,7 +307,7 @@ module ViralSeq
 
         if (ori_ref_l - l2 - 1) >= l1
           ref = ori_ref[l1..(ori_ref_l - l2 - 1)]
-          aln_seq = ViralSeq::Muscle.align(ref, seq, :PPP, path_to_muscle)
+          aln_seq = ViralSeq::Muscle.align(ref, seq, :Super5, path_to_muscle)
           aln_test = aln_seq[1]
           ref = aln_seq[0]
 

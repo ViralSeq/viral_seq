@@ -56,6 +56,43 @@ class String
     Regexp.new match
   end
 
+  # parse the nucleotide sequences as an Array of Array 
+  # @return [Array] Array of Array at each position
+  # @example parse a sequence with ambiguities to Array of Array
+  #   "ATRWCG".nt_to_array
+  #   => [["A"], ["T"], ["A", "G"], ["A", "T"], ["C"], ["G"]]
+  
+  def nt_to_array 
+    return_array = []
+    self.each_char.each do |base|
+      base_array = base.to_list
+      return_array.append base_array
+    end
+    return return_array
+  end
+
+
+  # compare the given nt sequence string with the ref sequence string
+  # @param ref [String] the ref sequence string to compare with
+  # @return [Interger] Number of differences
+  # @example parse a sequence with ambiguities to Array of Array
+  #   "ATRWCG".nt_to_array
+  #   => [["A"], ["T"], ["A", "G"], ["A", "T"], ["C"], ["G"]]
+
+  def nt_diff(ref)
+    count_diff = 0
+    self_array = self.split("")
+    ref_array = ref.nt_to_array
+    self_array.each_with_index do |nt, i|
+      ref_nt = ref_array[i]
+      unless ref_nt.include? nt
+        count_diff += 1
+      end
+    end
+    return count_diff
+  end
+
+
   # parse IUPAC nucleotide ambiguity codes (W S M K R Y B D H V N) as String if String.size == 1
   # @return [Array] parsed nt bases
   # @example parse IUPAC `R`

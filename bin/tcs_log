@@ -155,7 +155,7 @@ region_colors = {"Other" => "#808080"}
 CSV.foreach(log_file).each_with_index do |row, i|
     next if i == 0 || row[0] == nil
 
-    lib_name = row[0]
+    lib_name = row[0].to_s
     region = row[1]
     raw_sequences_per_barcode = row[2].to_i
 

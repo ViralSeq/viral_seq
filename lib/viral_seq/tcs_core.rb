@@ -223,7 +223,7 @@ module ViralSeq
         end
         forward_bio_primer_size = forward_bio_primer.size
         forward_starting_number = forward_n + forward_bio_primer_size
-        forward_primer_ref = forward_bio_primer.nt_parser
+        #forward_primer_ref = forward_bio_primer.nt_parser
 
         r1_passed_seq = {}
         r1_raw = r1_sh.dna_hash
@@ -232,7 +232,7 @@ module ViralSeq
           seq = r1_raw[name]
           next unless general_filter seq
           primer_region_seq = seq[forward_n, forward_bio_primer_size]
-          if primer_region_seq =~ forward_primer_ref
+          if primer_region_seq.nt_diff(forward_bio_primer) < 3
             new_name = remove_tag name
             r1_passed_seq[new_name] = seq
           end
@@ -255,13 +255,13 @@ module ViralSeq
         cdna_bio_primer = $2
         cdna_bio_primer_size = cdna_bio_primer.size
         reverse_starting_number = pid_length + cdna_bio_primer_size
-        cdna_primer_ref = cdna_bio_primer.nt_parser
+       # cdna_primer_ref = cdna_bio_primer.nt_to_array
         r2_passed_seq = {}
         proc_filter = proc do |name|
           seq = r2_raw[name]
           next unless general_filter seq
           primer_region_seq = seq[pid_length, cdna_bio_primer_size]
-          if primer_region_seq =~ cdna_primer_ref
+          if primer_region_seq.nt_diff(cdna_bio_primer) < 4
             new_name = remove_tag name
             r2_passed_seq[new_name] = seq
           end

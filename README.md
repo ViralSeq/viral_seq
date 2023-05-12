@@ -187,6 +187,13 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
+### Version-1.7.1-05120203
+
+  1. Add a size check for the raw sequences. If the size smaller than the input params, error messages will be sent to users. IF the actual size is greater than the input params, extra bases will be truncated. 
+  2. Now allows mismatch for the primer region sequences. Forward primer region allows 2 nt differences and cDNA primer region allows 3 nt differences.
+  3. Bug fix.  
+  4. TCS version to 2.5.2
+
 ### Version-1.7.0-08242022
 
   1. Add warnings if `tcs` pipeline is excecuting through source instead of installing from `gem`. 

@@ -218,10 +218,10 @@ end
 #process each library's html
 library_links = "
     <ul>
-        <li id='link_basic-statistics' class='pointer current_page' onclick='showPage(\"basic-statistics\")'>Basic Statistics</li>
+        <li id='link_basic-statistics' class='pointer lib_link current_page' onclick='showPage(\"basic-statistics\")'>Basic Statistics</li>
         <li>Libraries
             <ul style='margin-left: 16px;'>" + lib_names.map { |lib_name| "
-                <li id='link_#{lib_name}' class='pointer' onclick='showPage(\""+lib_name+"\")'>"+lib_name+"</li>"
+                <li id='link_#{lib_name}' class='pointer lib_link' onclick='showPage(\""+lib_name+"\")'>"+lib_name+"</li>"
                 }.join + "
             </ul>
         </li>
@@ -696,7 +696,8 @@ html = '
             padding: 8px;
         }
         .current_page {
-            border-bottom: 1px solid blue;
+            color: white;
+            background: #BAA !important;
         }
         .error-message {
             background: red !important;
@@ -710,6 +711,14 @@ html = '
         }
         .error-message:empty {
             display: none;
+        }
+
+        .lib_link:nth-child(odd){
+            background: #FFF6FF;
+        }
+
+        .lib_link:hover {
+            background: #EEEFEE;
         }
     </style>
 </html>

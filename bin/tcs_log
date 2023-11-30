@@ -12,6 +12,8 @@
 # command example:
 #   $ tcs_log batch_tcs_jobs
 
+# NOTE some libraries can be named {digit} and these are invalid query selectors, keep prepended with a string
+
 require 'viral_seq'
 require 'pathname'
 require 'json'
@@ -216,10 +218,10 @@ end
 #process each library's html
 library_links = "
     <ul>
-        <li id='link_basic-statistics' class='pointer current_page' onclick='showPage(\"basic-statistics\")'>Basic Statistics</li>
+        <li id='link_basic-statistics' class='pointer lib_link current_page' onclick='showPage(\"basic-statistics\")'>Basic Statistics</li>
         <li>Libraries
             <ul style='margin-left: 16px;'>" + lib_names.map { |lib_name| "
-                <li id='link_#{lib_name}' class='pointer' onclick='showPage(\""+lib_name+"\")'>"+lib_name+"</li>"
+                <li id='link_#{lib_name}' class='pointer lib_link' onclick='showPage(\""+lib_name+"\")'>"+lib_name+"</li>"
                 }.join + "
             </ul>
         </li>
@@ -227,7 +229,7 @@ library_links = "
 "
 
 library_pages = lib_names.map { |lib_name|
-    "<div id='"+lib_name+"' class='page hidden'>
+    "<div id='page_"+lib_name+"' class='page hidden'>
         <div class='error-message'></div>
         <div style='display: flex; gap: 16px; min-height: 45vh;'>
             <div class='card' style='flex: 1; display: flex; flex-direction: column;'>
@@ -391,7 +393,7 @@ end
 
 #create JS that initializes charts
 paired_raw_js = paired_raw.map { |lib, data| '
-    var element_pie_'+lib.var_safe+' = document.querySelector("#'+lib+' .pie_chart")
+    var element_pie_'+lib.var_safe+' = document.querySelector("#page_'+lib+' .pie_chart")
     if(isVisible(element_pie_'+lib.var_safe+')){
         var chart_pie_'+lib.var_safe+' = new google.visualization.PieChart(element_pie_'+lib.var_safe+');
         chart_pie_'+lib.var_safe+'.draw(
@@ -419,7 +421,7 @@ paired_raw_js = paired_raw.map { |lib, data| '
 
 tree_charts_js = tree_charts.map { |lib, d|
     d.map { |region, data| '
-        var element_chart_tree_'+lib.var_safe+'_'+region.var_safe+' = document.querySelector("#'+lib+' .'+region+' .treemap")
+        var element_chart_tree_'+lib.var_safe+'_'+region.var_safe+' = document.querySelector("#page_'+lib+' .'+region+' .treemap")
         if(isVisible(element_chart_tree_'+lib.var_safe+'_'+region.var_safe+')){
             var chart_tree_'+lib.var_safe+'_'+region.var_safe+' = new google.visualization.TreeMap(element_chart_tree_'+lib.var_safe+'_'+region.var_safe+');
             chart_tree_'+lib.var_safe+'_'+region.var_safe+'.draw(
@@ -439,7 +441,7 @@ tree_charts_js = tree_charts.map { |lib, d|
 }.join
 
 tcs_bar_chart_js = tcs_bar_chart.map { |lib, data| '
-    var element_tcs_bar_chart_'+lib.var_safe+' = document.querySelector("#'+lib+' .tcs_bar_chart")
+    var element_tcs_bar_chart_'+lib.var_safe+' = document.querySelector("#page_'+lib+' .tcs_bar_chart")
     if(isVisible(element_tcs_bar_chart_'+lib.var_safe+')){
         var tcs_bar_chart_'+lib.var_safe+' = new google.charts.Bar(element_tcs_bar_chart_'+lib.var_safe+');
         tcs_bar_chart_'+lib.var_safe+'.draw(
@@ -454,12 +456,12 @@ tcs_bar_chart_js = tcs_bar_chart.map { |lib, data| '
                 }
             })
         );
-        document.querySelector("#'+lib+' .tcs_warnings").innerHTML = "'+data['warnings']+'";
+        document.querySelector("#page_'+lib+' .tcs_warnings").innerHTML = "'+data['warnings']+'";
     }
 ' }.join
 
 detection_sensitivity_js = detection_sensitivity_chart.map { |lib, data| '
-    var element_detection_'+lib.var_safe+' = document.querySelector("#'+lib+' .detection_sensitivity_chart")
+    var element_detection_'+lib.var_safe+' = document.querySelector("#page_'+lib+' .detection_sensitivity_chart")
     if(isVisible(element_detection_'+lib.var_safe+')){
         var detection_'+lib.var_safe+' = new google.visualization.ColumnChart(element_detection_'+lib.var_safe+');
         detection_'+lib.var_safe+'.draw(
@@ -483,7 +485,7 @@ detection_sensitivity_js = detection_sensitivity_chart.map { |lib, data| '
 '}.join
 
 distinct_bar_chart_js = distinct_bar_chart.map { |lib, data| '
-    var element_distinct_'+lib.var_safe+' = document.querySelector("#'+lib+' .raw_bar_chart")
+    var element_distinct_'+lib.var_safe+' = document.querySelector("#page_'+lib+' .raw_bar_chart")
     if(isVisible(element_distinct_'+lib.var_safe+')){
         var distinct_'+lib.var_safe+' = new google.visualization.ColumnChart(element_distinct_'+lib.var_safe+');
         distinct_'+lib.var_safe+'.draw(
@@ -499,7 +501,7 @@ distinct_bar_chart_js = distinct_bar_chart.map { |lib, data| '
 ' }.join
 
 resampling_bar_chart_js = resampling_bar_chart.map { |lib, data| '
-    var element_resampling_'+lib.var_safe+' = document.querySelector("#'+lib+' .resampling_bar_chart")
+    var element_resampling_'+lib.var_safe+' = document.querySelector("#page_'+lib+' .resampling_bar_chart")
     if(isVisible(element_resampling_'+lib.var_safe+')){
         var resampling_'+lib.var_safe+' = new google.visualization.ColumnChart(element_resampling_'+lib.var_safe+');
         resampling_'+lib.var_safe+'.draw(
@@ -516,7 +518,7 @@ resampling_bar_chart_js = resampling_bar_chart.map { |lib, data| '
 
 scatter_charts_js = scatter_charts.map { |lib, d|
     d.map { |region, data| '
-        var element_chart_scatter_'+lib.var_safe+'_'+region.var_safe+' = document.querySelector("#'+lib+' .'+region+'.scatter")
+        var element_chart_scatter_'+lib.var_safe+'_'+region.var_safe+' = document.querySelector("#page_'+lib+' .'+region+'.scatter")
         if(isVisible(element_chart_scatter_'+lib.var_safe+'_'+region.var_safe+')){
             var chart_scatter_'+lib.var_safe+'_'+region.var_safe+' = new google.visualization.ComboChart(element_chart_scatter_'+lib.var_safe+'_'+region.var_safe+');
 
@@ -601,7 +603,7 @@ html = '
 
             function showPage(pageID){
                 document.querySelectorAll(".page").forEach(element => element.classList.add("hidden"))
-                document.getElementById(pageID).classList.remove("hidden")
+                document.getElementById("page_"+pageID).classList.remove("hidden")
 
                 document.querySelectorAll(".current_page").forEach(element => element.classList.remove("current_page"));
                 document.getElementById("link_"+pageID).classList.add("current_page");
@@ -620,7 +622,7 @@ html = '
                     '+library_links+'
                 </div>
                 <div id="pages" style="flex: 1; overflow: auto; height: 100vh;">
-                    <div style="display: flex; flex-direction: column; align-items: center; height: 100vh;" id="basic-statistics" class="page">
+                    <div style="display: flex; flex-direction: column; align-items: center; height: 100vh;" id="page_basic-statistics" class="page">
                         <div class="error-message"></div>
                         <div class="card" style="margin-top: 16px; width: 100%;">
                             <table id="home-table">
@@ -694,7 +696,8 @@ html = '
             padding: 8px;
         }
         .current_page {
-            border-bottom: 1px solid blue;
+            color: white;
+            background: #BAA !important;
         }
         .error-message {
             background: red !important;
@@ -708,6 +711,14 @@ html = '
         }
         .error-message:empty {
             display: none;
+        }
+
+        .lib_link:nth-child(odd){
+            background: #FFF6FF;
+        }
+
+        .lib_link:hover {
+            background: #EEEFEE;
         }
     </style>
 </html>

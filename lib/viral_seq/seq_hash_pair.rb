@@ -217,6 +217,7 @@ module ViralSeq
     # input a pair of sequences as String, return a Hash object of overlapping Hash object
     # {:overlap_size => number_of_differnt_positions, ...}
     # {minimal overlap set to 4. }
+    # !!! to do, consider how to get the overlap number when have a short insert.
     def overlap_matrix(sequence1, sequence2)
       min_overlap = 4
       max_overlap = [sequence1.size, sequence2.size].min

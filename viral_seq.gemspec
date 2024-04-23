@@ -25,7 +25,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
   spec.post_install_message = "Thanks for installing!"
 
-  spec.add_development_dependency "bundler", "~> 2.0"
+  spec.add_development_dependency "bundler", "~> 2.5"
   spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "rspec", "~> 3.0"
 
@@ -35,7 +35,7 @@ Gem::Specification.new do |spec|
   spec.required_rubygems_version = '>= 1.3.6'
 
   # muscle_bio gem required
-  spec.add_runtime_dependency "muscle_bio", "~> 0.5"
+  spec.add_runtime_dependency "muscle_bio", "= 0.4"
 
   # colorize gem required
   spec.add_runtime_dependency "colorize", "~> 0.1"

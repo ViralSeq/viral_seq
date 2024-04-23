@@ -10,7 +10,7 @@ A Ruby Gem containing bioinformatics tools for processing viral NGS data.
 
 Specifically for Primer ID sequencing and HIV drug resistance analysis.
 
-CLI tools `tcs`, `tcs_sdrm`, `tcs_log` and `locator` included in the gem. 
+CLI tools `tcs`, `tcs_sdrm`, `tcs_log` and `locator` included in the gem.
 
 #### tcs web app - https://primer-id.org/
 
@@ -20,8 +20,8 @@ CLI tools `tcs`, `tcs_sdrm`, `tcs_log` and `locator` included in the gem.
 ![Primer ID Sequencing](./docs/assets/img/cover.jpg)
 
 ### Reference readings on the Primer ID sequencing
-[Explantion of Primer ID sequencing](https://doi.org/10.21769/BioProtoc.3938)  
-[Primer ID MiSeq protocol](https://doi.org/10.1128/JVI.00522-15)  
+[Explantion of Primer ID sequencing](https://doi.org/10.21769/BioProtoc.3938)
+[Primer ID MiSeq protocol](https://doi.org/10.1128/JVI.00522-15)
 [Application of Primer ID sequencing in COVID-19 research](https://doi.org/10.1126/scitranslmed.abb5883)
 
 ## Requirements
@@ -40,7 +40,7 @@ Required RubyGems version: >= 1.3.6
 
 ### Excutables
 
-### `tcs`  
+### `tcs`
 Use executable `tcs` pipeline to process **Primer ID MiSeq sequencing** data.
 
 Web-based `tcs` analysis can be accessed at https://primer-id.org/
@@ -66,14 +66,14 @@ Example commands:
 Use `tcs_log` script to pool run logs and TCS fasta files after one batch of `tcs` jobs. This command generates log.html to visualize the sequencing runs.
 
 
-Example file structure:  
+Example file structure:
 ```
-batch_tcs_jobs/  
-      ├── lib1  
-      ├── lib2  
-      ├── lib3  
-      ├── lib4  
-      ├── ...  
+batch_tcs_jobs/
+      ├── lib1
+      ├── lib2
+      ├── lib3
+      ├── lib4
+      ├── ...
 ```
 
 Example command:
@@ -121,7 +121,7 @@ Output data in a new dir as 'libs_dir_SDRM'
 
 ---
 
-### `locator`  
+### `locator`
 Use executable `locator` to get the coordinates of the sequences on HIV/SIV reference genome from a FASTA file through a terminal
 
 ```bash
@@ -187,21 +187,30 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
+### Version-1.7.2-04052024
+
+  1. Use `muscle-v3.8.1` as default aligner because of the compatibility issues with `muscle-v5` on some platforms.
+  2. Adjust the end-join model for short insert (insert size less than read length substracted by adaptor size)
+  3. Add an option in the DR pipeline for different versions of the pipeline, default version as "v1".
+  4. Add recency and DPI report in the SDRM pipeline.
+  5. Re-organize the R scripts as stand-alone R files.
+  6. Bug fix
+
 ### Version-1.7.1-05120203
 
-  1. Add a size check for the raw sequences. If the size smaller than the input params, error messages will be sent to users. IF the actual size is greater than the input params, extra bases will be truncated. 
+  1. Add a size check for the raw sequences. If the size smaller than the input params, error messages will be sent to users. IF the actual size is greater than the input params, extra bases will be truncated.
   2. Now allows mismatch for the primer region sequences. Forward primer region allows 2 nt differences and cDNA primer region allows 3 nt differences.
-  3. Bug fix.  
+  3. Bug fix.
   4. TCS version to 2.5.2
 
 ### Version-1.7.0-08242022
 
-  1. Add warnings if `tcs` pipeline is excecuting through source instead of installing from `gem`. 
-  2. Optimized `ViralSeq:SeqHash#a3g` hypermut algorithm. Allowing a external reference other than the sample reference. 
+  1. Add warnings if `tcs` pipeline is excecuting through source instead of installing from `gem`.
+  2. Optimized `ViralSeq:SeqHash#a3g` hypermut algorithm. Allowing a external reference other than the sample reference.
 
 ### Version-1.6.4-07182022
 
-  1. Included region "P17" in the default `tcs -d` pipeline setting. `tcs` pipeline updated to version 2.5.1. 
+  1. Included region "P17" in the default `tcs -d` pipeline setting. `tcs` pipeline updated to version 2.5.1.
   2. Loosen the locator params for the "V1V3" end region for rare alignment issues. Now the default "V1V3" region end with position 7205 to 7210 instead of 7208.
   3. `tcs_sdrm` now analyse "P17" region for pairwise diversity.
 

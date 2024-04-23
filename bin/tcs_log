@@ -137,8 +137,8 @@ class String
         gsub '-',''
     end
     def shorten_html
-        gsub /\n/, ''
-        gsub /\t/, ''
+        gsub(/\n/, '')
+        gsub(/\t/, '')
     end
 end
 

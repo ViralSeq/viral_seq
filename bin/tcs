@@ -31,22 +31,21 @@ def gem_installed?(gem_name)
   begin
     found_gem = Gem::Specification.find_by_name(gem_name)
   rescue Gem::LoadError
-    return false   
+    return false
   else
-    return true 
+    return true
   end
 end
 
 if gem_installed?('viral_seq')
   require 'viral_seq'
-else 
+else
   printf "\n****************************************************\n"
   printf "**** THIS PACKAGE CANNOT BE RUN FROM SOURCE ********\n"
   printf "**** PLEASE INSTALL USING `gem install viral_seq` **\n"
   printf "****************************************************\n\n"
   exit 1
 end
-
 
 require 'json'
 require 'colorize'
@@ -77,8 +76,8 @@ OptionParser.new do |opts|
     options[:input] = p
   end
 
-  opts.on("-dr", "--dr_pipeline", "HIV drug resistance MPID pipeline") do |p|
-    options[:dr] = true
+  opts.on("-d", "--dr_pipeline VERSION", "HIV drug resistance MPID pipeline, choose your version") do |p|
+    options[:dr] = p.downcase
   end
 
   opts.on("-h", "--help", "Prints this help") do
@@ -88,6 +87,10 @@ OptionParser.new do |opts|
 
   opts.on("--keep-original", "keep raw sequence files") do
     options[:keep] = true
+  end
+
+  opts.on("--dr_params VERSION", "show params for DR pipeline") do |p|
+    options[:dr_params] = p.downcase
   end
 
   opts.on("-v", "--version", "Version info") do
@@ -101,10 +104,29 @@ OptionParser.new do |opts|
   # end
 end.parse!
 
+def safe_dr_params(version)
+  if version == "r"
+    version = "v1"
+  end # adding this statement to allow the backward compatiblity with previous `tcs -dr` command
+
+  params = ViralSeq::TcsDr::PARAMS[version]
+
+  if params.nil?
+    abort "The input DR version #{version} not exist. \nThe current supported versions for the DR pipeline are: \n#{ViralSeq::TcsDr::PARAMS.keys.join("\n")}\n\nRun `tcs --dr_params [VERSION]` for the detailed params used by each version".red
+  else
+    return params
+  end
+end
+
 if options[:json_generator]
   params = ViralSeq::TcsJson.generate
+elsif options[:dr_params]
+  params = safe_dr_params(options[:dr_params])
+  puts "The DR params for the version you entered is: "
+  puts JSON.pretty_generate params
+  exit
 elsif options[:dr]
-  params = ViralSeq::TcsDr::PARAMS  
+  params = safe_dr_params(options[:dr])
 elsif (options[:params_json] && File.exist?(options[:params_json]))
   params = JSON.parse(File.read(options[:params_json]), symbolize_names: true)
 else
@@ -119,6 +141,11 @@ end
 
 unless indir and File.exist?(indir)
   abort "No input sequence directory found. Script terminated.".red.bold
+end
+
+if options[:dr_params]
+  params = ViralSeq::TcsDr.PARAMS(options[:dr])
+  puts params
 end
 
 # log file
@@ -165,7 +192,7 @@ begin
 
   r1_raw_size = r1_fastq_sh.dna_hash.values[0].size
   r2_raw_size = r2_fastq_sh.dna_hash.values[0].size
- 
+
   if r1_raw_size >= $platform_sequencing_length
     r1_size_diff = r1_raw_size - $platform_sequencing_length
   else

@@ -495,7 +495,7 @@ module ViralSeq
       # total G->A mutations at apobec3g/f positions.
       total = 0
 
-      unless ref 
+      unless ref
         # make consensus sequence for the input sequence hash
         ref = self.consensus
       end
@@ -571,7 +571,7 @@ module ViralSeq
       hm_hash.each do |k,_v|
         hm_seq_hash.dna_hash[k] = self.dna_hash[k]
       end
-    
+
       hm_seq_hash.title = self.title + "_hypermut"
       hm_seq_hash.file = self.file
       filtered_seq_hash = self.sub(self.dna_hash.keys - hm_hash.keys)
@@ -713,7 +713,7 @@ module ViralSeq
 
 
     # align the @dna_hash sequences, return a new ViralSeq::SeqHash object with aligned @dna_hash using MUSCLE
-    # @param algorithm [Symbol], algorithm for MUSCLE5 only. Choose from :PPP or :Super5. 
+    # @param algorithm [Symbol], algorithm for MUSCLE5 only. Choose from :PPP or :Super5.
     # @param path_to_muscle [String], path to MUSCLE excutable. if not provided (as default), it will use RubyGem::MuscleBio
     # @return [SeqHash] new SeqHash object of the aligned @dna_hash, the title has "_aligned"
 
@@ -729,7 +729,7 @@ module ViralSeq
       temp_aln = File.join(temp_dir, "_temp_muscle_aln")
       File.open(temp_file, 'w'){|f| seq_hash.each {|k,v| f.puts k; f.puts v}}
       if path_to_muscle
-        unless ViralSeq.check_muscle?(path_to_muscle)
+        unless ViralSeq::Muscle.check_muscle?(path_to_muscle)
           File.unlink(temp_file)
           return nil
         end

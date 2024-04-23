@@ -245,4 +245,16 @@ RSpec.describe ViralSeq do
   it "can calculate minority mutation detection sensitivity given TCS number" do
     expect(ViralSeq::TcsCore.detection_limit(100)).to eq 0.0362
   end
+
+  it "can check R is installed" do
+    expect(ViralSeq::R.check_R[0]).to eq "R"
+  end
+
+  it "can check required R packages are installed" do
+    expect(ViralSeq::R.check_R_packages).to eq 0
+  end
+
+  it "can read required R script for SDRM" do
+    expect(ViralSeq::R.get_sdrm_rscript.size).to be > 1
+  end
 end

@@ -32,13 +32,8 @@ unless ARGV[0] && File.directory?(ARGV[0])
   abort "No sequence data provided. `tcs_sdrm` pipeline aborted. "
 end
 
-begin
-  r_version = `R --version`.split("\n")[0]
-  r_check = `R -e '#{ViralSeq::R_SCRIPT_CHECK_PACKAGES}' > /dev/null 2>&1`
-rescue Errno::ENOENT
-  abort '"R" is not installed. Install R at https://www.r-project.org/' +
-        "\n`tcs_sdrm` pipeline aborted."
-end
+r_version = ViralSeq::R.check_R
+ViralSeq::R.check_R_packages
 
 def abstract_line(data)
   return_data = data[3] + data[2] + data[4] + ":" +
@@ -72,7 +67,7 @@ Dir.mkdir(outdir) unless File.directory?(outdir)
 
 libs.each do |lib|
 
-  r_script = ViralSeq::R_SCRIPT.dup
+  r_script = ViralSeq::R.get_sdrm_rscript
 
   next unless File.directory?(lib)
 

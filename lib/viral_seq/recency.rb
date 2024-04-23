@@ -67,7 +67,7 @@ module ViralSeq
       else
         return ["NA", "NA", "NA"]
       end
-      path = File.join("lib", "viral_seq", "util", "recency_model", model_file)
+      path = File.join( ViralSeq.root, "viral_seq", "util", "recency_model", model_file)
       data_str = `Rscript -e 'fit = readRDS("#{path}"); test = data.frame(#{var} = #{pi}); pre= predict(fit, test, interval = "prediction", level = 0.9); cat(pre)'`
       dpi_array = data_str.split("\s")
       dpi = dpi_array[0].to_f

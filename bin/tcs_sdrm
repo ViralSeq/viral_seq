@@ -101,6 +101,8 @@ libs.each do |lib|
   summary_json_file = File.join(out_lib_dir, (lib_name + "_summary.json"))
   summary_json_out = File.open(summary_json_file,"w")
 
+  recency_report_file = File.join(out_lib_dir, (lib_name + "_recency_report.pdf"))
+
   filtered_seq_dir = File.join(out_lib_dir, (lib_name + "_filtered_seq"))
   Dir.mkdir(filtered_seq_dir) unless File.directory?(filtered_seq_dir)
 
@@ -285,12 +287,12 @@ libs.each do |lib|
   tcs_IN = 0
   tcs_V1V3 = 0
   tcs_P17 = 0
-  pi_RT = 0.0
-  pi_V1V3 = 0.0
-  pi_P17 = 0.0
-  dist20_RT = 0.0
-  dist20_V1V3 = 0.0
-  dist20_P17 = 0.0
+  pi_RT = "NA"
+  pi_V1V3 = "NA"
+  pi_P17 = "NA"
+  dist20_RT = "NA"
+  dist20_V1V3 = "NA"
+  dist20_P17 = "NA"
   summary_lines.each do |line|
       data = line.chomp.split(",")
       if data[0] == "PR"
@@ -320,6 +322,12 @@ libs.each do |lib|
                               pi_V1V3: pi_V1V3,
                               dist20_V1V3: dist20_V1V3
                               )
+
+  dpi_res = ViralSeq::Recency.dpi(pi_RT, pi_V1V3)
+  dpi = dpi_res[0]
+  dpi_lwr = dpi_res[1]
+  dpi_upr = dpi_res[2]
+  possible_dual_infection = ViralSeq::Recency.possible_dual_infection(recency, dpi_res)
 
   sdrm_lines = File.readlines(point_mutation_file)
   sdrm_lines.shift
@@ -352,6 +360,10 @@ libs.each do |lib|
     dist20_V1V3: dist20_V1V3,
     dist20_P17: dist20_P17,
     recency: recency,
+    dpi: dpi,
+    dpi_lwr: dpi_lwr,
+    dpi_upr: dpi_upr,
+    possible_dual_infection: possible_dual_infection,
     sdrm_PR: sdrm_PR,
     sdrm_RT: sdrm_RT,
     sdrm_IN: sdrm_IN
@@ -359,6 +371,8 @@ libs.each do |lib|
 
   summary_json_out.puts JSON.pretty_generate(summary_json)
   summary_json_out.close
+
+  ViralSeq::RecencyReport.generate(summary_json[0], recency_report_file)
 
   csvs = [
     {

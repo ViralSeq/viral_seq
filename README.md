@@ -187,16 +187,17 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
-### Version-1.7.2-04052024
+### Version-1.8.0.pre-04052024
 
   1. Use `muscle-v3.8.1` as default aligner because of the compatibility issues with `muscle-v5` on some platforms.
   2. Adjust the end-join model for short insert (insert size less than read length substracted by adaptor size)
   3. Add an option in the DR pipeline for different versions of the pipeline, default version as "v1".
-  4. Add recency and DPI report in the SDRM pipeline.
+  4. Add Days Post Infection (DPI) prediction model in the SDRM pipeline.
   5. Re-organize the R scripts as stand-alone R files.
-  6. Bug fix
+  6. Bug fix.
+  7. **NOT SOLVED**: to include versions of DR in reports
 
-### Version-1.7.1-05120203
+### Version-1.7.1-05122023
 
   1. Add a size check for the raw sequences. If the size smaller than the input params, error messages will be sent to users. IF the actual size is greater than the input params, extra bases will be truncated.
   2. Now allows mismatch for the primer region sequences. Forward primer region allows 2 nt differences and cDNA primer region allows 3 nt differences.

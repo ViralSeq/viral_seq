@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    viral_seq (1.7.2)
+    viral_seq (1.8.0.pre)
       colorize (~> 0.1)
       combine_pdf (~> 1.0, >= 1.0.0)
       muscle_bio (= 0.4)
@@ -48,7 +48,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bundler (>= 2.5)
+  bundler (~> 2.5)
   rake (~> 13.0)
   rspec (~> 3.0)
   viral_seq!

@@ -43,8 +43,10 @@ require_relative "viral_seq/tcs_dr"
 require_relative "viral_seq/sdrm"
 require_relative "viral_seq/recency"
 require_relative "viral_seq/R"
+require_relative "viral_seq/recency_report"
 
 
 require "muscle_bio"
 require "json"
 require "securerandom"
+require "prawn"

@@ -132,9 +132,22 @@ RSpec.describe ViralSeq do
 
   paired_seq2 = {">pair4" => ["AAAGGGGGGG", "GGGGGGGTT"],
                  ">pair5" => ["AAAAAAGGGG", "GGGGTTTTT"],
-                 ">pair6" => ["AAACAAGGGG", "GGGGTTTTT"]
+                 ">pair6" => ["AAACAAGGGG", "GGGGTTTTT"],
+                 ">pair7" => ["GGGGGGGTT", "AAAGGGGGGG",],
+                 ">pair8" => ["GGGGGGGTTTTTTTTTTTTTTT", "AAAAAAAAAAAAAAGGGGGGG",],
                  }
   p2 = ViralSeq::SeqHashPair.new(paired_seq2)
+
+  paired_seq3 = {
+  ">pair9" =>
+    [
+      "CAATACATCACAACTGTTTAATAGTACTTGGATTAATGGTACTAGGAAAGGTACTGAAGGAAATGTTACAGAAAATATCATACTCCCATGCAGAATAAAACAAATTATAAACATGTGGCAGGAAGTAGGAAAAGCAATGTATGCCCCTCCCATCAAAGGAATGATTAGATGTTCATCAAATATTACAGGGCTGCTATTAACAAGGGATGGTGGTGAGAACAAAAACAAGAGCGAGCCCGAGGTCTTCAGACCTGGAGGAGGAGATATGAGGGACA",
+      "TACATCACAACTGTTTAATAGTACTTGGATTAATGGTACTAGGAAAGGTACTGAAGGAAATGTTACAGAAAATATCATACTCCCATGCAGAATAAAACAAATTATAAACATGTGGCAGGAAGTAGGAAAAGCAATGTATGCCCCTCCCATCAAAGGAATGATTAGATGTTCATCAAATATTACAGGGCTGCTATTAACAAGGGATGGTGGTGAGAACAAAAACAAGAGCGAGCCCGAGGTCTTCAGACCTGGAGGAGGAGATATGAGGGAC"
+    ]
+
+  }
+
+  p3 = ViralSeq::SeqHashPair.new(paired_seq3)
 
   it "has a function to join paired-end reads with KNOWN overlap" do
     expect(p1.join1(100).dna_hash.keys).to eq [">pair1"]
@@ -144,9 +157,18 @@ RSpec.describe ViralSeq do
 
   it "has a function to join paired-end reads with UNKNOWN overlap" do
     expected_hash1 = {">pair4" => "AAAGGGGGGGGGGTT", ">pair5" => "AAAAAAGGGGTTTTT", ">pair6" => "AAACAAGGGGTTTTT"}
-    expected_hash2 = {">pair4"=>"AAAGGGGGGGTT", ">pair5"=>"AAAAAAGGGGTTTTT", ">pair6"=>"AAACAAGGGGTTTTT"}
+    expected_hash2 = {">pair4"=>"AAAGGGGGGGTT",
+    ">pair5"=>"AAAAAAGGGGTTTTT",
+    ">pair6"=>"AAACAAGGGGTTTTT",
+    ">pair7"=>"AAAGGGGGGGTT",
+    ">pair8"=>"GGGGGGGTTTTTTTTTTTTTTTAAAAAAAAAAAAAAGGGGGGG"}
     expect(p2.join2.dna_hash).to eq expected_hash1
     expect(p2.join2(model: :indiv).dna_hash).to eq expected_hash2
+  end
+
+  it "has a function to join paired-end reads with complicated patterns" do
+    expected_str = "CAATACATCACAACTGTTTAATAGTACTTGGATTAATGGTACTAGGAAAGGTACTGAAGGAAATGTTACAGAAAATATCATACTCCCATGCAGAATAAAACAAATTATAAACATGTGGCAGGAAGTAGGAAAAGCAATGTATGCCCCTCCCATCAAAGGAATGATTAGATGTTCATCAAATATTACAGGGCTGCTATTAACAAGGGATGGTGGTGAGAACAAAAACAAGAGCGAGCCCGAGGTCTTCAGACCTGGAGGAGGAGATATGAGGGACA"
+    expect(p3.join2.dna_hash.values[0]).to eq expected_str
   end
 
   it "has a function to find APOBEC3g/f hypermutation sequences" do
@@ -256,5 +278,11 @@ RSpec.describe ViralSeq do
 
   it "can read required R script for SDRM" do
     expect(ViralSeq::R.get_sdrm_rscript.size).to be > 1
+  end
+
+  it "can predict if there are multivariant virus infection based on HIV recency and dpi" do
+    expect(ViralSeq::Recency.possible_dual_infection("indeterminant", [800, 400, 1220])).to eq "Yes"
+    expect(ViralSeq::Recency.possible_dual_infection("chronic", [800, 400, 1220])).to eq "No"
+    expect(ViralSeq::Recency.possible_dual_infection("something", [800, 400, 1220])).to eq "insufficient data"
   end
 end

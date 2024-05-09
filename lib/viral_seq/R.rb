@@ -17,7 +17,7 @@ module ViralSeq
       if system "Rscript #{File.join( ViralSeq.root, "viral_seq", "util", "check_env.r")}"
         return 0
       else
-        raise "Non-zeor exit code. Error happens when checking required R packages."
+        raise "Non-zero exit code. Error happens when checking required R packages."
       end
     end # end check_R_packages.
 

@@ -47,7 +47,7 @@ module ViralSeq
         recency = "insufficient data"
       end
       return recency
-    end
+    end #end of .define
 
 
     def self.dpi(pi_rt, pi_v1v3)
@@ -78,6 +78,21 @@ module ViralSeq
       else
         return [dpi, lwr, upr]
       end
+    end # end of .dpi
+
+    def self.possible_dual_infection(recency, dpi)
+      if ["recent", "chronic", "indeterminant"].include? recency and dpi[0].is_a? Numeric
+        if recency == "indeterminant" and dpi[0] > 730
+          "Yes"
+        else
+          "No"
+        end
+      else
+        "insufficient data"
+      end
     end
+
   end
+
+
 end

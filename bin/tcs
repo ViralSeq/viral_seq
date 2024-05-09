@@ -89,8 +89,12 @@ OptionParser.new do |opts|
     options[:keep] = true
   end
 
-  opts.on("--dr_params VERSION", "show params for DR pipeline") do |p|
+  opts.on("--dr_params VERSION", "show params for a specific VERSION of DR pipeline") do |p|
     options[:dr_params] = p.downcase
+  end
+
+  opts.on("--dr_list_params", "show params for ALL DR pipeline versions") do |p|
+    options[:dr_list_params] = true
   end
 
   opts.on("-v", "--version", "Version info") do
@@ -125,6 +129,10 @@ elsif options[:dr_params]
   puts "The DR params for the version you entered is: "
   puts JSON.pretty_generate params
   exit
+elsif options[:dr_list_params]
+  params = ViralSeq::TcsDr::PARAMS
+  puts JSON.pretty_generate params
+  exit
 elsif options[:dr]
   params = safe_dr_params(options[:dr])
 elsif (options[:params_json] && File.exist?(options[:params_json]))
@@ -143,10 +151,6 @@ unless indir and File.exist?(indir)
   abort "No input sequence directory found. Script terminated.".red.bold
 end
 
-if options[:dr_params]
-  params = ViralSeq::TcsDr.PARAMS(options[:dr])
-  puts params
-end
 
 # log file
 

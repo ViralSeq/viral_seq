@@ -141,8 +141,8 @@ module ViralSeq
             },
 
             {
-              text: log[:dpi].round(1).to_s +
-              " (" + log[:dpi_lwr].round(1).to_s + "-" + log[:dpi_upr].round(1).to_s + ") Days",
+              text: log[:dpi].to_s +
+              " (" + log[:dpi_lwr].to_s + "-" + log[:dpi_upr].to_s + ") Days",
               styles: [:bold],
               size: 16,
               color: recency_color[log[:recency]]

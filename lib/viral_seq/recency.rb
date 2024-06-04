@@ -49,7 +49,10 @@ module ViralSeq
       return recency
     end #end of .define
 
-
+    # function for predict Days Post Infection
+    # @params pi_rt [Float] average pairwise diversity at RT region
+    # @params pi_viv3 [Float] average pairwise diversity at V1V3 region
+    # @return [Array] Array of [DPI, lwr, upr] for DPI prediction as [Numerics]
     def self.dpi(pi_rt, pi_v1v3)
 
       if pi_rt.is_a? Numeric and pi_v1v3.is_a? Numeric
@@ -70,15 +73,20 @@ module ViralSeq
       path = File.join( ViralSeq.root, "viral_seq", "util", "recency_model", model_file)
       data_str = `Rscript -e 'fit = readRDS("#{path}"); test = data.frame(#{var} = #{pi}); pre= predict(fit, test, interval = "prediction", level = 0.9); cat(pre)'`
       dpi_array = data_str.split("\s")
-      dpi = dpi_array[0].to_f
-      lwr = dpi_array[1].to_f
-      upr = dpi_array[2].to_f
+      dpi = dpi_array[0].to_f.round(1)
+      lwr = dpi_array[1].to_f.round(1)
+      upr = dpi_array[2].to_f.round(1)
       if lwr < 0
         return [dpi, 0.0, upr]
       else
         return [dpi, lwr, upr]
       end
     end # end of .dpi
+
+    # given `recency` and `dpi` predict if possible dual infection exists
+    # @params recency [String] Recency from ViralSeq::Recency.define() function
+    # @params dpi [Array] DPI array from ViralSeq::Recency.dpi() function
+    # @return [String] "Yes", "No", or "insufficient data"
 
     def self.possible_dual_infection(recency, dpi)
       if ["recent", "chronic", "indeterminant"].include? recency and dpi[0].is_a? Numeric
@@ -92,7 +100,7 @@ module ViralSeq
       end
     end
 
-  end
+  end # end of .possible_dual_infection
 
 
 end

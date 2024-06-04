@@ -20,7 +20,7 @@
 #
 # output data in a new dir as 'libs_dir_SDRM'
 
-require 'viral_seq'
+require '/Users/shuntaiz/Documents/work/Deep_sequencing/Ruby/GITHUB/ViralSeq/lib/viral_seq.rb'
 require 'json'
 require 'csv'
 require 'fileutils'

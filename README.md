@@ -187,7 +187,12 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
-### Version-1.8.0.pre-04052024
+
+### Version-1.8.1-06042024
+
+  1. Fixed a bug that causes `tcs_sdrm` pipeline to crash.
+
+### Version-1.8.0-04052024
 
   1. Use `muscle-v3.8.1` as default aligner because of the compatibility issues with `muscle-v5` on some platforms.
   2. Adjust the end-join model for short insert (insert size less than read length substracted by adaptor size)

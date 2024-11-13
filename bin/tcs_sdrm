@@ -344,7 +344,7 @@ libs.each do |lib|
       file: point_mutation_file,
       newPDF: "",
       table_width: [60,50,70,65,65,60,75,70,70,70,45],
-      extra_text: "* Mutation below Poisson cut-off for minority mutations"
+      extra_text: "* Mutation below FDR significance cut-off for minority mutations"
     },
     {
       name: "linkage",
@@ -352,7 +352,6 @@ libs.each do |lib|
       file: linkage_file,
       newPDF: "",
       table_width: [55,50,250,60,80,80,80,45],
-      extra_text: "* Mutation below Poisson cut-off for minority mutations"
     }
   ]
 

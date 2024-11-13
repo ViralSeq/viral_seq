@@ -126,7 +126,7 @@ module ViralSeq
         name_array.each do |name|
           tag = parser_file_name(name)[:tag]
           if name !~ /\.fastq\Z|\.fastq\.gz\Z/
-            errors[:file_type_error] << name
+            name_array.delete(name)
           elsif tag.count("R1") == 0 and tag.count("R2") == 0
             errors[:no_region_tag] << name
           elsif tag.count("R1") > 0 and tag.count("R2") > 0

@@ -299,10 +299,16 @@ begin
     distinct_to_raw = (primer_id_count.size/primer_id_list.size.to_f).round(3)
     summary_json[:distinct_to_raw] = distinct_to_raw
 
-    if primer_id_dis.keys.size < 5
+    if primer_id_count.keys.size < 5
       log.puts Time.now.to_s + "\t" +  "Less than 5 Primer IDs detected. Region #{region} aborted."
       next
     end
+
+    if primer_id_dis.keys.size < 5
+      log.puts Time.now.to_s + "\t" +  "Maximum frequency of Primer ID less than 5. Primer ID overloaded. Region #{region} aborted."
+      next
+    end
+
 
     max_id = primer_id_dis.keys.sort[-5..-1].mean
     consensus_cutoff = ViralSeq::TcsCore.calculate_cut_off(max_id,error_rate)

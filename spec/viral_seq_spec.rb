@@ -236,15 +236,24 @@ RSpec.describe ViralSeq do
     pr_sdrm = pr_sequence.sdrm_hiv_pr(pr_p_cut_off)
     expect(pr_sdrm[0][0][5]).to eq 247
 
+    pr_sdrm2 = pr_sequence.drm(ViralSeq::DrmVersion.config_version("V1").query_region("PR"))
+    expect(pr_sdrm2[0][0][5]).to eq 247
+
     rt_sequence = ViralSeq::SeqHash.fa('spec/sample_files/sample_dr_sequences/rt.fasta')
     rt_p_cut_off = rt_sequence.pm
     rt_sdrm = rt_sequence.sdrm_hiv_rt(rt_p_cut_off)
     expect(rt_sdrm[0][1][5]).to eq 52
 
+    rt_sdrm2 = rt_sequence.drm(ViralSeq::DrmVersion.config_version("V2").query_region("RT"))
+    expect(rt_sdrm2[0][1][5]).to eq 52
+
     in_sequence = ViralSeq::SeqHash.fa('spec/sample_files/sample_dr_sequences/in.fasta')
     in_p_cut_off = in_sequence.pm
     in_sdrm = in_sequence.sdrm_hiv_in(in_p_cut_off)
     expect(in_sdrm[1][0][3]).to eq 452
+
+    in_sdrm2 = in_sequence.drm(ViralSeq::DrmVersion.config_version("V1").query_region("IN"))
+    expect(in_sdrm2[1][0][3]).to eq 452
   end
 
   it "can do sequence locator on a SeqHash object" do
@@ -284,5 +293,12 @@ RSpec.describe ViralSeq do
     expect(ViralSeq::Recency.possible_dual_infection("indeterminant", [800, 400, 1220])).to eq "Yes"
     expect(ViralSeq::Recency.possible_dual_infection("chronic", [800, 400, 1220])).to eq "No"
     expect(ViralSeq::Recency.possible_dual_infection("something", [800, 400, 1220])).to eq "insufficient data"
+  end
+
+  name_array = %w[file1_r1.fastq.gz file1_r2.fastq.gz file2_r1.fastq file2_r2.fastq text.out]
+  name_array_error = %w[file1_r1.fastq.gz file1_r2.fastq.gz file2_r1.fastq file2_r2.fastq text.out file3_r1.fastq]
+  it "can filter file names and organized paired-end sequence files" do
+    expect(ViralSeq::TcsCore::validate_file_name(name_array)[:allPass])
+    expect(!ViralSeq::TcsCore::validate_file_name(name_array_error)[:allPass])
   end
 end

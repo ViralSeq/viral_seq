@@ -187,6 +187,12 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
+### Version-1.9.0-11132024
+
+  1. `ViralSeq::TcsCore::validate_file_name` will not report errors when non-sequence data in the folder, instead these files will be ignored.
+  2. Rewrote the APIs for DRM analysis for HIV. Now uses version config files for the sequencing information and DRM list configure files for DRM interpretation. Two configure files are at located in `/lib/viral_seq/util/`
+  3. `tcs_sdrm` will take a second argument for DRM config versions. Currently supports `["v1", "v2", "v3"]`. Refer to the documentations of the APIs for the details.
+  4. Next update will use secondary command `tcs sdrm` to replace `tcs_sdrm`, and `tcs log` to replace `tcs_log`.
 
 ### Version-1.8.1-06042024
 

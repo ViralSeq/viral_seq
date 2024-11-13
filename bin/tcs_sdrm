@@ -21,7 +21,6 @@
 # output data in a new dir as 'libs_dir_SDRM'
 
 require 'viral_seq'
-require 'json'
 require 'csv'
 require 'fileutils'
 require 'prawn'
@@ -31,6 +30,8 @@ require 'combine_pdf'
 unless ARGV[0] && File.directory?(ARGV[0])
   abort "No sequence data provided. `tcs_sdrm` pipeline aborted. "
 end
+
+dr_version = ARGV[1] ? ARGV[1] : "V1"
 
 r_version = ViralSeq::R.check_R
 ViralSeq::R.check_R_packages
@@ -49,12 +50,14 @@ log << { time: Time.now }
 log << { viral_seq_version: ViralSeq::VERSION }
 log << { tcs_version: ViralSeq::TCS_VERSION }
 log << { R_version: r_version}
-sdrm_list = {}
-sdrm_list[:nrti] = ViralSeq::DRMs.sdrm_json(:nrti)
-sdrm_list[:nnrti] = ViralSeq::DRMs.sdrm_json(:nnrti)
-sdrm_list[:hiv_pr] = ViralSeq::DRMs.sdrm_json(:hiv_pr)
-sdrm_list[:hiv_in] = ViralSeq::DRMs.sdrm_json(:hiv_in)
+log << { DR_version: dr_version}
+
+version_config = ViralSeq::DrmVersion.config_version(dr_version)
+
+sdrm_list = version_config.pull_drm_json
 log << { sdrm_list: sdrm_list }
+
+regions = version_config.seq_drm_correlation.keys
 
 # input dir
 indir = ARGV[0]
@@ -62,7 +65,7 @@ libs = Dir[indir + "/*"]
 log << { processed_libs: libs }
 
 #output dir
-outdir = indir + "_SDRM"
+outdir = indir + "_DRM_analysis"
 Dir.mkdir(outdir) unless File.directory?(outdir)
 
 libs.each do |lib|
@@ -85,7 +88,7 @@ libs.each do |lib|
 
   point_mutation_file = File.join(out_lib_dir, (lib_name + "_substitution.csv"))
   point_mutation_out = File.open(point_mutation_file, "w")
-  point_mutation_out.puts "region,TCS,AA position,wild type,mutation," +
+  point_mutation_out.puts "DRM_Class,TCS,AA position,wild type,mutation," +
                           "number,frequency,95% CI low,95% CI high,fdr,notes"
 
   linkage_file = File.join(out_lib_dir, (lib_name + "_linkage.csv"))
@@ -114,116 +117,63 @@ libs.each do |lib|
   aa_report_list = []
   summary_hash = {}
 
+  process_config = {}
+
   sub_seq_files.each do |sub_seq|
     seq_basename = File.basename(sub_seq)
-    seqs = ViralSeq::SeqHash.fa(sub_seq)
-    next if seqs.size < 3
+
     if seq_basename =~ /V1V3/i
-      summary_hash[:V1V3] = "#{seqs.size.to_s},NA,NA,NA,NA"
-      FileUtils.cp(sub_seq, filtered_seq_dir)
-    elsif seq_basename =~ /PR/i
-      a3g_check = seqs.a3g
-      a3g_seqs = a3g_check[:a3g_seq]
-      a3g_filtered_seqs = a3g_check[:filtered_seq]
-      stop_codon_check = a3g_filtered_seqs.stop_codon
-      stop_codon_seqs = stop_codon_check[:with_stop_codon]
-      filtered_seqs = stop_codon_check[:without_stop_codon]
-      poisson_minority_cutoff = filtered_seqs.pm
-      fdr_hash = filtered_seqs.fdr
-      summary_hash[:PR] = [
-                            seqs.size.to_s,
-                            a3g_seqs.size.to_s,
-                            stop_codon_seqs.size.to_s,
-                            filtered_seqs.size.to_s,
-                            poisson_minority_cutoff.to_s
-                          ].join(',')
-      next if filtered_seqs.size < 3
-      filtered_seqs.write_nt_fa(File.join(filtered_seq_dir,seq_basename))
-
-      sdrm = filtered_seqs.sdrm_hiv_pr(poisson_minority_cutoff, fdr_hash)
-      point_mutation_list += sdrm[0]
-      linkage_list += sdrm[1]
-      aa_report_list += sdrm[2]
-
-    elsif seq_basename =~/IN/i
-      a3g_check = seqs.a3g
-      a3g_seqs = a3g_check[:a3g_seq]
-      a3g_filtered_seqs = a3g_check[:filtered_seq]
-      stop_codon_check = a3g_filtered_seqs.stop_codon(2)
-      stop_codon_seqs = stop_codon_check[:with_stop_codon]
-      filtered_seqs = stop_codon_check[:without_stop_codon]
-      poisson_minority_cutoff = filtered_seqs.pm
-      fdr_hash = filtered_seqs.fdr
-      summary_hash[:IN] = [
-                            seqs.size.to_s,
-                            a3g_seqs.size.to_s,
-                            stop_codon_seqs.size.to_s,
-                            filtered_seqs.size.to_s,
-                            poisson_minority_cutoff.to_s
-                          ].join(',')
-      next if filtered_seqs.size < 3
-      filtered_seqs.write_nt_fa(File.join(filtered_seq_dir,seq_basename))
-
-      sdrm = filtered_seqs.sdrm_hiv_in(poisson_minority_cutoff, fdr_hash)
-      point_mutation_list += sdrm[0]
-      linkage_list += sdrm[1]
-      aa_report_list += sdrm[2]
-
-    elsif seq_basename =~/P17/i
-      a3g_check = seqs.a3g
-      a3g_seqs = a3g_check[:a3g_seq]
-      a3g_filtered_seqs = a3g_check[:filtered_seq]
-      stop_codon_check = a3g_filtered_seqs.stop_codon(2)
-      stop_codon_seqs = stop_codon_check[:with_stop_codon]
-      filtered_seqs = stop_codon_check[:without_stop_codon]
-      poisson_minority_cutoff = filtered_seqs.pm
-      fdr_hash = filtered_seqs.fdr
-      summary_hash[:P17] = [
-                            seqs.size.to_s,
-                            a3g_seqs.size.to_s,
-                            stop_codon_seqs.size.to_s,
-                            filtered_seqs.size.to_s,
-                            poisson_minority_cutoff.to_s
-                          ].join(',')
-      next if filtered_seqs.size < 3
-      filtered_seqs.write_nt_fa(File.join(filtered_seq_dir,seq_basename))
-
-    elsif seq_basename =~/RT/i
-      rt_seq1 = {}
-      rt_seq2 = {}
-      seqs.dna_hash.each do |k,v|
-        rt_seq1[k] = v[0,267]
-        rt_seq2[k] = v[267..-1]
+      seqs = ViralSeq::SeqHash.fa(sub_seq)
+      if seqs.size > 3
+        summary_hash["V1V3"] = "#{seqs.size.to_s},NA,NA,NA,NA"
+        FileUtils.cp(sub_seq, filtered_seq_dir)
       end
-      rt1 = ViralSeq::SeqHash.new(rt_seq1)
-      rt2 = ViralSeq::SeqHash.new(rt_seq2)
-      rt1_a3g = rt1.a3g
-      rt2_a3g = rt2.a3g
-      hypermut_seq_rt1 = rt1_a3g[:a3g_seq]
-      hypermut_seq_rt2 = rt2_a3g[:a3g_seq]
-      rt1_stop_codon = rt1.stop_codon(1)[:with_stop_codon]
-      rt2_stop_codon = rt2.stop_codon(2)[:with_stop_codon]
-      hypermut_seq_keys = (hypermut_seq_rt1.dna_hash.keys | hypermut_seq_rt2.dna_hash.keys)
-      stop_codon_seq_keys = (rt1_stop_codon.dna_hash.keys | rt2_stop_codon.dna_hash.keys)
-      reject_keys = (hypermut_seq_keys | stop_codon_seq_keys)
-      filtered_seqs = ViralSeq::SeqHash.new(seqs.dna_hash.reject {|k,v| reject_keys.include?(k) })
-      poisson_minority_cutoff = filtered_seqs.pm
-      fdr_hash = filtered_seqs.fdr
-      summary_hash[:RT] = [
-                            seqs.size.to_s,
-                            hypermut_seq_keys.size.to_s,
-                            stop_codon_seq_keys.size.to_s,
-                            filtered_seqs.size.to_s,
-                            poisson_minority_cutoff.to_s
-                          ].join(',')
-      next if filtered_seqs.size < 3
-      filtered_seqs.write_nt_fa(File.join(filtered_seq_dir,seq_basename))
-
-      sdrm = filtered_seqs.sdrm_hiv_rt(poisson_minority_cutoff, fdr_hash)
-      point_mutation_list += sdrm[0]
-      linkage_list += sdrm[1]
-      aa_report_list += sdrm[2]
     end
+
+    seq_basename.gsub!(/\_P17/i, "_CA")
+    regions.each do |region|
+      if seq_basename =~ /\_#{region}/i
+        process_config[region] = sub_seq
+      end
+    end
+  end
+
+  process_config.each do |region_name, path_to_file|
+    seq_basename = File.basename(path_to_file)
+    seq_basename.gsub!(/\_P17/i, "_CA")
+    region = version_config.query_region(region_name.to_s)
+
+    puts "prcessing region: " + region.region
+
+    sh = ViralSeq::SeqHash.fa(path_to_file)
+
+    if sh.size < 3
+      puts "Less than 3 TCS for #{region.region}. Skipped."
+      next
+    end
+
+    run_filtering = sh.filter_for_drm(region)
+
+    summary_hash[region.region] = [
+      sh.size,
+      run_filtering[:a3g_seq].size,
+      run_filtering[:stop_codon_seq].size,
+      run_filtering[:filtered_seq].size,
+      run_filtering[:filtered_seq].pm
+    ].join(',')
+
+    if run_filtering[:filtered_seq].size < 1
+      puts "Warning: NO TCS passed the filter for #{region.region}. DRM analysis skipped."
+      next
+    end
+
+    run_filtering[:filtered_seq].write_nt_fa(File.join(filtered_seq_dir,seq_basename))
+
+    drm_results = run_filtering[:filtered_seq].drm(region)
+    point_mutation_list += drm_results[0]
+    linkage_list += drm_results[1]
+    aa_report_list += drm_results[2]
+
   end
 
   point_mutation_list.each do |record|
@@ -262,12 +212,13 @@ libs.each do |lib|
       pi_csv.each do |line|
         line.chomp!
         data = line.split(",")
-        tag = data[0].split("_")[-1].gsub(/\W/,"").to_sym
+        tag = data[0].split("_")[-1].gsub(/\W/,"")
         summary_hash[tag] += "," + data[1].to_f.round(4).to_s + "," + data[2].to_f.round(4).to_s
       end
-      [:PR, :RT, :IN, :V1V3, :P17].each do |regions|
-        next unless summary_hash[regions]
-        seq_summary_out.puts regions.to_s + "," + summary_hash[regions]
+      regions << "V1V3"
+      regions.each do |region|
+        next unless summary_hash[region]
+        seq_summary_out.puts region.to_s + "," + summary_hash[region]
       end
       File.unlink(out_r_csv)
     end
@@ -286,13 +237,13 @@ libs.each do |lib|
   tcs_RT = 0
   tcs_IN = 0
   tcs_V1V3 = 0
-  tcs_P17 = 0
+  tcs_CA = 0
   pi_RT = "NA"
   pi_V1V3 = "NA"
-  pi_P17 = "NA"
+  pi_CA = "NA"
   dist20_RT = "NA"
   dist20_V1V3 = "NA"
-  dist20_P17 = "NA"
+  dist20_CA = "NA"
   summary_lines.each do |line|
       data = line.chomp.split(",")
       if data[0] == "PR"
@@ -307,10 +258,10 @@ libs.each do |lib|
           tcs_V1V3 = data[1].to_i
           pi_V1V3 = data[6].to_f
           dist20_V1V3 = data[7].to_f
-      elsif data[0] == "P17"
-          tcs_P17 = data[4].to_i
-          pi_P17 = data[6].to_f
-          dist20_P17 = data[7].to_f
+      elsif data[0] == "CA"
+          tcs_CA = data[4].to_i
+          pi_CA = data[6].to_f
+          dist20_CA = data[7].to_f
       end
   end
 
@@ -334,6 +285,7 @@ libs.each do |lib|
   sdrm_PR = ""
   sdrm_RT = ""
   sdrm_IN = ""
+  sdrm_CA = ""
   sdrm_lines.each do |line|
       data = line.chomp.split(",")
       next if data[-1] == "*"
@@ -343,6 +295,8 @@ libs.each do |lib|
           sdrm_RT += abstract_line(data)
       elsif data[0] == "IN"
           sdrm_IN += abstract_line(data)
+      elsif data[0] == "CA"
+          sdrm_CA += abstract_line(data)
       end
   end
 
@@ -352,13 +306,13 @@ libs.each do |lib|
     tcs_RT: tcs_RT,
     tcs_IN: tcs_IN,
     tcs_V1V3: tcs_V1V3,
-    tcs_P17: tcs_P17,
+    tcs_CA: tcs_CA,
     pi_RT: pi_RT,
     pi_V1V3: pi_V1V3,
-    pi_P17: pi_P17,
+    pi_CA: pi_CA,
     dist20_RT: dist20_RT,
     dist20_V1V3: dist20_V1V3,
-    dist20_P17: dist20_P17,
+    dist20_CA: dist20_CA,
     recency: recency,
     dpi: dpi,
     dpi_lwr: dpi_lwr,
@@ -366,7 +320,8 @@ libs.each do |lib|
     possible_dual_infection: possible_dual_infection,
     sdrm_PR: sdrm_PR,
     sdrm_RT: sdrm_RT,
-    sdrm_IN: sdrm_IN
+    sdrm_IN: sdrm_IN,
+    sdrm_CA: sdrm_CA
   ]
 
   summary_json_out.puts JSON.pretty_generate(summary_json)
@@ -433,7 +388,7 @@ libs.each do |lib|
   pdf << CombinePDF.load(out_r_pdf) if File.exist?(out_r_pdf)
 
   pdf.number_pages location: [:bottom_right],
-  number_format: "Swanstrom\'s lab HIV SDRM Pipeline, version #{$sdrm_version_number} by S.Z. and M.U.C.   Page %s",
+  number_format: "Swanstrom\'s lab HIV SDRM Pipeline, TCS version #{ViralSeq::TCS_VERSION}, DRM config version #{version_config.drm_version}, by S.Z. and M.U.C.   Page %s",
   font_size: 6,
   opacity: 0.5
 
@@ -447,5 +402,7 @@ end
 log_file = File.join(File.dirname(indir), "sdrm_log.json")
 
 File.open(log_file, 'w') { |f| f.puts JSON.pretty_generate(log) }
+
+puts "TCS SDRM pipeline done. Exit 0."
 
 FileUtils.touch(File.join(outdir, ".done"))

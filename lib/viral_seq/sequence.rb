@@ -136,7 +136,32 @@ module ViralSeq
         end
       end
       return out_hash
-    end # end of #hcv_ns5a
+    end # end of #sdrm
+
+    # Similar to #sdrm but use a DRM list as a param
+
+    def check_drm(drm_list_single_type)
+      aa_array = self.aa_array
+      out_hash = {}
+
+      drm_list_single_type.each do |position, mut|
+        wt_aa = mut[0]
+        mut_aas = mut[1]
+        test_aa = aa_array[position - 1]
+        if test_aa.size == 1 and mut_aas.include?(test_aa)
+          out_hash[position] = [wt_aa, test_aa]
+        elsif test_aa.size > 1
+          test_aa_array = test_aa.split("")
+          mut_detected = test_aa_array & mut_aas
+
+          if !mut_detected.empty?
+            out_hash[position] = [wt_aa, mut_detected.join]
+          end
+
+        end
+      end
+      return out_hash
+    end
 
     # HIV sequence locator function, resembling HIV Sequence Locator from LANL
     #   # current version only supports nucleotide sequence, not for amino acid sequence.

@@ -44,9 +44,12 @@ require_relative "viral_seq/sdrm"
 require_relative "viral_seq/recency"
 require_relative "viral_seq/R"
 require_relative "viral_seq/recency_report"
+require_relative "viral_seq/drm_region_config.rb"
+require_relative "viral_seq/drm_version.rb"
 
 
 require "muscle_bio"
 require "json"
 require "securerandom"
 require "prawn"
+require "colorize"

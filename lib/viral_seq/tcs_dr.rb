@@ -5,7 +5,7 @@ module ViralSeq
   # run `tcs --dr_params [VERSION]` to pull the params json string for each version of DR.
   module TcsDr
     PARAMS = {
-      "v1" => {:platform_error_rate=>0.02,
+      "v1" => {:platform_error_rate=>0.01,
       :primer_pairs=>
        [{:region=>"RT",
          :cdna=>
@@ -68,7 +68,7 @@ module ViralSeq
          :ref_end=>7205..7210,
          :indel=>true,
          :trim=>false},
-         {:region=>"P17",
+         {:region=>"CA",
           :cdna=>
            "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCTNNNNNNNNNNNCAGTCAACAAGGTTTCTGTCATCCAATTTTTTAC",
           :forward=>
@@ -86,7 +86,7 @@ module ViralSeq
          ]
       },
 
-      "v2" => {:platform_error_rate=>0.02,
+      "v2" => {:platform_error_rate=>0.01,
       :primer_pairs=>
       [{:region=>"RT",
         :cdna=>
@@ -149,7 +149,7 @@ module ViralSeq
         :ref_end=>7205..7210,
         :indel=>true,
         :trim=>false},
-        {:region=>"P17",
+        {:region=>"CA",
           :cdna=>
           "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCTNNNNNNNNNNNCAGTCAACAAGGTTTCTGTCATCCAATTTTTTAC",
           :forward=>
@@ -165,7 +165,89 @@ module ViralSeq
           :indel=>true,
           :trim=>false}
         ]
-      }
+      },
+
+      "v3" => {:platform_error_rate=>0.01,
+      :primer_pairs=>
+      [{:region=>"RT",
+        :cdna=>
+          "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCTNNNNNNNNNNNCAGTAAGGAATGGAGGTTCTTTCTGATG",
+        :forward=>
+          "GCCTCCCTCGCGCCATCAGAGATGTGTATAAGAGACAGNNNNGGCCATTGACAGAAGAAAAAATAAAAGC",
+        :majority=>0,
+        :end_join=>true,
+        :end_join_option=>1,
+        :overlap=>0,
+        :TCS_QC=>true,
+        :ref_genome=>"HXB2",
+        :ref_start=>2648,
+        :ref_end=>3209,
+        :indel=>true,
+        :trim=>false},
+        {:region=>"PR",
+        :cdna=>
+          "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCTNNNNNNNNNTTAACCTTTGGGCCATCCATTCC",
+        :forward=>
+          "GCCTCCCTCGCGCCATCAGAGATGTGTATAAGAGACAGNNNNTCAGAGCAGACCAGAGCCAACAGCCCCA",
+        :majority=>0,
+        :end_join=>true,
+        :end_join_option=>3,
+        :TCS_QC=>true,
+        :ref_genome=>"HXB2",
+        :ref_start=>0,
+        :ref_end=>2591,
+        :indel=>true,
+        :trim=>true,
+        :trim_ref=>"HXB2",
+        :trim_ref_start=>2253,
+        :trim_ref_end=>2549},
+        {:region=>"IN",
+        :cdna=>
+          "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCTNNNNNNNNNNNCACAATCAKCACCTGCCATCTG",
+        :forward=>"GCCTCCCTCGCGCCATCAGAGATGTGTATAAGAGACAGNNNNGCAGAAGTTATYCCAGCAGAAACA",
+        :majority=>0,
+        :end_join=>true,
+        :end_join_option=>3,
+        :TCS_QC=>true,
+        :ref_genome=>"HXB2",
+        :ref_start=>4509,
+        :ref_end=>5048,
+        :indel=>true,
+        :trim=>false},
+        {:region=>"V1V3",
+        :cdna=>
+          "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCTNNNNNNNNNNNCAGTCCATTTTGCTYTAYTRABVTTACAATRTGC",
+        :forward=>
+          "GCCTCCCTCGCGCCATCAGAGATGTGTATAAGAGACAGNNNNTTATGGGATCAAAGCCTAAAGCCATGTGTA",
+        :majority=>0,
+        :end_join=>true,
+        :end_join_option=>1,
+        :overlap=>0,
+        :TCS_QC=>true,
+        :ref_genome=>"HXB2",
+        :ref_start=>6585,
+        :ref_end=>7205..7210,
+        :indel=>true,
+        :trim=>false},
+        {:region=>"CA",
+          :cdna=>
+          "GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCTNNNNNNNNNNNCAGTCAACAAGGTTTCTGTCATCCAATTTTTTAC",
+          :forward=>
+          "GCCTCCCTCGCGCCATCAGAGATGTGTATAAGAGACAGNNNNGTCAGCCAAAATTACCCTATAGTGC",
+          :majority=>0,
+          :end_join=>true,
+          :end_join_option=>1,
+          :overlap=>0,
+          :TCS_QC=>true,
+          :ref_genome=>"HXB2",
+          :ref_start=>1196,
+          :ref_end=>1725,
+          :indel=>true,
+          :trim=>false}
+        ]
+      },
+
+
     }
 
   end

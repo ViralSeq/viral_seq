@@ -154,7 +154,7 @@ module ViralSeq
         s = ViralSeq::Sequence.new(name,seq)
         s.translate(rf_label)
         aa[name] = s.aa_string
-        record = s.sdrm(:hiv_pr)
+        record = s.sdrm(:PI)
         mut_com << record
         record.each do |position,mutation|
           if mut[position]
@@ -386,7 +386,7 @@ module ViralSeq
         s = ViralSeq::Sequence.new(name,seq)
         s.translate(rf_label)
         aa[name] = s.aa_string
-        record = s.sdrm(:hiv_in, start_codon_number)
+        record = s.sdrm(:INSTI, start_codon_number)
         mut_com << record
         record.each do |position,mutation|
           if mut[position]
@@ -460,5 +460,209 @@ module ViralSeq
       return [point_mutation_list, linkage_list, report_list]
     end
 
+
+    # wrapper function for #a3g_hypermut and #stop_codon with ViralSeq::DrmRegionConfig as a param.
+
+    def filter_for_drm(region_config)
+      seq_coord = region_config.seq_coord
+      reading_frame_number = region_config.get_reading_frame_number
+
+      if !seq_coord["gap"]
+
+        a3g_check = self.a3g
+        a3g_seqs = a3g_check[:a3g_seq]
+        a3g_filtered_seqs = a3g_check[:filtered_seq]
+
+        stop_codon_check = a3g_filtered_seqs.stop_codon(reading_frame_number[0])
+        stop_codon_seqs = stop_codon_check[:with_stop_codon]
+        filtered_seqs = stop_codon_check[:without_stop_codon]
+
+        return {
+          filtered_seq: filtered_seqs,
+          a3g_seq: a3g_seqs,
+          stop_codon_seq: stop_codon_seqs
+        }
+
+      else
+
+        r1_length, r2_length = region_config.r1_r2_length.values
+
+        r1_seqs = {}
+        r2_seqs = {}
+
+        self.dna_hash.each do |k,v|
+            r1_seqs[k] = v[0,r1_length]
+            r2_seqs[k] = v[r1_length, r2_length]
+        end
+
+        r1_sh = ViralSeq::SeqHash.new(r1_seqs)
+        r2_sh = ViralSeq::SeqHash.new(r2_seqs)
+
+        a3g_seqs_r1 = r1_sh.a3g[:a3g_seq]
+        a3g_seqs_r2 = r2_sh.a3g[:a3g_seq]
+
+        stop_codon_r1 = r1_sh.stop_codon(reading_frame_number[0])[:with_stop_codon]
+        stop_codon_r2 = r2_sh.stop_codon(reading_frame_number[1])[:with_stop_codon]
+
+        a3g_seq_keys = (a3g_seqs_r1.dna_hash.keys | a3g_seqs_r2.dna_hash.keys)
+        a3g_seqs = ViralSeq::SeqHash.new(self.dna_hash.select {|k, _v| a3g_seq_keys.include? k})
+
+        stop_codon_keys = (stop_codon_r1.dna_hash.keys | stop_codon_r2.dna_hash.keys)
+        stop_codon_seqs = ViralSeq::SeqHash.new(self.dna_hash.select {|k, _v| stop_codon_keys.include? k})
+
+        reject_keys = (a3g_seq_keys | stop_codon_keys)
+
+        filtered_seqs = ViralSeq::SeqHash.new(self.dna_hash.reject { |k, _v| reject_keys.include? k })
+
+        return {
+          filtered_seq: filtered_seqs,
+          a3g_seq: a3g_seqs,
+          stop_codon_seq: stop_codon_seqs
+        }
+
+      end
+
+    end # end of #filter_for_drm
+
+
+    # insert the partial genome into the whole gene for HIV resistance analysis
+
+
+    def complete_with_ref(region_config)
+      complete_seqs = {}
+      seq_coord = region_config.seq_coord
+
+      ref = ViralSeq::RefSeq.get(region_config.ref_info["ref_type"].to_sym)
+      a = region_config.ref_info["ref_coord"][0]
+      b = region_config.ref_info["ref_coord"][1]
+      c = seq_coord["minimum"]
+      d = seq_coord["maximum"]
+
+      if seq_coord["gap"]
+        e = seq_coord["gap"]["minimum"]
+        f = seq_coord["gap"]["maximum"]
+
+        self.dna_hash.each do |k,v|
+          complete_seqs[k] = ref[(a-1)..(c-2)] + v[0,(e-c)] + ref[(e-1)..(f-1)] + v[(e-c)..-1] + ref[d..(b-1)]
+        end
+      else
+        self.dna_hash.each do |k,v|
+          complete_seqs[k] = ref[(a-1)..(c-2)] + v + ref[d..(b-1)]
+        end
+      end
+
+      return ViralSeq::SeqHash.new(complete_seqs)
+    end #end of #complete_with_ref
+
+
+    # function to interpret HIV drms with ViralSeq::DrmRegionConfig as a param.
+
+    def drm(region_config)
+      region = region_config.region
+      fdr_hash = self.fdr # must run fdr before the completion of the sequences
+
+      complete_gene = self.complete_with_ref(region_config)
+      sequences = complete_gene.dna_hash
+
+      n_seq = sequences.size
+      aa = {}
+      mut = {}
+      mut_com = []
+      point_mutation_list = []
+
+      drm_list = region_config.drm_list
+
+      sequences.each do |name, seq|
+        s = ViralSeq::Sequence.new(name, seq)
+        s.translate
+        aa[name] = s.aa_string
+
+        records_per_seq = {}
+
+        drm_list.each do |drm_class, list|
+
+          mut[drm_class] = {}  if !mut[drm_class]
+
+          record = s.check_drm(list)
+          records_per_seq = records_per_seq.merge(record)
+
+          record.each do |position, mutation|
+            if !mut[drm_class][position]
+              mut[drm_class][position] = [mutation[0],[]]
+            end
+            mut[drm_class][position][1] << mutation[1]
+          end
+        end
+
+        mut_com << records_per_seq.sort.to_h
+      end
+
+      mut.each do |drm_class, mutations|
+        mutations.each do |position, mutation|
+          wt = mutation[0]
+          mut_list = mutation[1]
+          count_mut_list = mut_list.count_freq
+          count_mut_list.each do |m,number|
+            ci = ViralSeq::Math::BinomCI.new(number, n_seq)
+            fdr = fdr_hash[number].round(5)
+            label = fdr >= 0.05 ? "*" : ""
+            point_mutation_list << [drm_class, n_seq, position, wt, m, number, ci.mean.round(5), ci.lower.round(5), ci.upper.round(5), fdr, label]
+          end
+        end
+      end
+
+      point_mutation_list.sort_by! {|record| record[2]}
+
+      link = mut_com.count_freq
+      link2 = {}
+      link.each do |k,v|
+        pattern = []
+        if k.size == 0
+          pattern = ['WT']
+        else
+          k.each do |p,m|
+            pattern << (m[0] + p.to_s + m[1])
+          end
+        end
+        link2[pattern.join("+")] = v
+      end
+      linkage_list = []
+      link2.sort_by{|_key,value|value}.reverse.to_h.each do |k,v|
+        ci = ViralSeq::Math::BinomCI.new(v, n_seq)
+        label = ""
+        linkage_list << [region, n_seq, k, v, ci.mean.round(5), ci.lower.round(5), ci.upper.round(5), label]
+      end
+
+      report_list = []
+
+      div_aa = {}
+      aa_start = 1
+
+      aa_size = aa.values[0].size - 1
+
+      (0..aa_size).to_a.each do |p|
+        aas = []
+        aa.values.each do |r1|
+          aas << r1[p]
+        end
+        count_aas = aas.count_freq
+        div_aa[aa_start] = count_aas.sort_by{|_k,v|v}.reverse.to_h
+        aa_start += 1
+      end
+
+      div_aa.each do |k,v|
+        record = [region, k, n_seq]
+        ViralSeq::AMINO_ACID_LIST.each do |amino_acid|
+          aa_count = v[amino_acid]
+          record << (aa_count.to_f/n_seq*100).round(4)
+        end
+        report_list << record
+      end
+
+      return [point_mutation_list, linkage_list, report_list]
+
+    end
+
   end # end of ViralSeq::SeqHash
+
 end # end of ViralSeq

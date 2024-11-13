@@ -1,0 +1,684 @@
+{
+    "HCV_NS5A": [
+      {
+        "position": 28,
+        "wild-type": "M",
+        "mutations": [
+          "T"
+        ]
+      },
+      {
+        "position": 30,
+        "wild-type": "L",
+        "mutations": [
+          "H",
+          "K",
+          "R",
+          "Q",
+          "A",
+          "S",
+          "D"
+        ]
+      },
+      {
+        "position": 31,
+        "wild-type": "L",
+        "mutations": [
+          "M",
+          "V",
+          "F"
+        ]
+      },
+      {
+        "position": 32,
+        "wild-type": "P",
+        "mutations": [
+          "L"
+        ]
+      },
+      {
+        "position": 44,
+        "wild-type": "K",
+        "mutations": [
+          "R"
+        ]
+      },
+      {
+        "position": 58,
+        "wild-type": "H",
+        "mutations": [
+          "D",
+          "P",
+          "S"
+        ]
+      },
+      {
+        "position": 64,
+        "wild-type": "T",
+        "mutations": [
+          "A",
+          "S"
+        ]
+      },
+      {
+        "position": 77,
+        "wild-type": "P",
+        "mutations": [
+          "A",
+          "S"
+        ]
+      },
+      {
+        "position": 78,
+        "wild-type": "R",
+        "mutations": [
+          "K"
+        ]
+      },
+      {
+        "position": 79,
+        "wild-type": "T",
+        "mutations": [
+          "A"
+        ]
+      },
+      {
+        "position": 83,
+        "wild-type": "T",
+        "mutations": [
+          "M"
+        ]
+      },
+      {
+        "position": 85,
+        "wild-type": "S",
+        "mutations": [
+          "N",
+          "H",
+          "Y"
+        ]
+      },
+      {
+        "position": 92,
+        "wild-type": "A",
+        "mutations": [
+          "P",
+          "T",
+          "K",
+          "E"
+        ]
+      },
+      {
+        "position": 93,
+        "wild-type": "Y",
+        "mutations": [
+          "C",
+          "F",
+          "H",
+          "N"
+        ]
+      },
+      {
+        "position": 107,
+        "wild-type": "K",
+        "mutations": [
+          "T",
+          "S"
+        ]
+      },
+      {
+        "position": 121,
+        "wild-type": "I",
+        "mutations": [
+          "V"
+        ]
+      },
+      {
+        "position": 135,
+        "wild-type": "T",
+        "mutations": [
+          "A"
+        ]
+      }
+    ],
+    "NRTI": [
+      {
+        "position": 41,
+        "wild-type": "M",
+        "mutations": [
+          "L"
+        ]
+      },
+      {
+        "position": 65,
+        "wild-type": "K",
+        "mutations": [
+          "R"
+        ]
+      },
+      {
+        "position": 67,
+        "wild-type": "D",
+        "mutations": [
+          "N",
+          "G",
+          "E"
+        ]
+      },
+      {
+        "position": 69,
+        "wild-type": "T",
+        "mutations": [
+          "D"
+        ]
+      },
+      {
+        "position": 70,
+        "wild-type": "K",
+        "mutations": [
+          "R",
+          "E"
+        ]
+      },
+      {
+        "position": 74,
+        "wild-type": "L",
+        "mutations": [
+          "V",
+          "I"
+        ]
+      },
+      {
+        "position": 75,
+        "wild-type": "V",
+        "mutations": [
+          "M",
+          "T",
+          "A",
+          "S"
+        ]
+      },
+      {
+        "position": 77,
+        "wild-type": "F",
+        "mutations": [
+          "L"
+        ]
+      },
+      {
+        "position": 115,
+        "wild-type": "Y",
+        "mutations": [
+          "F"
+        ]
+      },
+      {
+        "position": 116,
+        "wild-type": "F",
+        "mutations": [
+          "Y"
+        ]
+      },
+      {
+        "position": 151,
+        "wild-type": "Q",
+        "mutations": [
+          "M"
+        ]
+      },
+      {
+        "position": 184,
+        "wild-type": "M",
+        "mutations": [
+          "V",
+          "I"
+        ]
+      },
+      {
+        "position": 210,
+        "wild-type": "L",
+        "mutations": [
+          "W"
+        ]
+      },
+      {
+        "position": 215,
+        "wild-type": "T",
+        "mutations": [
+          "Y",
+          "F",
+          "I",
+          "C",
+          "D",
+          "V",
+          "E"
+        ]
+      },
+      {
+        "position": 219,
+        "wild-type": "K",
+        "mutations": [
+          "Q",
+          "E",
+          "N",
+          "R"
+        ]
+      }
+    ],
+    "NNRTI": [
+      {
+        "position": 98,
+        "wild-type": "A",
+        "mutations": [
+          "G"
+        ]
+      },
+      {
+        "position": 100,
+        "wild-type": "L",
+        "mutations": [
+          "I"
+        ]
+      },
+      {
+        "position": 101,
+        "wild-type": "K",
+        "mutations": [
+          "E",
+          "P"
+        ]
+      },
+      {
+        "position": 103,
+        "wild-type": "K",
+        "mutations": [
+          "N",
+          "S"
+        ]
+      },
+      {
+        "position": 106,
+        "wild-type": "V",
+        "mutations": [
+          "M",
+          "A"
+        ]
+      },
+      {
+        "position": 138,
+        "wild-type": "E",
+        "mutations": [
+          "A",
+          "K",
+          "G",
+          "Q"
+        ]
+      },
+      {
+        "position": 179,
+        "wild-type": "V",
+        "mutations": [
+          "F",
+          "D"
+        ]
+      },
+      {
+        "position": 181,
+        "wild-type": "Y",
+        "mutations": [
+          "C",
+          "I",
+          "V"
+        ]
+      },
+      {
+        "position": 188,
+        "wild-type": "Y",
+        "mutations": [
+          "L",
+          "H",
+          "C"
+        ]
+      },
+      {
+        "position": 190,
+        "wild-type": "G",
+        "mutations": [
+          "A",
+          "S",
+          "E",
+          "C",
+          "T",
+          "V"
+        ]
+      },
+      {
+        "position": 225,
+        "wild-type": "P",
+        "mutations": [
+          "H"
+        ]
+      },
+      {
+        "position": 230,
+        "wild-type": "M",
+        "mutations": [
+          "L"
+        ]
+      }
+    ],
+    "PI": [
+      {
+        "position": 23,
+        "wild-type": "L",
+        "mutations": [
+          "I"
+        ]
+      },
+      {
+        "position": 24,
+        "wild-type": "L",
+        "mutations": [
+          "I"
+        ]
+      },
+      {
+        "position": 30,
+        "wild-type": "D",
+        "mutations": [
+          "N"
+        ]
+      },
+      {
+        "position": 32,
+        "wild-type": "V",
+        "mutations": [
+          "I"
+        ]
+      },
+      {
+        "position": 46,
+        "wild-type": "M",
+        "mutations": [
+          "I",
+          "L"
+        ]
+      },
+      {
+        "position": 47,
+        "wild-type": "I",
+        "mutations": [
+          "V",
+          "A"
+        ]
+      },
+      {
+        "position": 48,
+        "wild-type": "G",
+        "mutations": [
+          "V",
+          "M"
+        ]
+      },
+      {
+        "position": 50,
+        "wild-type": "I",
+        "mutations": [
+          "V",
+          "L"
+        ]
+      },
+      {
+        "position": 53,
+        "wild-type": "F",
+        "mutations": [
+          "L"
+        ]
+      },
+      {
+        "position": 54,
+        "wild-type": "I",
+        "mutations": [
+          "V",
+          "L",
+          "M",
+          "T",
+          "A",
+          "S"
+        ]
+      },
+      {
+        "position": 73,
+        "wild-type": "G",
+        "mutations": [
+          "S",
+          "T",
+          "C",
+          "A"
+        ]
+      },
+      {
+        "position": 76,
+        "wild-type": "L",
+        "mutations": [
+          "V"
+        ]
+      },
+      {
+        "position": 82,
+        "wild-type": "V",
+        "mutations": [
+          "A",
+          "T",
+          "S",
+          "F",
+          "L",
+          "C",
+          "M"
+        ]
+      },
+      {
+        "position": 83,
+        "wild-type": "N",
+        "mutations": [
+          "D"
+        ]
+      },
+      {
+        "position": 84,
+        "wild-type": "I",
+        "mutations": [
+          "V",
+          "A",
+          "C"
+        ]
+      },
+      {
+        "position": 88,
+        "wild-type": "N",
+        "mutations": [
+          "D",
+          "S"
+        ]
+      },
+      {
+        "position": 90,
+        "wild-type": "L",
+        "mutations": [
+          "M"
+        ]
+      }
+    ],
+    "INSTI": [
+      {
+        "position": 66,
+        "wild-type": "T",
+        "mutations": [
+          "A",
+          "I",
+          "K"
+        ]
+      },
+      {
+        "position": 74,
+        "wild-type": "L",
+        "mutations": [
+          "M"
+        ]
+      },
+      {
+        "position": 92,
+        "wild-type": "E",
+        "mutations": [
+          "Q"
+        ]
+      },
+      {
+        "position": 95,
+        "wild-type": "Q",
+        "mutations": [
+          "K"
+        ]
+      },
+      {
+        "position": 97,
+        "wild-type": "T",
+        "mutations": [
+          "A"
+        ]
+      },
+      {
+        "position": 121,
+        "wild-type": "F",
+        "mutations": [
+          "Y"
+        ]
+      },
+      {
+        "position": 140,
+        "wild-type": "G",
+        "mutations": [
+          "A",
+          "S",
+          "C"
+        ]
+      },
+      {
+        "position": 143,
+        "wild-type": "Y",
+        "mutations": [
+          "C",
+          "H",
+          "R"
+        ]
+      },
+      {
+        "position": 147,
+        "wild-type": "S",
+        "mutations": [
+          "G"
+        ]
+      },
+      {
+        "position": 148,
+        "wild-type": "Q",
+        "mutations": [
+          "H",
+          "K",
+          "R"
+        ]
+      },
+      {
+        "position": 263,
+        "wild-type": "R",
+        "mutations": [
+          "K"
+        ]
+      },
+      {
+        "position": 155,
+        "wild-type": [
+          "N",
+          [
+            "S",
+            "H"
+          ]
+        ],
+        "mutations": [
+          "R",
+          [
+            "K"
+          ]
+        ]
+      }
+    ],
+    "CAI": [
+      {
+        "position": 56,
+        "wild-type": "L",
+        "mutations": [
+          "I"
+        ]
+      },
+      {
+        "position": 57,
+        "wild-type": "N",
+        "mutations": [
+          "S"
+        ]
+      },
+      {
+        "position": 66,
+        "wild-type": "M",
+        "mutations": [
+          "I"
+        ]
+      },
+      {
+        "position": 67,
+        "wild-type": "Q",
+        "mutations": [
+          "H",
+          "Y",
+          "N",
+          "K"
+        ]
+      },
+      {
+        "position": 70,
+        "wild-type": "K",
+        "mutations": [
+          "N",
+          "H",
+          "R",
+          "S"
+        ]
+      },
+      {
+        "position": 74,
+        "wild-type": "N",
+        "mutations": [
+          "D",
+          "S"
+        ]
+      },
+      {
+        "position": 105,
+        "wild-type": "A",
+        "mutations": [
+          "T",
+          "S",
+          "E"
+        ]
+      },
+      {
+        "position": 107,
+        "wild-type": "T",
+        "mutations": [
+          "N",
+          "S",
+          "A"
+        ]
+      }
+    ]
+}

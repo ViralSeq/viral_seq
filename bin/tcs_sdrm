@@ -215,8 +215,8 @@ libs.each do |lib|
         tag = data[0].split("_")[-1].gsub(/\W/,"")
         summary_hash[tag] += "," + data[1].to_f.round(4).to_s + "," + data[2].to_f.round(4).to_s
       end
-      regions << "V1V3"
-      regions.each do |region|
+      regions_for_summary = regions.dup.push("V1V3")
+      regions_for_summary.each do |region|
         next unless summary_hash[region]
         seq_summary_out.puts region.to_s + "," + summary_hash[region]
       end

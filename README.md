@@ -187,6 +187,10 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
+### Version-1.9.1-12022024
+
+  1. Fixed a bug in the `tcs_sdrm` pipeline.
+
 ### Version-1.9.0-11132024
 
   1. `ViralSeq::TcsCore::validate_file_name` will not report errors when non-sequence data in the folder, instead these files will be ignored.

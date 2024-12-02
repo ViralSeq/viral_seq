@@ -14,10 +14,7 @@ module ViralSeq
       nt = ['A','T','C','G']
       pid_pool = ['A','T','C','G']
       (l-1).times do
-        pid_pool = pid_pool.product(nt)
-        pid_pool.collect! do |v|
-          v.join("")
-        end
+        pid_pool = pid_pool.product(nt).map(&:join)
       end
       return pid_pool
     end # end of .generate_primer_id_pool

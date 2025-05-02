@@ -14,7 +14,9 @@ module ViralSeq
 
     # check if required R packages is installed.
     def self.check_R_packages
-      if system "Rscript #{File.join( ViralSeq.root, "viral_seq", "util", "check_env.r")}"
+      file = File.join(ViralSeq.root, "viral_seq", "util", "check_env.r")
+      safe_file = Shellwords.escape(file)
+      if system "Rscript #{safe_file}"
         return 0
       else
         raise "Non-zero exit code. Error happens when checking required R packages."

@@ -37,6 +37,9 @@ Gem::Specification.new do |spec|
   # muscle_bio gem required
   spec.add_runtime_dependency "muscle_bio", "= 0.4"
 
+  # virust-locator-ruby required
+  spec.add_runtime_dependency "virust-locator-ruby", "~> 0.3"
+
   # colorize gem required
   spec.add_runtime_dependency "colorize", "~> 0.1"
 
@@ -47,4 +50,6 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "combine_pdf", "~> 1.0", '>= 1.0.0'
 
   spec.requirements << 'R required for some functions'
+
+  spec.add_dependency "shellwords", "~> 0.2"
 end

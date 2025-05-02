@@ -38,7 +38,7 @@ def myparser
       options[:outfile] = o
     end
 
-    opts.on('-r', '--ref_option OPTION', "reference genome option, choose from #{"`HXB2` (default), `NL43`, `MAC239`".blue.bold}") do |o|
+    opts.on('-r', '--ref_option OPTION', "reference genome option, choose from #{"`HXB2` (default), `SIVmm239`".blue.bold}") do |o|
       options[:ref_option] = o.to_sym
     end
 
@@ -84,7 +84,7 @@ begin
   seqs = ViralSeq::SeqHash.fa(seq_file)
   opt =  options[:ref_option] ? options[:ref_option] : :HXB2
 
-  unless [:HXB2, :NL43, :MAC239].include? opt
+  unless [:HXB2, :SIVmm239].include? opt
     puts "Reference option `#{opt}` not recognized, using `HXB2` as the reference genome.".red.bold
     opt = :HXB2
   end

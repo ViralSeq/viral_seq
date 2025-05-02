@@ -331,6 +331,10 @@ module ViralSeq
           return false
         elsif seq[1..-2] =~ /N/ # sequences with ambiguities except the 1st and last position removed
           return false
+        elsif seq =~ /G{11}/ # a string of poly-G indicates poor quanlity in 2-color chemistry
+          return false
+        elsif seq =~ /C{11}/ # a string of poly-C indicates poor quanlity in 2-color chemistry
+          return false
         elsif seq =~ /A{11}/ # a string of poly-A indicates adaptor sequence
           return false
         elsif seq =~ /T{11}/ # a string of poly-T indicates adaptor sequence

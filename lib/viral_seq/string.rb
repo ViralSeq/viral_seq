@@ -56,13 +56,13 @@ class String
     Regexp.new match
   end
 
-  # parse the nucleotide sequences as an Array of Array 
+  # parse the nucleotide sequences as an Array of Array
   # @return [Array] Array of Array at each position
   # @example parse a sequence with ambiguities to Array of Array
   #   "ATRWCG".nt_to_array
   #   => [["A"], ["T"], ["A", "G"], ["A", "T"], ["C"], ["G"]]
-  
-  def nt_to_array 
+
+  def nt_to_array
     return_array = []
     self.each_char.each do |base|
       base_array = base.to_list
@@ -75,9 +75,6 @@ class String
   # compare the given nt sequence string with the ref sequence string
   # @param ref [String] the ref sequence string to compare with
   # @return [Interger] Number of differences
-  # @example parse a sequence with ambiguities to Array of Array
-  #   "ATRWCG".nt_to_array
-  #   => [["A"], ["T"], ["A", "G"], ["A", "T"], ["C"], ["G"]]
 
   def nt_diff(ref)
     count_diff = 0

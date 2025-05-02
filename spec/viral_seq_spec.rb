@@ -68,7 +68,7 @@ RSpec.describe ViralSeq do
 
   it "can filter HIV sequences by locations" do
     sequence_hash = ViralSeq::SeqHash.fa('spec/sample_files/sample_seq.fasta')
-    filtered_sequence_hash = sequence_hash.hiv_seq_qc(4384, 4751, false, :HXB2, 'muscle')
+    filtered_sequence_hash = sequence_hash.hiv_seq_qc(4384, 4751, false, :HXB2)
     expect(filtered_sequence_hash.dna_hash.size).to eq 4
   end
 

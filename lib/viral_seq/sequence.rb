@@ -165,7 +165,7 @@ module ViralSeq
 
     # HIV sequence locator function, resembling HIV Sequence Locator from LANL
     #   # current version only supports nucleotide sequence, not for amino acid sequence.
-    # @param ref_option [Symbol], name of reference genomes, options are `:HXB2`, `:NL43`, `:MAC239`
+    # @param ref_option [Symbol], name of reference genomes, options are `:HXB2`, `:SIVmm239`
     # @param path_to_muscle [String], path to the muscle executable, if not provided, use MuscleBio to run Muscle
     # @return [Array] an array of the following info:
     #
@@ -181,182 +181,32 @@ module ViralSeq
     #
     #   aligned_reference_sequence (String)
     #
-    # @example identify the location of the input sequence on the NL43 genome
+    # @example identify the location of the input sequence on the HXB2 genome
     #   sequence = 'AGCAGATGATACAGTATTAGAAGAAATAAATTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAATATGATC'
     #   s = ViralSeq::Sequence.new('my_sequence', sequence)
-    #   loc = s.locator(:NL43)
-    #   h = ViralSeq::SeqHash.new; h.dna_hash['NL43'] = loc[5]; h.dna_hash[s.name] = loc[4]
+    #   loc = s.locator(:HXB2)
+    #   h = ViralSeq::SeqHash.new; h.dna_hash['HXB2'] = loc[5]; h.dna_hash[s.name] = loc[4]
     #   rs_string = h.to_rsphylip.split("\n")[1..-1].join("\n") # get a relaxed phylip format string for display of alignment.
-    #   puts "The input sequence \"#{s.name}\" is located on the NL43 nt sequence from #{loc[0].to_s} to #{loc[1].to_s}.\nIt is #{loc[2].to_s}% similar to the reference.\nIt #{loc[3]? "does" : "does not"} have indels.\nThe alignment is\n#{rs_string}"
-    #   => The input sequence "my_sequence" is located on the NL43 nt sequence from 2333 to 2433.
-    #   => It is 98.0% similar to the reference.
+    #   puts "The input sequence \"#{s.name}\" is located on the HXB2 nt sequence from #{loc[0].to_s} to #{loc[1].to_s}.\nIt is #{loc[2].round(1).to_s}% similar to the reference.\nIt #{loc[3]? "does" : "does not"} have indels.\nThe alignment is\n#{rs_string}"
+    #   => The input sequence "my_sequence" is located on the HXB2 nt sequence from 2333 to 2433.
+    #   => It is 97.0% similar to the reference.
     #   => It does not have indels.
     #   => The alignment is
-    #   => NL43         AGCAGATGAT ACAGTATTAG AAGAAATGAA TTTGCCAGGA AGATGGAAAC CAAAAATGAT AGGGGGAATT GGAGGTTTTA TCAAAGTAAG ACAGTATGAT C
+    #   => HXB2         AGCAGATGAT ACAGTATTAG AAGAAATGAA TTTGCCAGGA AGATGGAAAC CAAAAATGAT AGGGGGAATT GGAGGTTTTA TCAAAGTAAG ACAGTATGAT C
     #   => my_sequence  AGCAGATGAT ACAGTATTAG AAGAAATAAA TTTGCCAGGA AGATGGAAAC CAAAAATGAT AGGGGGAATT GGAGGTTTTA TCAAAGTAAG ACAATATGAT C
     # @see https://www.hiv.lanl.gov/content/sequence/LOCATE/locate.html LANL Sequence Locator
-
-    def locator(ref_option = :HXB2, path_to_muscle = false)
+    def locator(ref_option = :HXB2, algorithm = 1)
       seq = self.dna
-      ori_ref = ViralSeq::RefSeq.get(ref_option)
-
+      ref = ref_option.to_s
       begin
-        ori_ref_l = ori_ref.size
-        l1 = 0
-        l2 = 0
-
-        aln_seq = ViralSeq::Muscle.align(ori_ref, seq, :Super5, path_to_muscle)
-        aln_test = aln_seq[1]
-        aln_test =~ /^(\-*)(\w.*\w)(\-*)$/
-        gap_begin = $1.size
-        gap_end = $3.size
-        aln_test2 = $2
-        ref = aln_seq[0]
-        ref = ref[gap_begin..(-gap_end-1)]
-        ref_size = ref.size
-        if ref_size > 1.3*(seq.size)
-          l1 = l1 + gap_begin
-          l2 = l2 + gap_end
-          max_seq = aln_test2.scan(/[ACGT]+/).max_by(&:length)
-          aln_test2 =~ /#{max_seq}/
-          before_aln_seq = $`
-          before_aln = $`.size
-          post_aln_seq = $'
-          post_aln = $'.size
-          before_aln_seq_size = before_aln_seq.scan(/[ACGT]+/).join("").size
-          b1 = (1.3 * before_aln_seq_size).to_i
-          post_aln_seq_size = post_aln_seq.scan(/[ACGT]+/).join("").size
-          b2 = (1.3 * post_aln_seq_size).to_i
-          if (before_aln > seq.size) and (post_aln <= seq.size)
-            ref = ref[(before_aln - b1)..(ref_size - post_aln - 1)]
-            l1 = l1 + (before_aln - b1)
-          elsif (post_aln > seq.size) and (before_aln <= seq.size)
-            ref = ref[before_aln..(ref_size - post_aln - 1 + b2)]
-            l2 = l2 + post_aln - b2
-          elsif (post_aln > seq.size) and (before_aln > seq.size)
-            ref = ref[(before_aln - b1)..(ref_size - post_aln - 1 + b2)]
-            l1 = l1 + (before_aln - b1)
-            l2 = l2 + (post_aln - b2)
-          end
-
-          aln_seq = ViralSeq::Muscle.align(ref, seq, :Super5, path_to_muscle)
-          aln_test = aln_seq[1]
-          aln_test =~ /^(\-*)(\w.*\w)(\-*)$/
-          gap_begin = $1.size
-          gap_end = $3.size
-          ref = aln_seq[0]
-          ref = ref[gap_begin..(-gap_end-1)]
-        end
-
-        aln_test = aln_seq[1]
-        aln_test =~ /^(\-*)(\w.*\w)(\-*)$/
-        gap_begin = $1.size
-        gap_end = $3.size
-        aln_test = $2
-        aln_test =~ /^(\w+)(\-*)\w/
-        s1 = $1.size
-        g1 = $2.size
-        aln_test =~ /\w(\-*)(\w+)$/
-        s2 = $2.size
-        g2 = $1.size
-
-        l1 = l1 + gap_begin
-        l2 = l2 + gap_end
-        repeat = 0
-
-        if g1 == g2 and (s1 + g1 + s2) == ref.size
-          if s1 > s2 and g2 >= s2
-            ref = ref[0..(-g2-1)]
-            repeat = 1
-            l2 = l2 + g2
-          elsif s1 < s2 and g1 >= s1
-            ref = ref[g1..-1]
-            repeat = 1
-            l1 = l1 + g1
-          end
+        loc = VirustLocator::Locator.exec(seq, "nt", algorithm, ref).split("\t")
+        loc[0] = loc[0].to_i
+        loc[1] = loc[1].to_i
+        loc[2] = loc[2].to_f.round(1)
+        if loc[3].to_s.downcase == "true"
+          loc[3] = true
         else
-          if g1 >= s1
-            ref = ref[g1..-1]
-            repeat = 1
-            l1 = l1 + g1
-          end
-          if g2 >= s2
-            ref = ref[0..(-g2 - 1)]
-            repeat = 1
-            l2 = l2 + g2
-          end
-        end
-
-        while repeat == 1
-          aln_seq = ViralSeq::Muscle.align(ref, seq, :Super5, path_to_muscle)
-          aln_test = aln_seq[1]
-          aln_test =~ /^(\-*)(\w.*\w)(\-*)$/
-          gap_begin = $1.size
-          gap_end = $3.size
-          aln_test = $2
-          aln_test =~ /^(\w+)(\-*)\w/
-          s1 = $1.size
-          g1 = $2.size
-          aln_test =~ /\w(\-*)(\w+)$/
-          s2 = $2.size
-          g2 = $1.size
-          ref = aln_seq[0]
-          ref = ref[gap_begin..(-gap_end-1)]
-          l1 = l1 + gap_begin
-          l2 = l2 + gap_end
-          repeat = 0
-          if g1 >= s1
-            ref = ref[g1..-1]
-            repeat = 1
-            l1 = l1 + g1
-          end
-          if g2 >= s2
-            ref = ref[0..(-g2 - 1)]
-            repeat = 1
-            l2 = l2 + g2
-          end
-        end
-        ref = ori_ref[l1..(ori_ref_l - l2 - 1)]
-
-        aln_seq = ViralSeq::Muscle.align(ref, seq, :Super5, path_to_muscle)
-        aln_test = aln_seq[1]
-        ref = aln_seq[0]
-
-        #refine alignment
-
-        if ref =~ /^(\-+)/
-          l1 = l1 - $1.size
-        elsif ref =~ /(\-+)$/
-          l2 = l2 - $1.size
-        end
-
-        if (ori_ref_l - l2 - 1) >= l1
-          ref = ori_ref[l1..(ori_ref_l - l2 - 1)]
-          aln_seq = ViralSeq::Muscle.align(ref, seq, :Super5, path_to_muscle)
-          aln_test = aln_seq[1]
-          ref = aln_seq[0]
-
-          ref_size = ref.size
-          sim_count = 0
-          (0..(ref_size-1)).each do |n|
-            ref_base = ref[n]
-            test_base = aln_test[n]
-            sim_count += 1 if ref_base == test_base
-          end
-          similarity = (sim_count/ref_size.to_f*100).round(1)
-
-          loc_p1 = l1 + 1
-          loc_p2 = ori_ref_l - l2
-          if seq.size != (loc_p2 - loc_p1 + 1)
-              indel = true
-          elsif aln_test.include?("-")
-              indel = true
-          else
-              indel = false
-          end
-          return [loc_p1,loc_p2,similarity,indel,aln_test,ref]
-        else
-          return [0,0,0,0,0,0,0]
+          loc[3] = false
         end
       rescue => e
         puts "Unexpected error occured."
@@ -366,12 +216,13 @@ module ViralSeq
         puts "ViralSeq.sequence_locator returns nil"
         return nil
       end
-    end # end of locator
+      return loc
+    end #end of locator
 
     # Given start and end positions on the reference genome, return a sub-sequence of the target sequence in that range
     # @param p1 [Integer] start position number on the reference genome
     # @param p2 [Integer] end position number on the reference genome
-    # @param ref_option [Symbol], name of reference genomes, options are `:HXB2`, `:NL43`, `:MAC239`
+    # @param ref_option [Symbol], name of reference genomes, options are `:HXB2`, `:SIVmm239`
     # @param path_to_muscle [String], path to the muscle executable, if not provided, use MuscleBio to run Muscle
     # @return [ViralSeq::Sequence, nil] a new ViralSeq::Sequence object that of input range on the reference genome or nil
     #   if either the start or end position is beyond the range of the target sequence.
@@ -381,8 +232,8 @@ module ViralSeq
     #   s.sequence_clip(2333, 2433, :HXB2).dna
     #   => "AGCAGATGATACAGTATTAGAAGAAATAAATTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAATATGATC"
 
-    def sequence_clip(p1 = 0, p2 = 0, ref_option = :HXB2, path_to_muscle = false)
-      loc = self.locator(ref_option, path_to_muscle)
+    def sequence_clip(p1 = 0, p2 = 0, ref_option = :HXB2)
+      loc = self.locator(ref_option)
       l1 = loc[0]
       l2 = loc[1]
       if (p1 >= l1) & (p2 <= l2)

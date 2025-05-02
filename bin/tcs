@@ -27,9 +27,8 @@
 # run `tcs -j` to generate param json file.
 
 def gem_installed?(gem_name)
-  found_gem = false
   begin
-    found_gem = Gem::Specification.find_by_name(gem_name)
+    Gem::Specification.find_by_name(gem_name)
   rescue Gem::LoadError
     return false
   else
@@ -217,8 +216,8 @@ begin
     ViralSeq::TcsCore.log_and_abort log, "No primer information. Script terminated."
   end
 
-
   primers.each do |primer|
+
     summary_json = {}
     summary_json[:warnings] = []
     summary_json[:tcs_version] = ViralSeq::TCS_VERSION
@@ -470,6 +469,34 @@ begin
       f.puts JSON.pretty_generate(pid_json)
     end
 
+    filter_r1 = nil
+    filter_r2 = nil
+    r1_passed_seq = nil
+    r2_passed_seq = nil
+    r1_temp = nil
+    r2_temp = nil
+    r1_temp_sh = nil
+    r2_temp_sh = nil
+    r1_consensus_filtered = nil
+    r2_consensus_filtered = nil
+    consensus_filtered = nil
+    pid_json = nil
+    consensus = nil
+    r1_seq = nil
+    r2_seq = nil
+    bio_r1 = nil
+    bio_r2 = nil
+    id = nil
+    primer_id_count = nil
+    primer_id_dis = nil
+    primer_id_list = nil
+    primer_id_count_over_n = nil
+    r1_sub_seq = nil
+    r2_sub_seq = nil
+    common_keys = nil
+
+    GC.start
+
     # start end-join
     def end_join(dir, option, overlap)
       shp = ViralSeq::SeqHashPair.fa(dir)
@@ -492,7 +519,6 @@ begin
 
     if primer[:end_join]
       log.puts Time.now.to_s + "\t" +  "Start end-pairing for TCS..."
-      shp = ViralSeq::SeqHashPair.fa(out_dir_consensus)
       joined_sh = end_join(out_dir_consensus, primer[:end_join_option], primer[:overlap])
       log.puts Time.now.to_s + "\t" + "Paired TCS number: " + joined_sh.size.to_s
 
@@ -500,6 +526,11 @@ begin
 
       if export_raw
         joined_sh_raw = end_join(out_dir_raw, primer[:end_join_option], primer[:overlap])
+      end
+
+      joined_sh.write_nt_fa(File.join(out_dir_consensus, "combined.fasta"))
+      if export_raw
+        joined_sh_raw.write_nt_fa(File.join(out_dir_raw, "combined.raw.fasta"))
       end
 
       if primer[:TCS_QC]
@@ -513,42 +544,11 @@ begin
         if ref_end == 0
           ref_end = 0..(ViralSeq::RefSeq.get(ref_genome).size - 1)
         end
-        if primer[:end_join_option] == 1
-          r1_sh = ViralSeq::SeqHash.fa(outfile_r1)
-          r2_sh = ViralSeq::SeqHash.fa(outfile_r2)
-          r1_sh = r1_sh.hiv_seq_qc(ref_start, (0..(ViralSeq::RefSeq.get(ref_genome).size - 1)), indel, ref_genome)
-          r2_sh = r2_sh.hiv_seq_qc((0..(ViralSeq::RefSeq.get(ref_genome).size - 1)), ref_end, indel, ref_genome)
-          new_r1_seq = r1_sh.dna_hash.each_with_object({}) {|(k, v), h| h[k[0..-4]] = v}
-          new_r2_seq = r2_sh.dna_hash.each_with_object({}) {|(k, v), h| h[k[0..-4]] = v}
-          joined_seq = {}
-          new_r1_seq.each do |seq_name, seq|
-            next unless seq
-            next unless new_r2_seq[seq_name]
-            joined_seq[seq_name] = seq + new_r2_seq[seq_name]
-          end
-          joined_sh = ViralSeq::SeqHash.new(joined_seq)
 
-          if export_raw
-            r1_sh_raw = ViralSeq::SeqHash.fa(outfile_raw_r1)
-            r2_sh_raw = ViralSeq::SeqHash.fa(outfile_raw_r2)
-            r1_sh_raw = r1_sh_raw.hiv_seq_qc(ref_start, (0..(ViralSeq::RefSeq.get(ref_genome).size - 1)), indel, ref_genome)
-            r2_sh_raw = r2_sh_raw.hiv_seq_qc((0..(ViralSeq::RefSeq.get(ref_genome).size - 1)), ref_end, indel, ref_genome)
-            new_r1_seq_raw = r1_sh_raw.dna_hash.each_with_object({}) {|(k, v), h| h[k[0..-4]] = v}
-            new_r2_seq_raw = r2_sh_raw.dna_hash.each_with_object({}) {|(k, v), h| h[k[0..-4]] = v}
-            joined_seq_raw = {}
-            new_r1_seq_raw.each do |seq_name, seq|
-              next unless seq
-              next unless new_r2_seq_raw[seq_name]
-              joined_seq_raw[seq_name] = seq + new_r2_seq_raw[seq_name]
-            end
-            joined_sh_raw = ViralSeq::SeqHash.new(joined_seq_raw)
-          end
-        else
-          joined_sh = joined_sh.hiv_seq_qc(ref_start, ref_end, indel, ref_genome)
+        joined_sh = joined_sh.hiv_seq_qc(ref_start, ref_end, indel, ref_genome)
 
-          if export_raw
-            joined_sh_raw = joined_sh_raw.hiv_seq_qc(ref_start, ref_end, indel, ref_genome)
-          end
+        if export_raw
+          joined_sh_raw = joined_sh_raw.hiv_seq_qc(ref_start, ref_end, indel, ref_genome)
         end
 
         log.puts Time.now.to_s + "\t" + "Paired TCS number after QC based on reference genome: " + joined_sh.size.to_s

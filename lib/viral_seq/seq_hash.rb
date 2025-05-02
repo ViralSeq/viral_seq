@@ -656,7 +656,7 @@ module ViralSeq
 
     def nt_variants
       return_obj = {}
-      nt_hash = self.dna_hash
+
       tcs_number = self.size
       dl = ViralSeq::TcsCore.detection_limit(tcs_number)
       fdr_hash = self.fdr
@@ -869,7 +869,7 @@ module ViralSeq
     # @param start_nt [Integer,Range,Array] start nt position(s) on the refernce genome, can be single number (Integer) or a range of Integers (Range), or an Array
     # @param end_nt [Integer,Range,Array] end nt position(s) on the refernce genome,can be single number (Integer) or a range of Integers (Range), or an Array
     # @param indel [Boolean] allow indels or not, `ture` or `false`
-    # @param ref_option [Symbol], name of reference genomes, options are `:HXB2`, `:NL43`, `:MAC239`
+    # @param ref_option [Symbol], name of reference genomes, options are `:HXB2`, `:SIVmm239`
     # @param path_to_muscle [String], path to the muscle executable, if not provided, use MuscleBio to run Muscle
     # @return [ViralSeq::SeqHash] a new ViralSeq::SeqHash object with only the sequences that meet the QC criterias
     # @example QC for sequences in a FASTA files
@@ -880,17 +880,19 @@ module ViralSeq
     #   filtered_seqhash.dna_hash.size
     #   => 4
 
-    def hiv_seq_qc(start_nt, end_nt, indel=true, ref_option = :HXB2, path_to_muscle = false)
-      start_nt = start_nt..start_nt if start_nt.is_a?(Integer)
-      end_nt = end_nt..end_nt if end_nt.is_a?(Integer)
+    def hiv_seq_qc(start_nt, end_nt, indel=true, ref_option = :HXB2)
+      start_nt = position_helper(start_nt)
+      end_nt = position_helper(end_nt)
+
       seq_hash = self.dna_hash.dup
       seq_hash_unique = seq_hash.values.uniq
       seq_hash_unique_pass = []
 
-      seq_hash_unique.each do |seq|
-        next if seq.nil?
-        loc = ViralSeq::Sequence.new('', seq).locator(ref_option, path_to_muscle)
-        next unless loc # if locator tool fails, skip this seq.
+      batch_locator = VirustLocator::Locator.exec(seq_hash_unique.join("\s"), "nt", 1, ref_option).split("\n")
+      seq_hash_unique.each_with_index do |seq, i|
+        loc = batch_locator[i]
+        loc = locator_helper(loc)
+        next unless loc
         if start_nt.include?(loc[0]) && end_nt.include?(loc[1])
           if indel
             seq_hash_unique_pass << seq
@@ -898,8 +900,11 @@ module ViralSeq
             seq_hash_unique_pass << seq
           end
         end
+
       end
+
       seq_pass = []
+
       seq_hash_unique_pass.each do |seq|
         seq_hash.each do |seq_name, orginal_seq|
           if orginal_seq == seq
@@ -909,10 +914,10 @@ module ViralSeq
         end
       end
       self.sub(seq_pass)
-    end # end of #hiv_seq_qc
+    end # end of #hiv_seq_qc # end of #hiv_seq_qc
 
     # sequence locator for SeqHash object, resembling HIV Sequence Locator from LANL
-    # @param ref_option [Symbol], name of reference genomes, options are `:HXB2`, `:NL43`, `:MAC239`
+    # @param ref_option [Symbol], name of reference genomes, options are `:HXB2`, `:SIVmm239`
     # @return [Array] two dimensional array `[[],[],[],...]` for each sequence, including the following information:
     #
     #     title of the SeqHash object (String)
@@ -1341,7 +1346,7 @@ module ViralSeq
       seq_hash_unique = seq_hash.uniq_hash
       trimmed_seq_hash = {}
       seq_hash_unique.each do |seq, names|
-        trimmed_seq = ViralSeq::Sequence.new('', seq).sequence_clip(start_nt, end_nt, ref_option, path_to_muscle).dna
+        trimmed_seq = ViralSeq::Sequence.new('', seq).sequence_clip(start_nt, end_nt, ref_option).dna
         names.each do |name|
           trimmed_seq_hash[name] = trimmed_seq
         end
@@ -1430,6 +1435,37 @@ module ViralSeq
       var_count = var.count_freq
       var_count.sort_by{|key,_value|key}.to_h
     end # end of #varaint_for_poisson
+
+    # helper for start/end position for #hiv_seq_qc
+    def position_helper(position)
+      if position.is_a?(Range)
+        return position
+      elsif position.is_a?(Integer)
+        return position..position
+      elsif position.is_a?(String)
+        return position.to_i..position.to_i
+      elsif position.is_a?(Array)
+        return position[0].to_i..position[1].to_i
+      else
+        raise "Position #{position} not recognized"
+      end
+    end # position_helper
+
+    # helper for batch locator
+    # @param loc [String] the output of batch locator
+    # @return [Array] the locator information in an array
+    def locator_helper(loc)
+      loc = loc.split("\t")
+      loc[0] = loc[0].to_i
+      loc[1] = loc[1].to_i
+      loc[2] = loc[2].to_f.round(1)
+      if loc[3].to_s.downcase == "true"
+        loc[3] = true
+      else
+        loc[3] = false
+      end
+      return loc
+    end
 
   end # end of SeqHash
 

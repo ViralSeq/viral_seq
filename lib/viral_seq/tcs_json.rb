@@ -101,10 +101,10 @@ module ViralSeq
 
               data[:ref_genome] = get_ref
 
-              print "reference 5'end ref position or posiiton range, 0 if no need to match this end \n> "
+              print "reference 5'end ref position or position range, 0 if no need to match this end \n> "
               data[:ref_start] = gets.chomp.rstrip.to_i
 
-              print "reference 3'end ref position or posiiton range: 0 if no need to match this end \n> "
+              print "reference 3'end ref position or position range: 0 if no need to match this end \n> "
               data[:ref_end] = gets.chomp.rstrip.to_i
 
               print "allow indels? (default as yes) Y/N \n> "

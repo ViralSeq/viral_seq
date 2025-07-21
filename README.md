@@ -191,7 +191,11 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
-### Version-1.10.1
+### Version-1.10.2-07210225
+
+1. Fixed a bug processing parameters for HIV sequence QC.
+
+### Version-1.10.1-05012025
 
 1. Added quality filter for Illumina 2-color sequencing platforms (filter poly-G and poly-C)
 2. Replaced `MuscleBio` with [`VirustLocator`]("https://github.com/ViralSeq/virust-locator-ruby") for faster and more accurate pairwise alignment.

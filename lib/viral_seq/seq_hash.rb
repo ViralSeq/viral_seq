@@ -1440,8 +1440,10 @@ module ViralSeq
     def position_helper(position)
       if position.is_a?(Range)
         return position
-      elsif position.is_a?(Integer)
+      elsif position.is_a?(Integer) && position > 0
         return position..position
+      elsif position.is_a?(Integer) && position == 0
+        return 0..1000000
       elsif position.is_a?(String)
         return position.to_i..position.to_i
       elsif position.is_a?(Array)

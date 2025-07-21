@@ -11,3 +11,5 @@
 
 # gem files
 *.gem
+
+.DS_Store

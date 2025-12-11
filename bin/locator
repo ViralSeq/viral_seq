@@ -76,6 +76,10 @@ begin
   else
     csv_file = seq_file + ".csv"
   end
+  
+  fasta_file = csv_file.sub(/\.csv$/i, '.direction.fasta')
+
+  fasta_handle = File.open(fasta_file, 'w')
 
   unless File.exist?(seq_file)
     raise StandardError.new("Input file sequence file not found".red.bold)
@@ -92,9 +96,19 @@ begin
   locs = seqs.loc(opt)
   head = ["title", "sequence", "ref", "direction", "start", "end", "similarity", "indel", "aligned_input", "aligned_ref"]
   locs.unshift(head)
+
+  directional_fasta = []
   data = CSV.generate do |csv|
-    locs.each {|loc| csv << loc}
+    locs.each do |loc| 
+      csv << loc
+      directional_fasta << loc[1]
+      directional_fasta << loc[8].tr("-", "") # remove gaps for aligned_input
+    end
   end
+  directional_fasta[2..-1].each do |line|
+    fasta_handle.puts line
+  end
+  fasta_handle.close
 
   File.write(csv_file, data)
   puts "Output file found at #{csv_file.green.bold}"

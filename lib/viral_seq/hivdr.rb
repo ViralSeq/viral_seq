@@ -492,7 +492,7 @@ module ViralSeq
 
         self.dna_hash.each do |k,v|
             r1_seqs[k] = v[0,r1_length]
-            r2_seqs[k] = v[r1_length, r2_length]
+            r2_seqs[k] = v[-r2_length..-1] # to ensure the length from the end. Sometimes the platform will return sequence with one extra base.
         end
 
         r1_sh = ViralSeq::SeqHash.new(r1_seqs)

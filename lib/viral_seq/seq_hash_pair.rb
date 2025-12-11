@@ -250,7 +250,7 @@ module ViralSeq
 
     private
     # determine overlap size from @dna_hash
-    def determine_overlap_pid_pair(seq_pair_hash, diff = 0.0)
+    def determine_overlap_pid_pair(seq_pair_hash, diff = 0.02)
       overlaps = []
       seq_pair_hash.each do |_seq_name, seq_pair|
         overlap_list = []

@@ -106,7 +106,7 @@ module ViralSeq
         )
 
         formatted_text(
-          text_format2("P17", log[:pi_P17], log[:dist20_P17], log[:tcs_P17])
+          text_format2("CA", log[:pi_CA], log[:dist20_CA], log[:tcs_CA])
         )
 
         move_down 30

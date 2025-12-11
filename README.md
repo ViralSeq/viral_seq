@@ -191,6 +191,11 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
+### Version-1.10.3-12112025
+
+1. Bug fix for SDRM pipeline.
+2. Add a function in `locator` tool to export sequences in positive sense direction.
+
 ### Version-1.10.2-07210225
 
 1. Fixed a bug processing parameters for HIV sequence QC.

@@ -12,10 +12,10 @@
 #     ├── lib1_IN
 #     ├── lib1_V1V3
 #   ├── lib2
-#     ├── lib1_RT
-#     ├── lib1_PR
-#     ├── lib1_IN
-#     ├── lib1_V1V3
+#     ├── lib2_RT
+#     ├── lib2_PR
+#     ├── lib2_IN
+#     ├── lib2_V1V3
 #   ├── ...
 #
 # output data in a new dir as 'libs_dir_SDRM'
@@ -37,7 +37,7 @@ r_version = ViralSeq::R.check_R
 ViralSeq::R.check_R_packages
 
 def abstract_line(data)
-  return_data = data[3] + data[2] + data[4] + ":" +
+  data[3] + data[2] + data[4] + ":" +
                 (data[6].to_f * 100).round(2).to_s + "(" +
                 (data[7].to_f * 100).round(2).to_s + "-" +
                 (data[8].to_f * 100).round(2).to_s + "); "
@@ -143,7 +143,7 @@ libs.each do |lib|
     seq_basename.gsub!(/\_P17/i, "_CA")
     region = version_config.query_region(region_name.to_s)
 
-    puts "prcessing region: " + region.region
+    puts "processing region: " + region.region
 
     sh = ViralSeq::SeqHash.fa(path_to_file)
 

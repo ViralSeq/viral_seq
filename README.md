@@ -128,9 +128,15 @@ Output data in a new dir as 'libs_dir_SDRM'
 
 ---
 
-### `locator`
+### `locator` version >= 1.10.3
 
 Use executable `locator` to get the coordinates of the sequences on HIV/SIV reference genome from a FASTA file through a terminal
+
+```bash
+    $ locator -i sequence.fasta
+```
+
+### `locator` version < 1.10.3
 
 ```bash
     $ locator -i sequence.fasta -o sequence.fasta.csv

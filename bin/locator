@@ -56,6 +56,26 @@ def myparser
   return options
 end
 
+module ViralSeq
+  class SeqHash
+    def validate_nt_sequences
+      new_dna_hash = {}
+      self.dna_hash.each do |title, seq|
+        if seq.length < 10
+          print "[Warning] ".red.bold + "Sequence '#{title}' is too short (less than 10 nt), please check your input sequence.\n"
+        else 
+          unless seq =~ /\A[ACGTURYSWKMBDHVN\-\s]+\z/i
+            print "[Warning] ".red.bold + "Sequence '#{title}' contains invalid characters (not A, C, G, T, U, R, Y, S, W, K, M, B, D, H, V, N, '-', or space), please check your input sequence.\n"
+          else
+            new_dna_hash[title] = seq
+          end
+        end
+      end
+      self.dna_hash = new_dna_hash
+    end
+  end
+end
+
 puts "\n" + "Sequence Locator (RubyGem::ViralSeq Version #{ViralSeq::VERSION})".red.bold + " by " + "Shuntai Zhou".blue.bold
 puts "See details at " +  "https://github.com/ViralSeq/viral_seq\n".blue
 puts "Resembling" + " Sequence Locator ".magenta.bold + "from LANL" + " (https://www.hiv.lanl.gov/content/sequence/LOCATE/locate.html)\n".blue
@@ -86,6 +106,9 @@ begin
   end
 
   seqs = ViralSeq::SeqHash.fa(seq_file)
+
+  puts "Only sequences greater than 10 nt and containing valid nt chars will be processed.".blue.bold
+  seqs.validate_nt_sequences
   opt =  options[:ref_option] ? options[:ref_option] : :HXB2
 
   unless [:HXB2, :SIVmm239].include? opt

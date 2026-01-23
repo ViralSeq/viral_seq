@@ -136,13 +136,11 @@ Use executable `locator` to get the coordinates of the sequences on HIV/SIV refe
     $ locator -i sequence.fasta
 ```
 
-Locator output defaults to a new file in the same directory named {input}.direction.fasta
+Locator output defaults to a csv file with results and a new file in the same directory named {input}.direction.fasta
 
 ### `locator` version < 1.10.3
 
-```bash
-    $ locator -i sequence.fasta -o sequence.fasta.csv
-```
+Only has the the results csv file.
 
 ---
 

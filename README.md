@@ -197,6 +197,10 @@ qc_seqhash.sdrm_hiv_pr(cut_off)
 
 ## Updates
 
+### Version-1.10.4-01232026
+
+1. Added a fasta validator function in the `locator` cli tool.
+
 ### Version-1.10.3-12112025
 
 1. Bug fix for SDRM pipeline.
